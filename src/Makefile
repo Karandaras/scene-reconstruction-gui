@@ -1,7 +1,7 @@
 TARGET		:= ../fenster
-CXXFLAGS	:= -g -Wextra -Wall -Wno-long-long -pedantic-errors -std=c++98 `pkg-config gtkmm-3.0 --cflags --libs`
+CXXFLAGS	:= -I/usr/local/include/gazebo -g -Wextra -Wall -Wno-long-long -pedantic-errors -std=c++98 `pkg-config gtkmm-3.0 --cflags --libs` -lgazebo -lgazebo_common -lgazebo_transport -lgazebo_msgs -lgazebo_math -lboost_system-mt -lprotobuf
 CXX				:= g++
-LIBS			:=
+LIBS			:= 
 EXT				:= cpp
 BUILDDIR	:= ../build
 
