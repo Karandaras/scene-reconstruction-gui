@@ -138,9 +138,39 @@ struct MyWindow : Gtk::Window
 
     ModelColumns                  mdl_cols; 
 
+    // robot controller
+    class RCColumns : public Gtk::TreeModel::ColumnRecord {
+        public:
+            RCColumns() {
+                add(col_simname);
+                add(col_robname);
+                add(col_simangle);
+                add(col_offset);
+                add(col_robangle);
+            }
+
+            ~RCColumns() {}
+
+            Gtk::TreeModelColumn<Glib::ustring> col_simname;
+            Gtk::TreeModelColumn<Glib::ustring> col_robname;
+            Gtk::TreeModelColumn<double>        col_simangle;
+            Gtk::TreeModelColumn<double>        col_offset;
+            Gtk::TreeModelColumn<double>        col_robangle;
+        };
+
+    Gtk::ScrolledWindow           scw_robot;
+    Gtk::TreeView                 trv_robot;
+    Glib::RefPtr<Gtk::ListStore>  roc_store;
+
+    RCColumns                     roc_cols;
+
+    Gtk::ButtonBox                box_robot;
+    Gtk::Button                   btn_send;
+    Gtk::Button                   btn_reload;
 
     // layout
     Gtk::Grid                     grd_layout;
+    Gtk::Grid                     grd_robot;
 
     // tabs for log etc.
     Gtk::Notebook                 ntb_tabs;
@@ -154,23 +184,35 @@ struct MyWindow : Gtk::Window
     // gazebo node
     gazebo::transport::NodePtr node;
 
+    // subscriber and publisher
+    gazebo::transport::SubscriberPtr sceneResSub;
+    gazebo::transport::PublisherPtr  sceneReqPub;
+
     // request message to detect selection through gui
     boost::shared_ptr<gazebo::msgs::Request const> guiReq;
     boost::shared_ptr<gazebo::msgs::Response const> guiRes;
+    gazebo::msgs::Request *robReq;
 
   private:
     void init_transport_and_setup_topics();
     void attach_widgets_to_grid();
     void connect_signals();
+    void on_page_switch(Widget*, guint);
     void on_button_stop_clicked();
     void on_button_play_clicked();
     void on_button_pause_clicked();
+    void on_button_send_clicked();
+    void on_button_reload_clicked();
     bool on_scale_button_event(GdkEventButton*);
     bool on_scale_key_event(GdkEventKey*);
     void on_listener(const Gtk::TreeModel::Path&, const Gtk::TreeModel::iterator&);
+    void on_cell_simangle_edited(const Glib::ustring&, const Glib::ustring&);
+    void on_cell_offset_edited(const Glib::ustring&, const Glib::ustring&);
+    void on_cell_robangle_edited(const Glib::ustring&, const Glib::ustring&);
     void OnWSMsg(ConstWorldStatisticsPtr&);
     void OnReqMsg(ConstRequestPtr&);
     void OnResMsg(ConstResponsePtr&);
+    void OnResponseMsg(ConstResponsePtr&);
     void log(std::string, std::string, ...);
     Glib::ustring to_ustring(google::protobuf::uint32);
     Glib::ustring to_ustring(bool);
@@ -188,7 +230,9 @@ MyWindow::MyWindow()
   rng_time(adj_time, Gtk::ORIENTATION_HORIZONTAL),
   btn_stop("STOP"),
   btn_play("PLAY"),
-  btn_pause("PAUSE")
+  btn_pause("PAUSE"),
+  btn_send("SEND"),
+  btn_reload("RELOAD")
 {
     init_transport_and_setup_topics();
 
@@ -324,9 +368,30 @@ MyWindow::MyWindow()
 
     grd_layout.set_row_homogeneous(false);
     grd_layout.set_column_homogeneous(false);
+    grd_robot.set_row_homogeneous(false);
+    grd_robot.set_column_homogeneous(false);
 
+    // robot controller
+    sceneReqPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/Request");
+    sceneResSub = node->Subscribe("~/SceneReconstruction/Response", &MyWindow::OnResponseMsg, this);
+
+    trv_robot.set_model(roc_store = Gtk::ListStore::create(roc_cols));
+    
+    trv_robot.append_column("Simulator Name", roc_cols.col_simname);
+    trv_robot.append_column("Robot Name", roc_cols.col_robname);
+    trv_robot.append_column_editable("Simulator Angle", roc_cols.col_simangle);
+    trv_robot.append_column_editable("Offset", roc_cols.col_offset);
+    trv_robot.append_column_editable("Robot Angle", roc_cols.col_robangle);
+  
+    scw_robot.add(trv_robot);
+    scw_robot.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+    scw_robot.set_size_request(650,140);
+    scw_robot.set_hexpand(true);
+    scw_robot.set_vexpand(true);
+                                    
     attach_widgets_to_grid();
-    connect_signals();
+
+    grd_robot.attach(scw_robot, 0, 70, 650, 140);
    
     Gtk::Label lbl_tab1;
     lbl_tab1.set_text("Main");
@@ -338,13 +403,18 @@ MyWindow::MyWindow()
     lbl_tab4.set_text("Listener");
     Gtk::Label lbl_tab5;
     lbl_tab5.set_text("Model");
+    Gtk::Label lbl_tab6;
+    lbl_tab6.set_text("Robot Controller");
     ntb_tabs.append_page(grd_layout, lbl_tab1);
     ntb_tabs.append_page(scw_logger, lbl_tab2);
     ntb_tabs.append_page(scw_topics, lbl_tab3);
     ntb_tabs.append_page(scw_listen, lbl_tab4);
     ntb_tabs.append_page(scw_model, lbl_tab5);
+    ntb_tabs.append_page(grd_robot, lbl_tab6);
     add(ntb_tabs);
-   
+
+    connect_signals();   
+
     show_all_children();
 }
 
@@ -388,6 +458,20 @@ void MyWindow::attach_widgets_to_grid()
     box_buttons.set_spacing(5);
     grd_layout.attach(box_buttons,0,50,200,90);
 
+    // btn_send
+    btn_send.set_size_request(60,60);
+    btn_send.set_hexpand(false);
+    btn_send.set_vexpand(false);
+    box_robot.pack_start(btn_send,false,false);
+    // btn_send
+    btn_reload.set_size_request(60,60);
+    btn_reload.set_hexpand(false);
+    btn_reload.set_vexpand(false);
+    box_robot.pack_start(btn_reload,false,false);
+
+    box_robot.set_spacing(5);
+    grd_robot.attach(box_robot,0,0,650,70);
+
     // data display
     trv_data.set_model(dat_store = Gtk::TreeStore::create(dat_cols));
     trv_data.set_hover_selection(false);
@@ -428,9 +512,25 @@ void MyWindow::connect_signals()
     btn_stop.signal_clicked().connect(sigc::mem_fun(*this,&MyWindow::on_button_stop_clicked));
     btn_play.signal_clicked().connect(sigc::mem_fun(*this,&MyWindow::on_button_play_clicked));
     btn_pause.signal_clicked().connect(sigc::mem_fun(*this,&MyWindow::on_button_pause_clicked));
+    btn_send.signal_clicked().connect(sigc::mem_fun(*this,&MyWindow::on_button_send_clicked));
+    btn_reload.signal_clicked().connect(sigc::mem_fun(*this,&MyWindow::on_button_reload_clicked));
     rng_time.signal_button_release_event().connect(sigc::mem_fun(*this,&MyWindow::on_scale_button_event), false);
     rng_time.signal_key_release_event().connect(sigc::mem_fun(*this,&MyWindow::on_scale_key_event), false);
     trv_topics.get_model()->signal_row_changed().connect(sigc::mem_fun(*this,&MyWindow::on_listener), false);
+    ntb_tabs.signal_switch_page().connect(sigc::mem_fun(*this,&MyWindow::on_page_switch));
+
+    std::vector<Gtk::CellRenderer*> rob_col_simangle = trv_robot.get_column(2)->get_cells();
+    for(unsigned int i=0; i<rob_col_simangle.size(); i++) {
+      dynamic_cast<Gtk::CellRendererText*>(rob_col_simangle[i])->signal_edited().connect(sigc::mem_fun(*this,&MyWindow::on_cell_simangle_edited));
+    }
+    std::vector<Gtk::CellRenderer*> rob_col_offset = trv_robot.get_column(3)->get_cells();
+    for(unsigned int i=0; i<rob_col_offset.size(); i++) {
+      dynamic_cast<Gtk::CellRendererText*>(rob_col_offset[i])->signal_edited().connect(sigc::mem_fun(*this,&MyWindow::on_cell_offset_edited));
+    }
+    std::vector<Gtk::CellRenderer*> rob_col_robangle = trv_robot.get_column(4)->get_cells();
+    for(unsigned int i=0; i<rob_col_robangle.size(); i++) {
+      dynamic_cast<Gtk::CellRendererText*>(rob_col_robangle[i])->signal_edited().connect(sigc::mem_fun(*this,&MyWindow::on_cell_robangle_edited));
+    }
 }
 
 bool MyWindow::on_scale_button_event(GdkEventButton *b)
@@ -468,6 +568,72 @@ void MyWindow::on_button_play_clicked()
 void MyWindow::on_button_pause_clicked()
 {
       log("button pressed", "PAUSE");
+}
+
+void MyWindow::on_button_send_clicked()
+{
+      log("button pressed", "SEND");
+}
+
+void MyWindow::on_button_reload_clicked()
+{
+      log("button pressed", "RELOAD");
+      robReq = gazebo::msgs::CreateRequest("controller_info");
+      sceneReqPub->Publish(*robReq);
+      log("controller_info", "requesting info from RobotControllerPlugin");
+}
+
+void MyWindow::on_page_switch(Widget *page, guint page_num) {
+      if(page_num == 5) { // Robot Controller
+        robReq = gazebo::msgs::CreateRequest("controller_info");
+	sceneReqPub->Publish(*robReq);
+	log("controller_info", "requesting info from RobotControllerPlugin");
+      }
+}
+
+void MyWindow::on_cell_simangle_edited(const Glib::ustring& path, const Glib::ustring& new_text)
+{
+  log("cell edited", "Simulation Angle changed");  
+  Gtk::TreeIter it = trv_robot.get_model()->get_iter(path);
+  
+  double simangle =  strtod(new_text.data(), NULL);
+  double offset;
+  offset = it->get_value(roc_cols.col_offset);
+  double robangle = simangle - offset;
+
+  it->set_value(roc_cols.col_simangle, simangle);
+  it->set_value(roc_cols.col_offset, offset);
+  it->set_value(roc_cols.col_robangle, robangle);
+} 
+
+void MyWindow::on_cell_offset_edited(const Glib::ustring& path, const Glib::ustring& new_text)
+{
+  log("cell edited", "Offset changed");
+  Gtk::TreeIter it = trv_robot.get_model()->get_iter(path);
+
+  double offset = strtod(new_text.data(), NULL);
+  double robangle;
+  robangle = it->get_value(roc_cols.col_robangle);
+  double simangle = robangle + offset;
+
+  it->set_value(roc_cols.col_simangle, simangle);
+  it->set_value(roc_cols.col_offset, offset);
+  it->set_value(roc_cols.col_robangle, robangle);
+}
+
+void MyWindow::on_cell_robangle_edited(const Glib::ustring& path, const Glib::ustring& new_text)
+{
+  log("cell edited", "Robot Angle changed");
+  Gtk::TreeIter it = trv_robot.get_model()->get_iter(path);
+
+  double offset;
+  offset = it->get_value(roc_cols.col_offset);
+  double robangle = strtod(new_text.data(), NULL);
+  double simangle = robangle + offset;
+
+  it->set_value(roc_cols.col_simangle, simangle);
+  it->set_value(roc_cols.col_offset, offset);
+  it->set_value(roc_cols.col_robangle, robangle);
 }
 
 void MyWindow::on_listener(const Gtk::TreeModel::Path& path, const Gtk::TreeModel::iterator& iter)
@@ -565,6 +731,41 @@ void MyWindow::OnResMsg(ConstResponsePtr &_msg)
   }
 }
 
+void MyWindow::OnResponseMsg(ConstResponsePtr &_msg)
+{
+  if(!robReq || robReq->id() != _msg->id()) 
+    return;
+
+  if(_msg->request() == "controller_info") {
+    gazebo::msgs::SceneRobotController src;
+    if(_msg->has_type() && _msg->type() == src.GetTypeName()) {
+      src.ParseFromString(_msg->serialized_data());
+      log("controller_info", "receving info from RobotControllerPlugin");
+
+      int sn, rn, o, sa, ra;
+      sn = src.simulator_name_size();
+      rn = src.robot_name_size();
+      o  = src.offset_size();
+      sa = src.simulator_angle_size();
+      ra = src.robot_angle_size();
+
+      if(sn == rn && rn == o && o == sa && sa == ra && ra == sn) {
+        trv_robot.set_model(roc_store = Gtk::ListStore::create(roc_cols));
+        Gtk::TreeModel::Row row;
+
+        for(int i=0; i<sn; i++) {
+          row = *(roc_store->append());
+          row[roc_cols.col_simname] = src.simulator_name(i);
+          row[roc_cols.col_robname] = src.robot_name(i);
+          row[roc_cols.col_offset] = src.offset(i);
+          row[roc_cols.col_simangle] = src.simulator_angle(i);
+	  row[roc_cols.col_robangle] = src.robot_angle(i);
+        }
+      }
+    }
+  }
+}
+
 void MyWindow::log(std::string event, std::string text, ...)
 {
   va_list Args;
@@ -647,7 +848,7 @@ Glib::ustring MyWindow::convert(gazebo::msgs::Quaternion in, int round = -1, boo
   std::stringstream convert;
   if(as_euler) {
     gazebo::math::Vector3 v = q.GetAsEuler();
-    v *= *180/M_PI;
+    v *= 180/M_PI;
     if(round != -1)
       v.Round(round);
   
