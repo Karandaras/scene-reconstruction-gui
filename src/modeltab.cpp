@@ -14,9 +14,12 @@ ModelTab::ModelTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger) : Scen
   trv_model.set_model(mdl_store = Gtk::TreeStore::create(mdl_cols));
   trv_model.set_hover_selection(true);
   trv_model.set_enable_tree_lines(true);
+  trv_model.set_headers_visible(false);
 
-  trv_model.append_column("Description", mdl_cols.col_desc);
-  trv_model.append_column_editable("Value", mdl_cols.col_val);
+  int c = trv_model.append_column("Description", mdl_cols.col_desc);
+  trv_model.get_column(c-1)->set_resizable(true);
+  c = trv_model.append_column_editable("Value", mdl_cols.col_val);
+  trv_model.get_column(c-1)->set_resizable(true);
 
   scw_model.add(trv_model);
   scw_model.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);

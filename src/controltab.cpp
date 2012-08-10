@@ -67,6 +67,7 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger)
   trv_data.set_hover_expand(true);
   trv_data.set_enable_tree_lines(true);
   trv_data.get_selection()->set_mode(Gtk::SELECTION_NONE);
+  trv_data.set_headers_visible(false);
   Gtk::TreeModel::Row row = *(dat_store->append());
   row[dat_cols.col_name] = "Coordinates";
   row[dat_cols.col_data] = "";

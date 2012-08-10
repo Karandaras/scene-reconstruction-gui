@@ -48,11 +48,26 @@ namespace SceneReconstruction {
 
       RCColumns                     roc_cols;
 
-      Gtk::ButtonBox                box_robot;
       Gtk::Button                   btn_send;
       Gtk::Button                   btn_reload;
+      Gtk::Label                    lbl_pos;
+      Gtk::Label                    lbl_posx;
+      Gtk::Entry                    ent_posx;
+      Gtk::Label                    lbl_posy;
+      Gtk::Entry                    ent_posy;
+      Gtk::Label                    lbl_posz;
+      Gtk::Entry                    ent_posz;
+      Gtk::Label                    lbl_rot;
+      Gtk::Label                    lbl_rotw;
+      Gtk::Entry                    ent_rotw;
+      Gtk::Label                    lbl_rotx;
+      Gtk::Entry                    ent_rotx;
+      Gtk::Label                    lbl_roty;
+      Gtk::Entry                    ent_roty;
+      Gtk::Label                    lbl_rotz;
+      Gtk::Entry                    ent_rotz;
 
-      Gtk::Grid                     grd_robot;
+      Gtk::Table                    tbl_robot;
 
       // subscriber and publisher
       gazebo::transport::SubscriberPtr sceneResSub;

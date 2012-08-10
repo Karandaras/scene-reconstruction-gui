@@ -14,6 +14,8 @@ LoggerTab::LoggerTab() : SceneTab::SceneTab("Logger") {
   int column_count = trv_logger.append_column("Event", *cell1);
   Gtk::TreeViewColumn *column1 = trv_logger.get_column(column_count-1); 
   if (column1) {
+    column1->set_reorderable(true);
+    column1->set_resizable(true);
 #ifndef GLIBMM_PROPERTIES_ENABLED
       column1->add_attribute(cell1->property_text(), log_cols.col_event);
 #else
@@ -26,6 +28,8 @@ LoggerTab::LoggerTab() : SceneTab::SceneTab("Logger") {
   column_count = trv_logger.append_column("Time", *cell2);
   Gtk::TreeViewColumn *column2 = trv_logger.get_column(column_count-1); 
   if (column2) {
+    column2->set_reorderable(true);
+    column2->set_resizable(true);
 #ifndef GLIBMM_PROPERTIES_ENABLED
       column2->add_attribute(cell2->property_text(), log_cols.col_time);
 #else
@@ -40,6 +44,9 @@ LoggerTab::LoggerTab() : SceneTab::SceneTab("Logger") {
   column_count = trv_logger.append_column("Text", *cell3);
   Gtk::TreeViewColumn *column3 = trv_logger.get_column(column_count-1); 
   if (column3) {
+    column3->set_reorderable(true);
+    column3->set_resizable(true);
+    column3->set_expand(true);
 #ifndef GLIBMM_PROPERTIES_ENABLED
       column3->add_attribute(cell3->property_text(), log_cols.col_text);
 #else
