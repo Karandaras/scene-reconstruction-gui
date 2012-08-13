@@ -5,6 +5,13 @@
 
 using namespace SceneReconstruction;
 
+/** @class ControlTab "controltab.h"
+ * Tab for the GUI that allows the user to control the scene recontruction
+ * by jumping to specific times or (un)pausing. It also displays coordinates
+ * of the currently selected object.
+ * @author Bastian Klingen
+ */
+
 ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger)
 : SceneTab::SceneTab("Control"),
   adj_time(Gtk::Adjustment::create(0.0, 0.0, 101.0, 0.1, 1.0, 1.0) ),
@@ -69,23 +76,23 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger)
   trv_data.get_selection()->set_mode(Gtk::SELECTION_NONE);
   trv_data.set_headers_visible(false);
   Gtk::TreeModel::Row row = *(dat_store->append());
-  row[dat_cols.col_name] = "Coordinates";
-  row[dat_cols.col_data] = "";
+  row[dat_cols.name] = "Coordinates";
+  row[dat_cols.data] = "";
 
   Gtk::TreeModel::Row childrow = *(dat_store->append(row.children()));
-  childrow[dat_cols.col_name] = "Gazebo";
-  childrow[dat_cols.col_data] = "X: 0 Y: 0 Z: 0";
+  childrow[dat_cols.name] = "Gazebo";
+  childrow[dat_cols.data] = "X: 0 Y: 0 Z: 0";
 
   childrow = *(dat_store->append(row.children()));
-  childrow[dat_cols.col_name] = "Robot";
-  childrow[dat_cols.col_data] = "X: 0 Y: 0 Z: 0";
+  childrow[dat_cols.name] = "Robot";
+  childrow[dat_cols.data] = "X: 0 Y: 0 Z: 0";
 
   childrow = *(dat_store->append(row.children()));
-  childrow[dat_cols.col_name] = "Sensor";
-  childrow[dat_cols.col_data] = "X: 0 Y: 0 Z: 0";
+  childrow[dat_cols.name] = "Sensor";
+  childrow[dat_cols.data] = "X: 0 Y: 0 Z: 0";
  
-  trv_data.append_column("Name", dat_cols.col_name);
-  trv_data.append_column("Data", dat_cols.col_data);
+  trv_data.append_column("Name", dat_cols.name);
+  trv_data.append_column("Data", dat_cols.data);
 
   scw_data.add(trv_data);
   scw_data.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
@@ -137,11 +144,11 @@ void ControlTab::update_coords(gazebo::msgs::Model model) {
   Gtk::TreeModel::Children rows = trv_data.get_model()->children();
   for(Gtk::TreeModel::Children::iterator iter = rows.begin(); iter != rows.end(); ++iter) {
     Gtk::TreeModel::Row row = *iter;
-    if(row[dat_cols.col_name] == "Coordinates" && model.has_pose()) {
+    if(row[dat_cols.name] == "Coordinates" && model.has_pose()) {
       Gtk::TreeModel::Children childrows = row.children();
       Gtk::TreeModel::Children::iterator childiter = childrows.begin();
       Gtk::TreeModel::Row childrow = *childiter;
-      childrow[dat_cols.col_data] = Converter::convert(model.pose(), 0, 3);
+      childrow[dat_cols.data] = Converter::convert(model.pose(), 0, 3);
     }
   }
 }

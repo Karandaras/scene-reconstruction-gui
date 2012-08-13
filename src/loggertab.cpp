@@ -2,6 +2,11 @@
 
 using namespace SceneReconstruction;
 
+/** @class LoggerTab "loggertab.h"
+ * Tab for the GUI that is used for logging.
+ * @author Bastian Klingen
+ */
+
 LoggerTab::LoggerTab() : SceneTab::SceneTab("Logger") {
   offset = time(NULL);
   trv_logger.set_model(log_store = Gtk::ListStore::create(log_cols));
@@ -17,9 +22,9 @@ LoggerTab::LoggerTab() : SceneTab::SceneTab("Logger") {
     column1->set_reorderable(true);
     column1->set_resizable(true);
 #ifndef GLIBMM_PROPERTIES_ENABLED
-      column1->add_attribute(cell1->property_text(), log_cols.col_event);
+      column1->add_attribute(cell1->property_text(), log_cols.event);
 #else
-      column1->add_attribute(*cell1, "text", log_cols.col_event);
+      column1->add_attribute(*cell1, "text", log_cols.event);
 #endif
   } 
   
@@ -31,9 +36,9 @@ LoggerTab::LoggerTab() : SceneTab::SceneTab("Logger") {
     column2->set_reorderable(true);
     column2->set_resizable(true);
 #ifndef GLIBMM_PROPERTIES_ENABLED
-      column2->add_attribute(cell2->property_text(), log_cols.col_time);
+      column2->add_attribute(cell2->property_text(), log_cols.time);
 #else
-      column2->add_attribute(*cell2, "text", log_cols.col_time);
+      column2->add_attribute(*cell2, "text", log_cols.time);
 #endif
   } 
   
@@ -48,9 +53,9 @@ LoggerTab::LoggerTab() : SceneTab::SceneTab("Logger") {
     column3->set_resizable(true);
     column3->set_expand(true);
 #ifndef GLIBMM_PROPERTIES_ENABLED
-      column3->add_attribute(cell3->property_text(), log_cols.col_text);
+      column3->add_attribute(cell3->property_text(), log_cols.text);
 #else
-      column3->add_attribute(*cell3, "text", log_cols.col_text);
+      column3->add_attribute(*cell3, "text", log_cols.text);
 #endif
   } 
   scw_logger.add(trv_logger);
@@ -87,9 +92,9 @@ void LoggerTab::log(std::string event, std::string text, ...)
   buffer[buf_len] = '\0';
 
   Gtk::TreeModel::Row row = *(log_store->append());
-  row[log_cols.col_event] = "["+event+"]";
-  row[log_cols.col_time] = time_buffer;
-  row[log_cols.col_text] = buffer;
+  row[log_cols.event] = "["+event+"]";
+  row[log_cols.time] = time_buffer;
+  row[log_cols.text] = buffer;
 
   free(time_buffer);
   free(buffer);

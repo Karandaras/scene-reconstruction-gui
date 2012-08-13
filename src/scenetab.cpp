@@ -5,6 +5,11 @@
 
 using namespace SceneReconstruction;
 
+/** @class SceneTab "scenetab.h"
+ * Base tab class that needs to be extended
+ * @author Bastian Klingen
+ */
+
 SceneTab::SceneTab(Glib::ustring text) {
   label = new Gtk::Label(text);
 }

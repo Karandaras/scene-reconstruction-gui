@@ -3,6 +3,11 @@
 
 using namespace SceneReconstruction;
 
+/** @class RobotControllerTab "robotcontrollertab.h"
+ * Tab for the GUI that displays data of the RobotController Gazebo Plugin
+ * @author Bastian Klingen
+ */
+
 RobotControllerTab::RobotControllerTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger)
 : SceneTab::SceneTab("RobotController"),
   btn_send("SEND"),
@@ -20,23 +25,23 @@ RobotControllerTab::RobotControllerTab(gazebo::transport::NodePtr& _node, Logger
 
   int c;  
 
-  c = trv_robot.append_column("Simulator Name", roc_cols.col_simname);
+  c = trv_robot.append_column("Simulator Name", roc_cols.simname);
   trv_robot.get_column(c-1)->set_expand(true);
   trv_robot.get_column(c-1)->set_reorderable(true);
 
-  c = trv_robot.append_column("Robot Name", roc_cols.col_robname);
+  c = trv_robot.append_column("Robot Name", roc_cols.robname);
   trv_robot.get_column(c-1)->set_expand(true);
   trv_robot.get_column(c-1)->set_reorderable(true);
 
-  c = trv_robot.append_column_editable("Simulator Angle", roc_cols.col_simangle);
+  c = trv_robot.append_column_editable("Simulator Angle", roc_cols.simangle);
   trv_robot.get_column(c-1)->set_expand(true);
   trv_robot.get_column(c-1)->set_reorderable(true);
 
-  c = trv_robot.append_column_editable("Offset", roc_cols.col_offset);
+  c = trv_robot.append_column_editable("Offset", roc_cols.offset);
   trv_robot.get_column(c-1)->set_expand(true);
   trv_robot.get_column(c-1)->set_reorderable(true);
 
-  c = trv_robot.append_column_editable("Robot Angle", roc_cols.col_robangle);
+  c = trv_robot.append_column_editable("Robot Angle", roc_cols.robangle);
   trv_robot.get_column(c-1)->set_expand(true);
   trv_robot.get_column(c-1)->set_reorderable(true);
 
@@ -195,11 +200,11 @@ void RobotControllerTab::OnResponseMsg(ConstResponsePtr& _msg) {
 
         for(int i=0; i<sn; i++) {
           row = *(roc_store->append());
-          row[roc_cols.col_simname]  = src.simulator_name(i);
-          row[roc_cols.col_robname]  = src.robot_name(i);
-          row[roc_cols.col_offset]   = src.offset(i);
-          row[roc_cols.col_simangle] = src.simulator_angle(i);
-	        row[roc_cols.col_robangle] = src.robot_angle(i);
+          row[roc_cols.simname]  = src.simulator_name(i);
+          row[roc_cols.robname]  = src.robot_name(i);
+          row[roc_cols.offset]   = src.offset(i);
+          row[roc_cols.simangle] = src.simulator_angle(i);
+	        row[roc_cols.robangle] = src.robot_angle(i);
         }
       }
     }
@@ -223,12 +228,12 @@ void RobotControllerTab::on_cell_simangle_edited(const Glib::ustring& path, cons
   
   double simangle =  strtod(new_text.data(), NULL);
   double offset;
-  offset = it->get_value(roc_cols.col_offset);
+  offset = it->get_value(roc_cols.offset);
   double robangle = simangle - offset;
 
-  it->set_value(roc_cols.col_simangle, simangle);
-  it->set_value(roc_cols.col_offset, offset);
-  it->set_value(roc_cols.col_robangle, robangle);
+  it->set_value(roc_cols.simangle, simangle);
+  it->set_value(roc_cols.offset, offset);
+  it->set_value(roc_cols.robangle, robangle);
 }
 
 void RobotControllerTab::on_cell_offset_edited(const Glib::ustring& path, const Glib::ustring& new_text) {
@@ -237,12 +242,12 @@ void RobotControllerTab::on_cell_offset_edited(const Glib::ustring& path, const 
 
   double offset = strtod(new_text.data(), NULL);
   double robangle;
-  robangle = it->get_value(roc_cols.col_robangle);
+  robangle = it->get_value(roc_cols.robangle);
   double simangle = robangle + offset;
 
-  it->set_value(roc_cols.col_simangle, simangle);
-  it->set_value(roc_cols.col_offset, offset);
-  it->set_value(roc_cols.col_robangle, robangle);
+  it->set_value(roc_cols.simangle, simangle);
+  it->set_value(roc_cols.offset, offset);
+  it->set_value(roc_cols.robangle, robangle);
 }
 
 void RobotControllerTab::on_cell_robangle_edited(const Glib::ustring& path, const Glib::ustring& new_text) {
@@ -250,13 +255,13 @@ void RobotControllerTab::on_cell_robangle_edited(const Glib::ustring& path, cons
   Gtk::TreeIter it = trv_robot.get_model()->get_iter(path);
 
   double offset;
-  offset = it->get_value(roc_cols.col_offset);
+  offset = it->get_value(roc_cols.offset);
   double robangle = strtod(new_text.data(), NULL);
   double simangle = robangle + offset;
 
-  it->set_value(roc_cols.col_simangle, simangle);
-  it->set_value(roc_cols.col_offset, offset);
-  it->set_value(roc_cols.col_robangle, robangle);
+  it->set_value(roc_cols.simangle, simangle);
+  it->set_value(roc_cols.offset, offset);
+  it->set_value(roc_cols.robangle, robangle);
 }
 
 Gtk::Widget& RobotControllerTab::get_tab() {

@@ -11,6 +11,11 @@
 
 using namespace SceneReconstruction;
 
+/** @class SceneGui "scenegui.h"
+ * Main Class that creates the GUI
+ * @author Bastian Klingen
+ */
+
 SceneGUI::SceneGUI()
 {
   // Init Gazebo

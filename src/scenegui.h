@@ -9,10 +9,16 @@
 #include "loggertab.h"
 
 namespace SceneReconstruction {
+  /** @class SceneGUI "scenegui.h"
+   * Main Class that creates the GUI
+   * @author Bastian Klingen
+   */
   class SceneGUI
   {
     public:
+      /** Constructor */
       SceneGUI();
+      /** Destructor */
       ~SceneGUI();
 
     private:
@@ -27,6 +33,7 @@ namespace SceneReconstruction {
       LoggerTab*                    logger;
 
     public:
+      /** Gtk::Window for the GUI */
       Gtk::Window                   window;
   };
 }
