@@ -60,9 +60,28 @@ LoggerTab::LoggerTab() : SceneTab::SceneTab("Logger") {
   } 
   scw_logger.add(trv_logger);
   scw_logger.set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
+
+  log_tabs.append_page(scw_logger, "Events");
+
+  txt_console.set_editable(false);
+  txt_console.override_font(Pango::FontDescription("monospace"));
+  tbs_cout = new TextBufferStreamBuffer<char>(txt_console.get_buffer());
+
+  old_cout = std::cout.rdbuf();
+  old_cerr = std::cerr.rdbuf();
+
+  std::cout.rdbuf(tbs_cout);
+  std::cerr.rdbuf(tbs_cout);
+
+  scw_console.add(txt_console);
+  scw_console.set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
+
+  log_tabs.append_page(scw_console, "Console");
 }
 
 LoggerTab::~LoggerTab() {
+  std::cout.rdbuf(old_cout);
+  std::cerr.rdbuf(old_cerr);
 }
 
 void LoggerTab::log(std::string event, std::string text, ...)
@@ -102,6 +121,6 @@ void LoggerTab::log(std::string event, std::string text, ...)
 }
 
 Gtk::Widget& LoggerTab::get_tab() {
-  return scw_logger;
+  return log_tabs;
 }
 

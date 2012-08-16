@@ -18,6 +18,9 @@ using namespace SceneReconstruction;
 
 SceneGUI::SceneGUI()
 {
+  // create LoggerTab to log all Gazebo output
+  logger = new LoggerTab();
+
   // Init Gazebo
   gazebo::transport::init();
   gazebo::transport::run();
@@ -58,7 +61,6 @@ SceneGUI::SceneGUI()
 
 
   // Add all tabs
-  logger = new LoggerTab();
   ControlTab*         tab1 = new ControlTab(node, logger);
   ModelTab*           tab2 = new ModelTab(node, logger);
   RobotControllerTab* tab3 = new RobotControllerTab(node, logger);
