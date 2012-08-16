@@ -9,10 +9,10 @@ namespace SceneReconstruction {
    */
   class AnsiConverter {
     public:
-     /** 
-       * @param text the 
-       * @return Glib::ustring converted and formatted representation of text
-       */
+      /** removes ansi-tags "\033[*m" from the string
+        * @param text the text to clean
+        * @return Glib::ustring converted and formatted representation of text
+        */
       static Glib::ustring ansi_to_textview(std::string text) {
         std::ostringstream out;
         bool tag = false;
@@ -31,6 +31,10 @@ namespace SceneReconstruction {
         return result;
       }
 
+      /** checks if a string contains ansi-tags
+        * @param text the text to check
+        * @return bool true if text contains ansi tags
+        */
       static bool check_ansi_tags(std::string text) {
         if(text.find("\033[") != std::string::npos)
           return true;
@@ -38,6 +42,10 @@ namespace SceneReconstruction {
           return false;
       }
 
+      /** seperates ansi-tags divided by ;
+        * @param text the text to check
+        * @return std::vector a vector containing the ansi-tags
+        */
       static std::vector< std::string > get_ansi_tags(std::string text) {
         std::vector< std::string > taglist;
         size_t pos_start = text.find("\033[")+1;

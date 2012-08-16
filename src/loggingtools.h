@@ -88,14 +88,11 @@ namespace SceneReconstruction {
         tags.clear();
       }
     protected:
-      Glib::RefPtr<Gtk::TextBuffer> buffer;
-      std::ostringstream line;
-      bool tag_open, tag_close;
-      std::vector< Glib::RefPtr<Gtk::TextTag> > cur_tags;
-
-      // Tags for the TextView
-      std::map<std::string, Glib::RefPtr<Gtk::TextTag> > tags;
-
+      /** gets called by the << operator
+        * @param *text pointer to first char of the input to write
+        * @param length length of input
+        * @return std::streamsize number of chars written
+        */
       std::streamsize xsputn(const charT * text, std::streamsize length)
       {
         std::ostringstream tmp;
@@ -131,6 +128,15 @@ namespace SceneReconstruction {
 
         return length;
       }
+
+    private:
+      Glib::RefPtr<Gtk::TextBuffer> buffer;
+      std::ostringstream line;
+      bool tag_open, tag_close;
+      std::vector< Glib::RefPtr<Gtk::TextTag> > cur_tags;
+
+      // Tags for the TextView
+      std::map<std::string, Glib::RefPtr<Gtk::TextTag> > tags;
 
       void process_line() {
         if(AnsiConverter::check_ansi_tags(line.str())) {
