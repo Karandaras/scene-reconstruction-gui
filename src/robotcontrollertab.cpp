@@ -18,8 +18,8 @@ RobotControllerTab::RobotControllerTab(gazebo::transport::NodePtr& _node, Logger
   logger = _logger;
   tbl_robot.set_col_spacings(5);
 
-  sceneReqPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/Request");
-  sceneResSub = node->Subscribe("~/SceneReconstruction/Response", &RobotControllerTab::OnResponseMsg, this);
+  sceneReqPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/RobotController/Request");
+  sceneResSub = node->Subscribe("~/SceneReconstruction/RobotController/Response", &RobotControllerTab::OnResponseMsg, this);
 
   trv_robot.set_model(roc_store = Gtk::ListStore::create(roc_cols));
 
