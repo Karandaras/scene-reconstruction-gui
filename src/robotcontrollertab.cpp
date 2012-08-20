@@ -10,8 +10,6 @@ using namespace SceneReconstruction;
 
 RobotControllerTab::RobotControllerTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger)
 : SceneTab::SceneTab("RobotController"),
-  btn_send("SEND"),
-  btn_reload("RELOAD"),
   tbl_robot(9,9,false)
 {
   node = _node;
@@ -67,6 +65,7 @@ RobotControllerTab::RobotControllerTab(gazebo::transport::NodePtr& _node, Logger
   scw_robot.set_vexpand(true);
 
   // btn_send
+  btn_send.set_label("SEND");
   btn_send.set_size_request(70,70);
   btn_send.set_hexpand(false);
   btn_send.set_vexpand(false);
@@ -150,6 +149,7 @@ RobotControllerTab::RobotControllerTab(gazebo::transport::NodePtr& _node, Logger
   tbl_robot.attach(ent_rotz, 7, 8, 2, 3, Gtk::FILL, Gtk::FILL);
 
   // btn_send
+  btn_reload.set_label("RELOAD");
   btn_reload.set_hexpand(false);
   btn_reload.set_vexpand(false);
   tbl_robot.attach(btn_reload,8,9,0,3, Gtk::EXPAND|Gtk::FILL, Gtk::FILL);
@@ -167,6 +167,8 @@ void RobotControllerTab::OnResponseMsg(ConstResponsePtr& _msg) {
     return;
 
   if(_msg->request() == "controller_info") {
+    logger->msglog("<<", _msg);
+
     gazebo::msgs::SceneRobotController src;
     if(_msg->has_type() && _msg->type() == src.GetTypeName()) {
       src.ParseFromString(_msg->serialized_data());
@@ -208,6 +210,8 @@ void RobotControllerTab::OnResponseMsg(ConstResponsePtr& _msg) {
         }
       }
     }
+
+    robReq.reset();
   }
 }
 
@@ -217,9 +221,10 @@ void RobotControllerTab::on_button_send_clicked() {
 
 void RobotControllerTab::on_button_reload_clicked() {
   logger->log("robot controller", "RELOAD");
-  robReq = gazebo::msgs::CreateRequest("controller_info");
-  sceneReqPub->Publish(*robReq);
+  robReq.reset(gazebo::msgs::CreateRequest("controller_info"));
+  sceneReqPub->Publish(*(robReq.get()));
   logger->log("robot controller", "requesting info from RobotControllerPlugin");
+  logger->msglog(">>", robReq);
 }
 
 void RobotControllerTab::on_cell_simangle_edited(const Glib::ustring& path, const Glib::ustring& new_text) {

@@ -8,6 +8,7 @@
 #include "controltab.h"
 #include "robotcontrollertab.h"
 #include "modeltab.h"
+#include "objectinstantiatortab.h"
 
 using namespace SceneReconstruction;
 
@@ -61,13 +62,15 @@ SceneGUI::SceneGUI()
 
 
   // Add all tabs
-  ControlTab*         tab1 = new ControlTab(node, logger);
-  ModelTab*           tab2 = new ModelTab(node, logger);
-  RobotControllerTab* tab3 = new RobotControllerTab(node, logger);
+  ControlTab*            tab1 = new ControlTab(node, logger);
+  ModelTab*              tab2 = new ModelTab(node, logger);
+  RobotControllerTab*    tab3 = new RobotControllerTab(node, logger);
+  ObjectInstantiatorTab* tab4 = new ObjectInstantiatorTab(node, logger);
 
   vec_tabs.push_back(tab1);
   vec_tabs.push_back(tab2);
   vec_tabs.push_back(tab3);
+  vec_tabs.push_back(tab4);
   vec_tabs.push_back(logger);
 
   for(std::vector<SceneTab*>::iterator it = vec_tabs.begin(); it != vec_tabs.end(); it++) {

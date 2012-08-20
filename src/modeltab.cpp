@@ -315,6 +315,8 @@ void ModelTab::fill_model_treeview(gazebo::msgs::Model model) {
 
 void ModelTab::OnReqMsg(ConstRequestPtr& _msg) {
   if (guiRes && _msg->request() == "entity_info" && _msg->id() == guiRes->id()) {
+    logger->msglog("<<", _msg);
+
     gazebo::msgs::Model model;
     if (guiRes->has_type() && guiRes->type() == model.GetTypeName()) {
       model.ParseFromString(guiRes->serialized_data());
@@ -331,6 +333,8 @@ void ModelTab::OnReqMsg(ConstRequestPtr& _msg) {
 
 void ModelTab::OnResMsg(ConstResponsePtr& _msg) {
   if (guiReq && _msg->request() == "entity_info" && _msg->id() == guiReq->id()) {
+    logger->msglog("<<", _msg);
+
     gazebo::msgs::Model model;
     if (_msg->has_type() && _msg->type() == model.GetTypeName()) {
       model.ParseFromString(_msg->serialized_data());

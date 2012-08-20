@@ -14,11 +14,7 @@ using namespace SceneReconstruction;
 
 ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger)
 : SceneTab::SceneTab("Control"),
-  adj_time(Gtk::Adjustment::create(0.0, 0.0, 101.0, 0.1, 1.0, 1.0) ),
-  rng_time(adj_time, Gtk::ORIENTATION_HORIZONTAL),
-  btn_stop("STOP"),
-  btn_play("PLAY"),
-  btn_pause("PAUSE")
+  rng_time(Gtk::ORIENTATION_HORIZONTAL)
 {
   node = _node;
   logger = _logger;
@@ -31,6 +27,8 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger)
   grd_layout.set_column_homogeneous(false);
 
   // rng_time setup
+  adj_time = Gtk::Adjustment::create(0.0, 0.0, 101.0, 0.1, 1.0, 1.0);
+  rng_time.set_adjustment(adj_time);
   rng_time.set_digits(2);
   rng_time.set_draw_value(true);
   rng_time.set_size_request(200,50);
@@ -39,6 +37,7 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger)
   grd_layout.attach(rng_time,0,0,200,50);
 
   // btn_stop
+  btn_stop.set_label("STOP");
   btn_stop.set_size_request(60,60);
   btn_stop.set_hexpand(false);
   btn_stop.set_vexpand(false);
@@ -47,6 +46,7 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger)
   btn_stop.signal_clicked().connect(sigc::mem_fun(*this,&ControlTab::on_button_stop_clicked));
 
   // btn_play
+  btn_play.set_label("PLAY");
   btn_play.set_size_request(60,60);
   btn_play.set_hexpand(false);
   btn_play.set_vexpand(false);
@@ -55,6 +55,7 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger)
   btn_play.signal_clicked().connect(sigc::mem_fun(*this,&ControlTab::on_button_play_clicked));
 
   // btn_pause
+  btn_pause.set_label("PAUSE");
   btn_pause.set_size_request(60,60);
   btn_pause.set_hexpand(false);
   btn_pause.set_vexpand(false);
@@ -109,6 +110,8 @@ ControlTab::~ControlTab() {
 
 void ControlTab::OnReqMsg(ConstRequestPtr& _msg) {
   if (guiRes && _msg->request() == "entity_info" && _msg->id() == guiRes->id()) {
+    logger->msglog("<<", _msg);
+
     gazebo::msgs::Model model;
     if (guiRes->has_type() && guiRes->type() == model.GetTypeName()) {
       model.ParseFromString(guiRes->serialized_data());
@@ -125,6 +128,8 @@ void ControlTab::OnReqMsg(ConstRequestPtr& _msg) {
 
 void ControlTab::OnResMsg(ConstResponsePtr& _msg) {
   if (guiReq && _msg->request() == "entity_info" && _msg->id() == guiReq->id()) {
+    logger->msglog("<<", _msg);
+
     gazebo::msgs::Model model;
     if (_msg->has_type() && _msg->type() == model.GetTypeName()) {
       model.ParseFromString(_msg->serialized_data());

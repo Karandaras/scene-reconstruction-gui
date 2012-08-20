@@ -73,7 +73,7 @@ IF(PKG_CONFIG_FOUND)
   
   set(CMAKE_CXX_FLAGS " -g -Wextra -Wall -Wno-long-long -pedantic-errors -std=c++98" CACHE INTERNAL "General CXX Flags")
 
-  add_executable(GUI src/scenegui.cpp src/scenetab.cpp src/loggertab.cpp src/controltab.cpp src/modeltab.cpp src/robotcontrollertab.cpp)
+  add_executable(GUI src/scenegui.cpp src/scenetab.cpp src/controltab.cpp src/loggertab.cpp src/modeltab.cpp src/robotcontrollertab.cpp src/objectinstantiatortab.cpp)
 
   target_link_libraries(GUI ${GTKMM_LIBRARIES})
   target_link_libraries(GUI ${GAZEBO_LIBRARIES})
