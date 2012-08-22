@@ -10,7 +10,7 @@ namespace SceneReconstruction {
   class SceneTab {
     public:
       /** Constructor
-       * @param parent SceneGUI parent
+       * @param builder the ui_builder to access the needed parts
        */
       SceneTab(Glib::RefPtr<Gtk::Builder>&);
       /** Destructor */

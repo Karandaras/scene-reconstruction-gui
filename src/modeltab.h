@@ -26,7 +26,7 @@ namespace SceneReconstruction {
       /** Constructor
        * @param _node Gazebo Node Pointer to use
        * @param _logger LoggerTab to use
-       * @param parent parent SceneGUI
+       * @param builder the ui_builder to access the needed parts
        */
       ModelTab(gazebo::transport::NodePtr&, LoggerTab*, Glib::RefPtr<Gtk::Builder>&);
       /** Destructor */

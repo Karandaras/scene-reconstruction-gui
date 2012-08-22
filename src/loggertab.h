@@ -23,7 +23,7 @@ namespace SceneReconstruction {
   {
     public:
       /** Constructor
-       * @param parent parent SceneGUI
+       * @param builder the ui_builder to access the needed parts
        */
       LoggerTab(Glib::RefPtr<Gtk::Builder>&);
       /** Destructor */
