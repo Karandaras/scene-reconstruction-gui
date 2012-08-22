@@ -12,97 +12,52 @@ using namespace SceneReconstruction;
  * @author Bastian Klingen
  */
 
-ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger)
-: SceneTab::SceneTab("Control"),
-  rng_time(Gtk::ORIENTATION_HORIZONTAL)
+ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Glib::RefPtr<Gtk::Builder>& builder)
+: SceneTab::SceneTab(builder)
 {
   node = _node;
   logger = _logger;
   old_value = 0.0;
-
+  
   reqSub = node->Subscribe("~/request", &ControlTab::OnReqMsg, this);
   resSub = node->Subscribe("~/response", &ControlTab::OnResMsg, this);
 
-  grd_layout.set_row_homogeneous(false);
-  grd_layout.set_column_homogeneous(false);
-
   // rng_time setup
-  adj_time = Gtk::Adjustment::create(0.0, 0.0, 101.0, 0.1, 1.0, 1.0);
-  rng_time.set_adjustment(adj_time);
-  rng_time.set_digits(2);
-  rng_time.set_draw_value(true);
-  rng_time.set_size_request(200,50);
-  rng_time.set_hexpand(false);
-  rng_time.set_vexpand(false);
-  grd_layout.attach(rng_time,0,0,200,50);
+  _builder->get_widget("control_scale", rng_time);
+  rng_time->signal_button_release_event().connect(sigc::mem_fun(*this,&ControlTab::on_scale_button_event), false);
+  rng_time->signal_key_release_event().connect(sigc::mem_fun(*this,&ControlTab::on_scale_key_event), false);
 
   // btn_stop
-  btn_stop.set_label("STOP");
-  btn_stop.set_size_request(60,60);
-  btn_stop.set_hexpand(false);
-  btn_stop.set_vexpand(false);
-  box_buttons.pack_start(btn_stop,false,false);
-
-  btn_stop.signal_clicked().connect(sigc::mem_fun(*this,&ControlTab::on_button_stop_clicked));
+  _builder->get_widget("control_toolbutton_stop", btn_stop);
+  btn_stop->signal_clicked().connect(sigc::mem_fun(*this,&ControlTab::on_button_stop_clicked));
 
   // btn_play
-  btn_play.set_label("PLAY");
-  btn_play.set_size_request(60,60);
-  btn_play.set_hexpand(false);
-  btn_play.set_vexpand(false);
-  box_buttons.pack_start(btn_play,false,false);
-
-  btn_play.signal_clicked().connect(sigc::mem_fun(*this,&ControlTab::on_button_play_clicked));
+  _builder->get_widget("control_toolbutton_play", btn_play);
+  btn_play->signal_clicked().connect(sigc::mem_fun(*this,&ControlTab::on_button_play_clicked));
 
   // btn_pause
-  btn_pause.set_label("PAUSE");
-  btn_pause.set_size_request(60,60);
-  btn_pause.set_hexpand(false);
-  btn_pause.set_vexpand(false);
-  box_buttons.pack_start(btn_pause,false,false);
-
-  btn_pause.signal_clicked().connect(sigc::mem_fun(*this,&ControlTab::on_button_pause_clicked));
-
-  box_buttons.set_spacing(5);
-  grd_layout.attach(box_buttons,0,50,200,90);
-
-  rng_time.signal_button_release_event().connect(sigc::mem_fun(*this,&ControlTab::on_scale_button_event), false);
-  rng_time.signal_key_release_event().connect(sigc::mem_fun(*this,&ControlTab::on_scale_key_event), false);
+  _builder->get_widget("control_toolbutton_pause", btn_pause);
+  btn_pause->signal_clicked().connect(sigc::mem_fun(*this,&ControlTab::on_button_pause_clicked));
 
   // data display
-  trv_data.set_model(dat_store = Gtk::TreeStore::create(dat_cols));
-  trv_data.set_hover_selection(false);
-  trv_data.set_hover_expand(true);
-  trv_data.set_enable_tree_lines(true);
-  trv_data.get_selection()->set_mode(Gtk::SELECTION_NONE);
-  trv_data.set_headers_visible(false);
+  _builder->get_widget("control_treeview", trv_data);
+  dat_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(trv_data->get_model());
   Gtk::TreeModel::Row row = *(dat_store->append());
-  row[dat_cols.name] = "Coordinates";
-  row[dat_cols.data] = "";
+  row.set_value(0,(Glib::ustring)"Coordinates");
+  row.set_value(1,(Glib::ustring)"");
 
   Gtk::TreeModel::Row childrow = *(dat_store->append(row.children()));
-  childrow[dat_cols.name] = "Gazebo";
-  childrow[dat_cols.data] = "X: 0 Y: 0 Z: 0";
+  childrow.set_value(0,(Glib::ustring)"Gazebo");
+  childrow.set_value(1,(Glib::ustring)"X: 0 Y: 0 Z: 0");
 
   childrow = *(dat_store->append(row.children()));
-  childrow[dat_cols.name] = "Robot";
-  childrow[dat_cols.data] = "X: 0 Y: 0 Z: 0";
+  childrow.set_value(0,(Glib::ustring)"Robot");
+  childrow.set_value(1,(Glib::ustring)"X: 0 Y: 0 Z: 0");
 
   childrow = *(dat_store->append(row.children()));
-  childrow[dat_cols.name] = "Sensor";
-  childrow[dat_cols.data] = "X: 0 Y: 0 Z: 0";
- 
-  trv_data.append_column("Name", dat_cols.name);
-  trv_data.append_column("Data", dat_cols.data);
-
-  scw_data.add(trv_data);
-  scw_data.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
-  
-  scw_data.set_hexpand();
-  scw_data.set_vexpand();
-  scw_data.set_size_request(450,140);
-  grd_layout.attach(scw_data,200,0,450,140);
-
+  childrow.set_value(0,(Glib::ustring)"Sensor");
+  childrow.set_value(1,(Glib::ustring)"X: 0 Y: 0 Z: 0");
+  trv_data->expand_all();
 }
 
 ControlTab::~ControlTab() {
@@ -146,14 +101,16 @@ void ControlTab::OnResMsg(ConstResponsePtr& _msg) {
 
 void ControlTab::update_coords(gazebo::msgs::Model model) {
   // Update Coords-Treeview
-  Gtk::TreeModel::Children rows = trv_data.get_model()->children();
+  Gtk::TreeModel::Children rows = trv_data->get_model()->children();
   for(Gtk::TreeModel::Children::iterator iter = rows.begin(); iter != rows.end(); ++iter) {
     Gtk::TreeModel::Row row = *iter;
-    if(row[dat_cols.name] == "Coordinates" && model.has_pose()) {
+    Glib::ustring tmp;
+    row.get_value(0, tmp);
+    if(tmp == "Coordinates" && model.has_pose()) {
       Gtk::TreeModel::Children childrows = row.children();
       Gtk::TreeModel::Children::iterator childiter = childrows.begin();
       Gtk::TreeModel::Row childrow = *childiter;
-      childrow[dat_cols.data] = Converter::convert(model.pose(), 0, 3);
+      childrow.set_value(1, Converter::convert(model.pose(), 0, 3));
     }
   }
 }
@@ -171,24 +128,20 @@ void ControlTab::on_button_pause_clicked() {
 }
 
 bool ControlTab::on_scale_button_event(GdkEventButton* b) {
-  if(rng_time.get_value() != old_value) {
-    logger->log("control", "Time changed from %.2f to %.2f using button %d of the mouse on rng_time", old_value, rng_time.get_value(), b->button);
-    old_value = rng_time.get_value();
+  if(rng_time->get_value() != old_value) {
+    logger->log("control", "Time changed from %.2f to %.2f using button %d of the mouse on rng_time", old_value, rng_time->get_value(), b->button);
+    old_value = rng_time->get_value();
   }
 
   return false;
 }
 
 bool ControlTab::on_scale_key_event(GdkEventKey* k) {
-  if((k->keyval == GDK_KEY_Left || k->keyval == GDK_KEY_Right || k->keyval == GDK_KEY_Up || k->keyval == GDK_KEY_Down || k->keyval == GDK_KEY_KP_Left || k->keyval == GDK_KEY_KP_Right || k->keyval == GDK_KEY_KP_Up || k->keyval == GDK_KEY_KP_Down || k->keyval == GDK_KEY_Home || k->keyval == GDK_KEY_End || k->keyval == GDK_KEY_Page_Up || k->keyval == GDK_KEY_Page_Down) && old_value != rng_time.get_value()) {
-    logger->log("control", "Time changed from %.2f to %.2f using key %s of the keyboard on rng_time", old_value, rng_time.get_value(), gdk_keyval_name(k->keyval));
-    old_value = rng_time.get_value();
+  if((k->keyval == GDK_KEY_Left || k->keyval == GDK_KEY_Right || k->keyval == GDK_KEY_Up || k->keyval == GDK_KEY_Down || k->keyval == GDK_KEY_KP_Left || k->keyval == GDK_KEY_KP_Right || k->keyval == GDK_KEY_KP_Up || k->keyval == GDK_KEY_KP_Down || k->keyval == GDK_KEY_Home || k->keyval == GDK_KEY_End || k->keyval == GDK_KEY_Page_Up || k->keyval == GDK_KEY_Page_Down) && old_value != rng_time->get_value()) {
+    logger->log("control", "Time changed from %.2f to %.2f using key %s of the keyboard on rng_time", old_value, rng_time->get_value(), gdk_keyval_name(k->keyval));
+    old_value = rng_time->get_value();
   }
 
   return false;
-}
-
-Gtk::Widget& ControlTab::get_tab() {
-  return grd_layout;
 }
 

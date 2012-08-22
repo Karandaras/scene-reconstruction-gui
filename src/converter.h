@@ -53,6 +53,38 @@ namespace SceneReconstruction {
         return ret;
       }
 
+      /** converts vector given by three doubles to Glib::ustring 
+       * @param x double x value
+       * @param y double y value
+       * @param z double z value
+       * @param round precision for rounding, -1 to disable
+       * @return Glib::ustring representation of in
+       */
+      static Glib::ustring convert(double x, double y, double z, int round = -1) {
+        std::stringstream convert;
+        if(round != -1) {
+          gazebo::math::Vector3 v(x,y,z);
+          v.Round(round);
+          convert << "X: ";
+          convert << v.x;
+          convert << " Y: ";
+          convert << v.y;
+          convert << " Z: ";
+          convert << v.z;
+        }
+        else {
+          convert << "X: ";
+          convert << x;
+          convert << " Y: ";
+          convert << y;
+          convert << " Z: ";
+          convert << z;
+        }
+
+        Glib::ustring ret(convert.str());
+        return ret;
+      }
+
       /** converts gazebo::msgs::Vector3d to Glib::ustring 
        * @param in input as gazebo::msgs::Vector3d
        * @param round precision for rounding, -1 to disable
@@ -71,6 +103,62 @@ namespace SceneReconstruction {
         convert << " Z: ";
         convert << v.z;
 
+        Glib::ustring ret(convert.str());
+        return ret;
+      }
+
+      /** converts a quaternionen given by four doubles to Glib::ustring 
+       * @param w double w value
+       * @param x double x value
+       * @param y double y value
+       * @param z double z value
+       * @param round precision for rounding, -1 to disable
+       * @param as_euler choose euler or quaternion representation
+       * @return Glib::ustring representation of in
+       */
+      static Glib::ustring convert(double w, double x, double y, double z, int round = -1, bool as_euler = false) {
+        std::stringstream convert;
+        if(round == -1 && !as_euler) {
+          convert << "W: ";
+          convert << w;
+          convert << " X: ";
+          convert << x;
+          convert << " Y: ";
+          convert << y;
+          convert << " Z: ";
+          convert << z;
+        }
+        else {
+          gazebo::math::Quaternion q(w,x,y,z); 
+
+          if(round != -1)
+            q.Round(round);
+
+          if(as_euler) {
+            gazebo::math::Vector3 v = q.GetAsEuler();
+            v *= 180/M_PI;
+            if(round != -1)
+              v.Round(round);
+          
+            convert << "R: ";
+            convert << v.x;
+            convert << " P: ";
+            convert << v.y;
+            convert << " Y: ";
+            convert << v.z;
+          }
+          else {
+            convert << "W: ";
+            convert << q.w;
+            convert << " X: ";
+            convert << q.x;
+            convert << " Y: ";
+            convert << q.y;
+            convert << " Z: ";
+            convert << q.z;
+          }
+        }
+        
         Glib::ustring ret(convert.str());
         return ret;
       }

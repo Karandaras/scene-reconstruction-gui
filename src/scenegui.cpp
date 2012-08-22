@@ -19,8 +19,12 @@ using namespace SceneReconstruction;
 
 SceneGUI::SceneGUI()
 {
+  // Setup the GUI
+  ui_builder = Gtk::Builder::create_from_file("res/ui.glade");
+  ui_builder->get_widget("window", window);
+
   // create LoggerTab to log all Gazebo output
-  logger = new LoggerTab();
+  logger = new LoggerTab(ui_builder);
 
   // Init Gazebo
   gazebo::transport::init();
@@ -56,16 +60,11 @@ SceneGUI::SceneGUI()
       std::cerr << "Conflicting gazebo versions\n";
   }
 
-  // Setup the GUI
-  window.set_default_size(600,120);
-  window.set_title("GUI-Tool for Scene Reconstruction");
-
-
-  // Add all tabs
-  ControlTab*            tab1 = new ControlTab(node, logger);
-  ModelTab*              tab2 = new ModelTab(node, logger);
-  RobotControllerTab*    tab3 = new RobotControllerTab(node, logger);
-  ObjectInstantiatorTab* tab4 = new ObjectInstantiatorTab(node, logger);
+  // Create all tabs
+  ControlTab*            tab1 = new ControlTab(node, logger, ui_builder);
+  ModelTab*              tab2 = new ModelTab(node, logger, ui_builder);
+  RobotControllerTab*    tab3 = new RobotControllerTab(node, logger, ui_builder);
+  ObjectInstantiatorTab* tab4 = new ObjectInstantiatorTab(node, logger, ui_builder);
 
   vec_tabs.push_back(tab1);
   vec_tabs.push_back(tab2);
@@ -73,12 +72,7 @@ SceneGUI::SceneGUI()
   vec_tabs.push_back(tab4);
   vec_tabs.push_back(logger);
 
-  for(std::vector<SceneTab*>::iterator it = vec_tabs.begin(); it != vec_tabs.end(); it++) {
-    ntb_tabs.append_page((*it)->get_tab(), (*it)->get_label());
-  }
-
-  window.add(ntb_tabs);
-  window.show_all_children();
+  window->show_all_children();
 }
 
 SceneGUI::~SceneGUI() {
@@ -91,6 +85,7 @@ int main(int argc, char **argv)
 {
     Gtk::Main main(argc,argv);
     SceneGUI scene;
-    main.run(scene.window);
+
+    main.run(*(scene.window));
     return 0;
 }

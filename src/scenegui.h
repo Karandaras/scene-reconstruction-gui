@@ -22,18 +22,16 @@ namespace SceneReconstruction {
       ~SceneGUI();
 
     private:
-      // tabs for log etc.
-      Gtk::Notebook                 ntb_tabs;
-
-      // gazebo node
+     // gazebo node
       gazebo::transport::NodePtr    node;
 
       // vector for all tabs
       std::vector<SceneTab*>        vec_tabs;
       LoggerTab*                    logger;
+      Glib::RefPtr<Gtk::Builder>    ui_builder;
 
     public:
       /** Gtk::Window for the GUI */
-      Gtk::Window                   window;
+      Gtk::Window*                   window;
   };
 }
