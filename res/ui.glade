@@ -342,6 +342,9 @@
                     <property name="headers_clickable">False</property>
                     <property name="search_column">0</property>
                     <property name="enable_tree_lines">True</property>
+                    <child internal-child="selection">
+                      <object class="GtkTreeSelection" id="treeview-selection1"/>
+                    </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="control_treeview_column_description">
                         <property name="title" translatable="yes">Description</property>
@@ -855,7 +858,7 @@
             <property name="can_focus">False</property>
             <child>
               <object class="GtkBox" id="objectinstantiator_box_spawnedobjects">
-                <property name="width_request">150</property>
+                <property name="width_request">180</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
@@ -953,7 +956,7 @@
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkComboBox" id="objectinstantiator_combobox_objectdata">
-                    <property name="width_request">266</property>
+                    <property name="width_request">270</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="hexpand">True</property>
@@ -977,8 +980,8 @@
                     <property name="can_focus">False</property>
                     <child>
                       <object class="GtkImage" id="objectinstantiator_image_objectdata">
-                        <property name="width_request">266</property>
-                        <property name="height_request">200</property>
+                        <property name="width_request">270</property>
+                        <property name="height_request">210</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="stock">gtk-missing-image</property>
@@ -1069,7 +1072,7 @@
             </child>
             <child>
               <object class="GtkBox" id="objectinstantiator_objectrepository">
-                <property name="width_request">150</property>
+                <property name="width_request">180</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="halign">end</property>

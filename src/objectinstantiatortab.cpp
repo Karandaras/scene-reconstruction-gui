@@ -34,7 +34,7 @@ ObjectInstantiatorTab::ObjectInstantiatorTab(gazebo::transport::NodePtr& _node, 
   row = *(img_store->append());
   row.set_value(0, (Glib::ustring)"None");
   images["None"] = Gdk::Pixbuf::create_from_file("res/noimg.png");
-  img_data->set(images["None"]->scale_simple(320,240,Gdk::INTERP_NEAREST));
+  img_data->set(images["None"]->scale_simple(270,210,Gdk::INTERP_BILINEAR));
   com_data->set_active(0);
   com_data->signal_changed().connect( sigc::mem_fun(*this, &ObjectInstantiatorTab::on_combo_changed) );
 
@@ -228,7 +228,7 @@ void ObjectInstantiatorTab::on_combo_changed() {
         Glib::ustring name;
         row.get_value(0, name);
         image_iter = images.find(name);
-        img_data->set(image_iter->second->scale_simple(320,240,Gdk::INTERP_NEAREST));
+        img_data->set(image_iter->second->scale_simple(270,210,Gdk::INTERP_BILINEAR));
         logger->log("object instantiator", "displaying image "+image_iter->first);
         if(win_show->get_visible()) {
           win_image->set(image_iter->second);
@@ -251,7 +251,7 @@ void ObjectInstantiatorTab::on_win_combo_changed() {
         Glib::ustring name;
         row.get_value(0, name);
         image_iter = images.find(name);
-        img_data->set(image_iter->second->scale_simple(320,240,Gdk::INTERP_NEAREST));
+        img_data->set(image_iter->second->scale_simple(270,210,Gdk::INTERP_BILINEAR));
         logger->log("object instantiator", "displaying image "+image_iter->first);
         if(win_show->get_visible()) {
           win_image->set(image_iter->second);
