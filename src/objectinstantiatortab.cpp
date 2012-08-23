@@ -161,10 +161,10 @@ void ObjectInstantiatorTab::OnResponseMsg(ConstResponsePtr& _msg) {
       row.set_value(1, Converter::convert(src1.pos_x(), src1.pos_y(), src1.pos_z()));
     }
 
-    if(src1.has_rot_w() && src1.has_rot_x() && src1.has_rot_y() && src1.has_rot_z()) {
+    if(src1.has_ori_w() && src1.has_ori_x() && src1.has_ori_y() && src1.has_ori_z()) {
       row = *(dat_store->append());
       row.set_value(0, (Glib::ustring)"Orientation");
-      row.set_value(1, Converter::convert(src1.rot_w(), src1.rot_x(), src1.rot_y(), src1.rot_z()));
+      row.set_value(1, Converter::convert(src1.ori_w(), src1.ori_x(), src1.ori_y(), src1.ori_z()));
     }
 
     if(src1.has_frame()) {
