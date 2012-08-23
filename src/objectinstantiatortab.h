@@ -49,7 +49,7 @@ namespace SceneReconstruction {
       Gtk::ToolButton                                             *btn_refresh_repository;
       Gtk::ToolButton                                             *btn_show;
   
-      Gtk::Dialog                                                 *win_show;
+      Gtk::Window                                                 *win_show;
       Gtk::Image                                                  *win_image;
       Gtk::ScrolledWindow                                         *win_scroll;
       Gtk::ComboBox                                               *win_combo;

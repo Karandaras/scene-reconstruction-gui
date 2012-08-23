@@ -66,96 +66,56 @@
       <column type="gchararray"/>
     </columns>
   </object>
-  <object class="GtkDialog" id="objectinstantiator_objectdata_window">
+  <object class="GtkWindow" id="objectinstantiator_objectdata_window">
     <property name="width_request">800</property>
     <property name="height_request">600</property>
     <property name="can_focus">False</property>
-    <property name="border_width">5</property>
-    <property name="title" translatable="yes">Image-Viewer</property>
+    <property name="default_width">800</property>
+    <property name="default_height">600</property>
     <property name="destroy_with_parent">True</property>
     <property name="icon_name">edit-find</property>
-    <property name="type_hint">dialog</property>
-    <property name="transient_for">window</property>
-    <child internal-child="vbox">
-      <object class="GtkBox" id="objectinstantiator_objectdata_window_vbox">
+    <child>
+      <object class="GtkBox" id="objectinstantiator_objectdata_window_box">
+        <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
-        <child internal-child="action_area">
-          <object class="GtkButtonBox" id="dialog-action_area1">
+        <child>
+          <object class="GtkComboBox" id="objectinstantiator_objectdata_window_combobox">
+            <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
+            <property name="model">objectinstantiator_liststore_objectdata</property>
             <child>
-              <object class="GtkButton" id="objectinstantiator_objectdata_window_button_close">
-                <property name="label" translatable="yes">Close</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
+              <object class="GtkCellRendererText" id="objectinstantiator_objectdata_window_cellrenderertext"/>
+              <attributes>
+                <attribute name="text">0</attribute>
+              </attributes>
             </child>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="pack_type">end</property>
             <property name="position">0</property>
           </packing>
         </child>
         <child>
-          <object class="GtkBox" id="objectinstantiator_objectdata_window_box">
+          <object class="GtkScrolledWindow" id="objectinstantiator_objectdata_window_scrolledwindow">
+            <property name="width_request">320</property>
+            <property name="height_request">240</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="orientation">vertical</property>
+            <property name="can_focus">True</property>
+            <property name="shadow_type">in</property>
             <child>
-              <object class="GtkComboBox" id="objectinstantiator_objectdata_window_combobox">
+              <object class="GtkViewport" id="objectinstantiator_objectdata_window_viewport">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="model">objectinstantiator_liststore_objectdata</property>
                 <child>
-                  <object class="GtkCellRendererText" id="objectinstantiator_objectdata_window_cellrenderertext"/>
-                  <attributes>
-                    <attribute name="text">0</attribute>
-                  </attributes>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkScrolledWindow" id="objectinstantiator_objectdata_window_scrolledwindow">
-                <property name="width_request">320</property>
-                <property name="height_request">240</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="shadow_type">in</property>
-                <child>
-                  <object class="GtkViewport" id="objectinstantiator_objectdata_window_viewport">
+                  <object class="GtkImage" id="objectinstantiator_objectdata_window_image">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <child>
-                      <object class="GtkImage" id="objectinstantiator_objectdata_window_image">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="stock">gtk-missing-image</property>
-                      </object>
-                    </child>
+                    <property name="stock">gtk-missing-image</property>
                   </object>
                 </child>
               </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
             </child>
           </object>
           <packing>
@@ -166,9 +126,6 @@
         </child>
       </object>
     </child>
-    <action-widgets>
-      <action-widget response="0">objectinstantiator_objectdata_window_button_close</action-widget>
-    </action-widgets>
   </object>
   <object class="GtkTreeStore" id="objectinstantiator_treestore_objectdata">
     <columns>
@@ -209,25 +166,28 @@
             <property name="can_focus">False</property>
             <property name="orientation">vertical</property>
             <child>
-              <object class="GtkViewport" id="control_viewport">
+              <object class="GtkPaned" id="control_paned">
                 <property name="height_request">80</property>
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can_focus">True</property>
+                <property name="position">215</property>
+                <property name="position_set">True</property>
                 <child>
                   <object class="GtkFixed" id="control_fixed">
-                    <property name="height_request">80</property>
+                    <property name="width_request">215</property>
+                    <property name="height_request">75</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="hexpand">True</property>
                     <child>
                       <object class="GtkToolbar" id="control_toolbar">
-                        <property name="width_request">215</property>
-                        <property name="height_request">70</property>
+                        <property name="width_request">205</property>
+                        <property name="height_request">65</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="hexpand">True</property>
+                        <property name="toolbar_style">both</property>
                         <property name="show_arrow">False</property>
-                        <property name="icon_size">6</property>
+                        <property name="icon_size">4</property>
                         <child>
                           <object class="GtkToolButton" id="control_toolbutton_stop">
                             <property name="visible">True</property>
@@ -272,36 +232,51 @@
                         </child>
                       </object>
                       <packing>
-                        <property name="y">5</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkSeparator" id="control_toolbar_separator_right">
-                        <property name="height_request">70</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="orientation">vertical</property>
-                      </object>
-                      <packing>
-                        <property name="x">214</property>
+                        <property name="x">5</property>
                         <property name="y">5</property>
                       </packing>
                     </child>
                     <child>
                       <object class="GtkSeparator" id="control_toolbar_separator_left">
-                        <property name="height_request">70</property>
+                        <property name="height_request">65</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="orientation">vertical</property>
                       </object>
                       <packing>
-                        <property name="y">5</property>
+                        <property name="x">5</property>
+                        <property name="y">6</property>
                       </packing>
                     </child>
                     <child>
+                      <object class="GtkSeparator" id="control_toolbar_separator_right">
+                        <property name="height_request">65</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="orientation">vertical</property>
+                      </object>
+                      <packing>
+                        <property name="x">209</property>
+                        <property name="y">6</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="resize">False</property>
+                    <property name="shrink">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkViewport" id="control_viewport">
+                    <property name="width_request">416</property>
+                    <property name="height_request">75</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <child>
                       <object class="GtkScale" id="control_scale">
-                        <property name="width_request">410</property>
-                        <property name="height_request">70</property>
+                        <property name="width_request">416</property>
+                        <property name="height_request">75</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="hexpand">True</property>
@@ -310,12 +285,12 @@
                         <property name="round_digits">2</property>
                         <property name="digits">2</property>
                       </object>
-                      <packing>
-                        <property name="x">220</property>
-                        <property name="y">5</property>
-                      </packing>
                     </child>
                   </object>
+                  <packing>
+                    <property name="resize">True</property>
+                    <property name="shrink">False</property>
+                  </packing>
                 </child>
               </object>
               <packing>
@@ -442,291 +417,325 @@
             <property name="can_focus">False</property>
             <property name="orientation">vertical</property>
             <child>
-              <object class="GtkViewport" id="robotcontroller_viewport">
+              <object class="GtkPaned" id="robotcontroller_paned">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can_focus">True</property>
+                <property name="position">140</property>
+                <property name="position_set">True</property>
                 <child>
-                  <object class="GtkFixed" id="robotcontroller_fixed">
+                  <object class="GtkViewport" id="robotcontroller_viewport_left">
+                    <property name="width_request">140</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkLabel" id="robotcontroller_label_position">
-                        <property name="width_request">175</property>
+                      <object class="GtkFixed" id="robotcontroller_fixed_left">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Position</property>
-                      </object>
-                      <packing>
-                        <property name="x">145</property>
-                        <property name="y">5</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="robotcontroller_label_position_x">
-                        <property name="width_request">55</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">X</property>
-                      </object>
-                      <packing>
-                        <property name="x">145</property>
-                        <property name="y">20</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="robotcontroller_label_position_y">
-                        <property name="width_request">55</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Y</property>
-                      </object>
-                      <packing>
-                        <property name="x">205</property>
-                        <property name="y">20</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="robotcontroller_label_position_z">
-                        <property name="width_request">55</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Z</property>
-                      </object>
-                      <packing>
-                        <property name="x">265</property>
-                        <property name="y">20</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkEntry" id="robotcontroller_entry_position_x">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="invisible_char">●</property>
-                        <property name="width_chars">5</property>
-                        <property name="invisible_char_set">True</property>
-                      </object>
-                      <packing>
-                        <property name="x">145</property>
-                        <property name="y">40</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkEntry" id="robotcontroller_entry_position_y">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="invisible_char">●</property>
-                        <property name="width_chars">5</property>
-                        <property name="invisible_char_set">True</property>
-                      </object>
-                      <packing>
-                        <property name="x">205</property>
-                        <property name="y">40</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkEntry" id="robotcontroller_entry_position_z">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="invisible_char">●</property>
-                        <property name="width_chars">5</property>
-                        <property name="invisible_char_set">True</property>
-                      </object>
-                      <packing>
-                        <property name="x">265</property>
-                        <property name="y">40</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkSeparator" id="robotcontroller_separator">
-                        <property name="height_request">75</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="orientation">vertical</property>
-                      </object>
-                      <packing>
-                        <property name="x">325</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="robotcontroller_label_orientation">
-                        <property name="width_request">235</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Orientation</property>
-                      </object>
-                      <packing>
-                        <property name="x">330</property>
-                        <property name="y">5</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="robotcontroller_label_orientation_w">
-                        <property name="width_request">55</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">W</property>
-                      </object>
-                      <packing>
-                        <property name="x">330</property>
-                        <property name="y">20</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="robotcontroller_label_orientation_x">
-                        <property name="width_request">55</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">X</property>
-                      </object>
-                      <packing>
-                        <property name="x">390</property>
-                        <property name="y">20</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="robotcontroller_label_orientation_y">
-                        <property name="width_request">55</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Y</property>
-                      </object>
-                      <packing>
-                        <property name="x">450</property>
-                        <property name="y">20</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="robotcontroller_label_orientation_z">
-                        <property name="width_request">55</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Z</property>
-                      </object>
-                      <packing>
-                        <property name="x">510</property>
-                        <property name="y">20</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkEntry" id="robotcontroller_entry_orientation_w">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="invisible_char">●</property>
-                        <property name="width_chars">5</property>
-                        <property name="invisible_char_set">True</property>
-                      </object>
-                      <packing>
-                        <property name="x">330</property>
-                        <property name="y">40</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkEntry" id="robotcontroller_entry_orientation_x">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="invisible_char">●</property>
-                        <property name="width_chars">5</property>
-                        <property name="invisible_char_set">True</property>
-                      </object>
-                      <packing>
-                        <property name="x">390</property>
-                        <property name="y">40</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkEntry" id="robotcontroller_entry_orientation_y">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="invisible_char">●</property>
-                        <property name="width_chars">5</property>
-                        <property name="invisible_char_set">True</property>
-                      </object>
-                      <packing>
-                        <property name="x">450</property>
-                        <property name="y">40</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkEntry" id="robotcontroller_entry_orientation_z">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="invisible_char">●</property>
-                        <property name="width_chars">5</property>
-                        <property name="invisible_char_set">True</property>
-                      </object>
-                      <packing>
-                        <property name="x">510</property>
-                        <property name="y">40</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkToolbar" id="robotcontroller_toolbar">
-                        <property name="width_request">135</property>
-                        <property name="height_request">65</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="toolbar_style">both</property>
-                        <property name="show_arrow">False</property>
-                        <property name="icon_size">4</property>
                         <child>
-                          <object class="GtkToolButton" id="robotcontroller_toolbutton_send">
+                          <object class="GtkToolbar" id="robotcontroller_toolbar">
+                            <property name="width_request">130</property>
+                            <property name="height_request">65</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="use_action_appearance">False</property>
-                            <property name="label" translatable="yes">Send</property>
-                            <property name="use_underline">True</property>
-                            <property name="stock_id">gtk-ok</property>
+                            <property name="toolbar_style">both</property>
+                            <property name="show_arrow">False</property>
+                            <property name="icon_size">4</property>
+                            <child>
+                              <object class="GtkToolButton" id="robotcontroller_toolbutton_send">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="use_action_appearance">False</property>
+                                <property name="label" translatable="yes">Send</property>
+                                <property name="use_underline">True</property>
+                                <property name="stock_id">gtk-ok</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="homogeneous">True</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton" id="robotcontroller_toolbutton_reload">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="use_action_appearance">False</property>
+                                <property name="label" translatable="yes">Reload</property>
+                                <property name="use_underline">True</property>
+                                <property name="stock_id">gtk-refresh</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="homogeneous">True</property>
+                              </packing>
+                            </child>
                           </object>
                           <packing>
-                            <property name="expand">True</property>
-                            <property name="homogeneous">True</property>
+                            <property name="x">5</property>
+                            <property name="y">5</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkToolButton" id="robotcontroller_toolbutton_reload">
+                          <object class="GtkSeparator" id="robotcontroller_toolbar_separator_left">
+                            <property name="height_request">65</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="use_action_appearance">False</property>
-                            <property name="label" translatable="yes">Reload</property>
-                            <property name="use_underline">True</property>
-                            <property name="stock_id">gtk-refresh</property>
+                            <property name="orientation">vertical</property>
                           </object>
                           <packing>
-                            <property name="expand">True</property>
-                            <property name="homogeneous">True</property>
+                            <property name="x">5</property>
+                            <property name="y">6</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSeparator" id="robotcontroller_toolbar_separator_right">
+                            <property name="height_request">65</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="orientation">vertical</property>
+                          </object>
+                          <packing>
+                            <property name="x">134</property>
+                            <property name="y">6</property>
                           </packing>
                         </child>
                       </object>
-                      <packing>
-                        <property name="x">5</property>
-                        <property name="y">5</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkSeparator" id="robotcontroller_toolbar_separator_left">
-                        <property name="height_request">66</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="orientation">vertical</property>
-                      </object>
-                      <packing>
-                        <property name="x">5</property>
-                        <property name="y">5</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkSeparator" id="robotcontroller_toolbar_separator_right">
-                        <property name="height_request">66</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="orientation">vertical</property>
-                      </object>
-                      <packing>
-                        <property name="x">139</property>
-                        <property name="y">5</property>
-                      </packing>
                     </child>
                   </object>
+                  <packing>
+                    <property name="resize">False</property>
+                    <property name="shrink">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkViewport" id="robotcontroller_viewport_right">
+                    <property name="height_request">75</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">center</property>
+                    <property name="hexpand">True</property>
+                    <child>
+                      <object class="GtkFixed" id="robotcontroller_fixed_right">
+                        <property name="height_request">80</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="hexpand">True</property>
+                        <child>
+                          <object class="GtkLabel" id="robotcontroller_label_position">
+                            <property name="width_request">175</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Position</property>
+                          </object>
+                          <packing>
+                            <property name="x">5</property>
+                            <property name="y">5</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="robotcontroller_label_position_x">
+                            <property name="width_request">55</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">X</property>
+                          </object>
+                          <packing>
+                            <property name="x">5</property>
+                            <property name="y">20</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="robotcontroller_label_position_y">
+                            <property name="width_request">55</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Y</property>
+                          </object>
+                          <packing>
+                            <property name="x">65</property>
+                            <property name="y">20</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="robotcontroller_label_position_z">
+                            <property name="width_request">55</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Z</property>
+                          </object>
+                          <packing>
+                            <property name="x">125</property>
+                            <property name="y">20</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="robotcontroller_entry_position_x">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="width_chars">5</property>
+                            <property name="invisible_char_set">True</property>
+                          </object>
+                          <packing>
+                            <property name="x">5</property>
+                            <property name="y">40</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="robotcontroller_entry_position_y">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="width_chars">5</property>
+                            <property name="invisible_char_set">True</property>
+                          </object>
+                          <packing>
+                            <property name="x">65</property>
+                            <property name="y">40</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="robotcontroller_entry_position_z">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="width_chars">5</property>
+                            <property name="invisible_char_set">True</property>
+                          </object>
+                          <packing>
+                            <property name="x">125</property>
+                            <property name="y">40</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSeparator" id="robotcontroller_separator">
+                            <property name="height_request">80</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="orientation">vertical</property>
+                          </object>
+                          <packing>
+                            <property name="x">185</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="robotcontroller_label_orientation">
+                            <property name="width_request">235</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Orientation</property>
+                          </object>
+                          <packing>
+                            <property name="x">190</property>
+                            <property name="y">5</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="robotcontroller_label_orientation_w">
+                            <property name="width_request">55</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">W</property>
+                          </object>
+                          <packing>
+                            <property name="x">190</property>
+                            <property name="y">20</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="robotcontroller_label_orientation_x">
+                            <property name="width_request">55</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">X</property>
+                          </object>
+                          <packing>
+                            <property name="x">250</property>
+                            <property name="y">20</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="robotcontroller_label_orientation_y">
+                            <property name="width_request">55</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Y</property>
+                          </object>
+                          <packing>
+                            <property name="x">310</property>
+                            <property name="y">20</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="robotcontroller_label_orientation_z">
+                            <property name="width_request">55</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Z</property>
+                          </object>
+                          <packing>
+                            <property name="x">370</property>
+                            <property name="y">20</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="robotcontroller_entry_orientation_w">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="width_chars">5</property>
+                            <property name="invisible_char_set">True</property>
+                          </object>
+                          <packing>
+                            <property name="x">190</property>
+                            <property name="y">40</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="robotcontroller_entry_orientation_x">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="width_chars">5</property>
+                            <property name="invisible_char_set">True</property>
+                          </object>
+                          <packing>
+                            <property name="x">250</property>
+                            <property name="y">40</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="robotcontroller_entry_orientation_y">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="width_chars">5</property>
+                            <property name="invisible_char_set">True</property>
+                          </object>
+                          <packing>
+                            <property name="x">310</property>
+                            <property name="y">40</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="robotcontroller_entry_orientation_z">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="width_chars">5</property>
+                            <property name="invisible_char_set">True</property>
+                          </object>
+                          <packing>
+                            <property name="x">370</property>
+                            <property name="y">40</property>
+                          </packing>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="resize">True</property>
+                    <property name="shrink">False</property>
+                  </packing>
                 </child>
               </object>
               <packing>

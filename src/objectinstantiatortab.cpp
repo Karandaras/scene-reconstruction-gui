@@ -53,8 +53,8 @@ ObjectInstantiatorTab::ObjectInstantiatorTab(gazebo::transport::NodePtr& _node, 
   _builder->get_widget("objectinstantiator_objectdata_window_combobox", win_combo);
   win_combo->set_active(0);
   win_combo->signal_changed().connect( sigc::mem_fun(*this, &ObjectInstantiatorTab::on_win_combo_changed) );
-  _builder->get_widget("objectinstantiator_objectdata_window_button_close", win_close);
-  win_close->signal_clicked().connect(sigc::mem_fun(*this,&ObjectInstantiatorTab::on_win_button_close_clicked));
+//  _builder->get_widget("objectinstantiator_objectdata_window_button_close", win_close);
+//  win_close->signal_clicked().connect(sigc::mem_fun(*this,&ObjectInstantiatorTab::on_win_button_close_clicked));
 
   // btn_show
   _builder->get_widget("objectinstantiator_toolbutton_display_spawnedobjects", btn_show);
