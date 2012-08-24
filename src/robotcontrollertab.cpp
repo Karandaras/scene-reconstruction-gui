@@ -22,14 +22,17 @@ RobotControllerTab::RobotControllerTab(gazebo::transport::NodePtr& _node, Logger
   rob_store->clear();
   std::vector<Gtk::CellRenderer*> rob_col_simangle = trv_robot->get_column(2)->get_cells();
   for(unsigned int i=0; i<rob_col_simangle.size(); i++) {
+    dynamic_cast<Gtk::CellRendererText*>(rob_col_simangle[i])->property_editable() = true;
     dynamic_cast<Gtk::CellRendererText*>(rob_col_simangle[i])->signal_edited().connect(sigc::mem_fun(*this,&RobotControllerTab::on_cell_simangle_edited));
   }
   std::vector<Gtk::CellRenderer*> rob_col_offset = trv_robot->get_column(3)->get_cells();
   for(unsigned int i=0; i<rob_col_offset.size(); i++) {
+    dynamic_cast<Gtk::CellRendererText*>(rob_col_offset[i])->property_editable() = true;
     dynamic_cast<Gtk::CellRendererText*>(rob_col_offset[i])->signal_edited().connect(sigc::mem_fun(*this,&RobotControllerTab::on_cell_offset_edited));
   }
   std::vector<Gtk::CellRenderer*> rob_col_robangle = trv_robot->get_column(4)->get_cells();
   for(unsigned int i=0; i<rob_col_robangle.size(); i++) {
+    dynamic_cast<Gtk::CellRendererText*>(rob_col_robangle[i])->property_editable() = true;
     dynamic_cast<Gtk::CellRendererText*>(rob_col_robangle[i])->signal_edited().connect(sigc::mem_fun(*this,&RobotControllerTab::on_cell_robangle_edited));
   }
 

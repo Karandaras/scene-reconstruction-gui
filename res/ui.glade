@@ -813,7 +813,6 @@
                         <child>
                           <object class="GtkCellRendererText" id="robotcontroller_cellrenderertext_simulatorangle"/>
                           <attributes>
-                            <attribute name="editable">2</attribute>
                             <attribute name="text">2</attribute>
                           </attributes>
                         </child>
@@ -828,7 +827,6 @@
                         <child>
                           <object class="GtkCellRendererText" id="robotcontroller_cellrenderertext_offset"/>
                           <attributes>
-                            <attribute name="editable">3</attribute>
                             <attribute name="text">3</attribute>
                           </attributes>
                         </child>
@@ -843,7 +841,6 @@
                         <child>
                           <object class="GtkCellRendererText" id="robotcontroller_cellrenderertext_robotangle"/>
                           <attributes>
-                            <attribute name="editable">4</attribute>
                             <attribute name="text">4</attribute>
                           </attributes>
                         </child>
