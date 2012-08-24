@@ -17,7 +17,8 @@ ModelTab::ModelTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Glib::
   resSub = node->Subscribe("~/response", &ModelTab::OnResMsg, this);
 
   _builder->get_widget("model_treeview", trv_model);
-  mdl_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(mdl_store);
+  mdl_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(_builder->get_object("model_treestore"));
+  mdl_store->clear();
 }
 
 ModelTab::~ModelTab() {

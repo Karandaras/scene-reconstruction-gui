@@ -11,10 +11,12 @@ LoggerTab::LoggerTab(Glib::RefPtr<Gtk::Builder>& builder) : SceneTab::SceneTab(b
   offset = time(NULL);
 
   _builder->get_widget("logger_event_treeview", trv_logger);
-  log_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(trv_logger->get_model());
+  log_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("logger_event_liststore"));
+  log_store->clear();
   
   _builder->get_widget("logger_messages_treeview", trv_msgs);
-  msg_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(trv_msgs->get_model());
+  msg_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("logger_messages_liststore"));
+  msg_store->clear();
 
   _builder->get_widget("logger_console_textview", txt_console);
   txt_console->set_editable(false);

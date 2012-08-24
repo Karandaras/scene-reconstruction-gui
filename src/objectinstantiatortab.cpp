@@ -19,7 +19,8 @@ ObjectInstantiatorTab::ObjectInstantiatorTab(gazebo::transport::NodePtr& _node, 
 
   // object list
   _builder->get_widget("objectinstantiator_treeview_spawnedobjects", trv_object);
-  obj_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(trv_object->get_model());
+  obj_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("objectinstantiator_liststore_spawnedobjects"));
+//  obj_store->clear();
 
   // data list
   _builder->get_widget("objectinstantiator_image_objectdata", img_data);
@@ -28,7 +29,7 @@ ObjectInstantiatorTab::ObjectInstantiatorTab(gazebo::transport::NodePtr& _node, 
   evt_data->signal_button_release_event().connect( sigc::mem_fun(*this, &ObjectInstantiatorTab::on_image_button_release) );
 
   _builder->get_widget("objectinstantiator_combobox_objectdata", com_data);
-  img_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(com_data->get_model());
+  img_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("objectinstantiator_liststore_objectdata"));
   img_store->clear();
   Gtk::TreeModel::Row row;    
   row = *(img_store->append());
@@ -39,11 +40,13 @@ ObjectInstantiatorTab::ObjectInstantiatorTab(gazebo::transport::NodePtr& _node, 
   com_data->signal_changed().connect( sigc::mem_fun(*this, &ObjectInstantiatorTab::on_combo_changed) );
 
   _builder->get_widget("objectinstantiator_treeview_objectdata", trv_data);
-  dat_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(trv_data->get_model());
+  dat_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(_builder->get_object("objectinstantiator_treestore_objectdata"));
+  dat_store->clear();
 
   // repository list
   _builder->get_widget("objectinstantiator_treeview_objectrepository", trv_repo);
-  rep_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(trv_repo->get_model());
+  rep_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("objectinstantiator_liststore_objectrepository"));
+  rep_store->clear();
 
   _builder->get_widget("objectinstantiator_objectdata_window", win_show);
   win_show->set_visible(false);
@@ -53,8 +56,6 @@ ObjectInstantiatorTab::ObjectInstantiatorTab(gazebo::transport::NodePtr& _node, 
   _builder->get_widget("objectinstantiator_objectdata_window_combobox", win_combo);
   win_combo->set_active(0);
   win_combo->signal_changed().connect( sigc::mem_fun(*this, &ObjectInstantiatorTab::on_win_combo_changed) );
-//  _builder->get_widget("objectinstantiator_objectdata_window_button_close", win_close);
-//  win_close->signal_clicked().connect(sigc::mem_fun(*this,&ObjectInstantiatorTab::on_win_button_close_clicked));
 
   // btn_show
   _builder->get_widget("objectinstantiator_toolbutton_display_spawnedobjects", btn_show);

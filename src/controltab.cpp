@@ -41,7 +41,8 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Gl
 
   // data display
   _builder->get_widget("control_treeview", trv_data);
-  dat_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(trv_data->get_model());
+  dat_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(_builder->get_object("control_treestore"));
+  dat_store->clear();
   Gtk::TreeModel::Row row = *(dat_store->append());
   row.set_value(0,(Glib::ustring)"Coordinates");
   row.set_value(1,(Glib::ustring)"");

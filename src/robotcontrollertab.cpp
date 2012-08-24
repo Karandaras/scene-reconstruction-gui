@@ -18,7 +18,8 @@ RobotControllerTab::RobotControllerTab(gazebo::transport::NodePtr& _node, Logger
   sceneResSub = node->Subscribe("~/SceneReconstruction/RobotController/Response", &RobotControllerTab::OnResponseMsg, this);
 
   _builder->get_widget("robotcontroller_treeview", trv_robot);
-  rob_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(trv_robot->get_model());
+  rob_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("robotcontroller_liststore"));
+  rob_store->clear();
   std::vector<Gtk::CellRenderer*> rob_col_simangle = trv_robot->get_column(2)->get_cells();
   for(unsigned int i=0; i<rob_col_simangle.size(); i++) {
     dynamic_cast<Gtk::CellRendererText*>(rob_col_simangle[i])->signal_edited().connect(sigc::mem_fun(*this,&RobotControllerTab::on_cell_simangle_edited));
