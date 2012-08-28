@@ -9,6 +9,7 @@
 #include "robotcontrollertab.h"
 #include "modeltab.h"
 #include "objectinstantiatortab.h"
+#include "frameworktab.h"
 
 using namespace SceneReconstruction;
 
@@ -38,11 +39,13 @@ SceneGUI::SceneGUI()
   ModelTab*              tab2 = new ModelTab(node, logger, ui_builder);
   RobotControllerTab*    tab3 = new RobotControllerTab(node, logger, ui_builder);
   ObjectInstantiatorTab* tab4 = new ObjectInstantiatorTab(node, logger, ui_builder);
+  FrameworkTab*          tab5 = new FrameworkTab(node, logger, ui_builder);
 
   vec_tabs.push_back(tab1);
   vec_tabs.push_back(tab2);
   vec_tabs.push_back(tab3);
   vec_tabs.push_back(tab4);
+  vec_tabs.push_back(tab5);
   vec_tabs.push_back(logger);
 
   window->show_all_children();

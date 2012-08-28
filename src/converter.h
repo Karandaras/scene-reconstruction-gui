@@ -1,5 +1,8 @@
 #pragma once
 #define _USE_MATH_DEFINES
+
+#define SHIFTSEQUENCE "  "
+
 #include <math.h> 
 
 #include <gtkmm.h>
@@ -219,6 +222,48 @@ namespace SceneReconstruction {
         }
         else
           return "";
+      }
+
+      /** converts JSON-Style input to a more human-readable output
+       * @param json JSON-Style input
+       * @return Glib::ustring human-readable version of json
+       */
+      static Glib::ustring parse_json(std::string json) {
+        std::stringstream out;
+        unsigned int tabs = 0;
+        for(unsigned int i=0; i<json.length(); i++) {
+          if(json[i] == '{' && i!=0) {
+            tabs++;
+            out << "\n" << shift(tabs);
+          }
+          else if(json[i] == '}') {
+            tabs--;
+            out << "\n" << shift(tabs);
+          }
+
+          out << json[i];
+
+          if(json[i] == '{') {
+            tabs++;
+            out << "\n" << shift(tabs);
+          }
+          else if(json[i] == ',') {
+            out << "\n" << shift(tabs);
+          }
+          else if(json[i] == '}') {
+            tabs--;
+          }
+        }
+        return out.str();
+      }
+
+    private:
+      static std::string shift(unsigned int count) {
+        std::string result = "";
+        for(unsigned int i=0; i<count; i++) {
+          result += SHIFTSEQUENCE;
+        }
+        return result;
       }
   };
 }
