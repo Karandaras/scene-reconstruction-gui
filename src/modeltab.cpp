@@ -308,7 +308,7 @@ void ModelTab::fill_model_treeview(gazebo::msgs::Model model) {
 
 void ModelTab::OnReqMsg(ConstRequestPtr& _msg) {
   if (guiRes && _msg->request() == "entity_info" && _msg->id() == guiRes->id()) {
-    logger->msglog("<<", _msg);
+    logger->msglog("<<", "~/request", _msg);
 
     gazebo::msgs::Model model;
     if (guiRes->has_type() && guiRes->type() == model.GetTypeName()) {
@@ -326,7 +326,7 @@ void ModelTab::OnReqMsg(ConstRequestPtr& _msg) {
 
 void ModelTab::OnResMsg(ConstResponsePtr& _msg) {
   if (guiReq && _msg->request() == "entity_info" && _msg->id() == guiReq->id()) {
-    logger->msglog("<<", _msg);
+    logger->msglog("<<", "~/response", _msg);
 
     gazebo::msgs::Model model;
     if (_msg->has_type() && _msg->type() == model.GetTypeName()) {
@@ -342,3 +342,8 @@ void ModelTab::OnResMsg(ConstResponsePtr& _msg) {
   }
 }
 
+void ModelTab::set_enabled(bool enabled) {
+  Gtk::Widget* tab;
+  _builder->get_widget("model_tab", tab);
+  tab->set_sensitive(enabled);
+}

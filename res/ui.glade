@@ -50,6 +50,8 @@
       <column type="gchararray"/>
       <!-- column-name type -->
       <column type="gchararray"/>
+      <!-- column-name topic -->
+      <column type="gchararray"/>
       <!-- column-name message -->
       <column type="gchararray"/>
     </columns>
@@ -1291,9 +1293,9 @@
                     <child>
                       <object class="GtkTreeViewColumn" id="logger_messages_treeview_column_dir">
                         <property name="sizing">fixed</property>
-                        <property name="fixed_width">50</property>
-                        <property name="min_width">50</property>
-                        <property name="max_width">50</property>
+                        <property name="fixed_width">30</property>
+                        <property name="min_width">30</property>
+                        <property name="max_width">30</property>
                         <property name="title" translatable="yes">Dir</property>
                         <child>
                           <object class="GtkCellRendererText" id="logger_messages_cellrenderertext_dir"/>
@@ -1306,9 +1308,9 @@
                     <child>
                       <object class="GtkTreeViewColumn" id="logger_messages_treeview_column_time">
                         <property name="sizing">fixed</property>
-                        <property name="fixed_width">80</property>
-                        <property name="min_width">80</property>
-                        <property name="max_width">80</property>
+                        <property name="fixed_width">70</property>
+                        <property name="min_width">70</property>
+                        <property name="max_width">70</property>
                         <property name="title" translatable="yes">Time</property>
                         <child>
                           <object class="GtkCellRendererText" id="logger_messages_cellrenderertext_time"/>
@@ -1321,7 +1323,7 @@
                     <child>
                       <object class="GtkTreeViewColumn" id="logger_messages_treeview_column_type">
                         <property name="sizing">fixed</property>
-                        <property name="fixed_width">150</property>
+                        <property name="fixed_width">100</property>
                         <property name="title" translatable="yes">Type</property>
                         <child>
                           <object class="GtkCellRendererText" id="logger_messages_cellrenderertext_type"/>
@@ -1332,12 +1334,26 @@
                       </object>
                     </child>
                     <child>
+                      <object class="GtkTreeViewColumn" id="logger_messages_treeview_column_topic">
+                        <property name="resizable">True</property>
+                        <property name="min_width">200</property>
+                        <property name="title" translatable="yes">Topic</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="logger_messages_cellrenderertext_topic"/>
+                          <attributes>
+                            <attribute name="text">3</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkTreeViewColumn" id="logger_messages_treeview_column_message">
+                        <property name="resizable">True</property>
                         <property name="title" translatable="yes">Message</property>
                         <child>
                           <object class="GtkCellRendererText" id="logger_messages_cellrenderertext_message"/>
                           <attributes>
-                            <attribute name="text">3</attribute>
+                            <attribute name="text">4</attribute>
                           </attributes>
                         </child>
                       </object>
@@ -1387,6 +1403,104 @@
               </object>
               <packing>
                 <property name="position">2</property>
+                <property name="tab_fill">False</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFixed" id="logger_availability_tab">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="GtkImage" id="logger_availability_status_image_robotcontroller">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="stock">gtk-no</property>
+                  </object>
+                  <packing>
+                    <property name="x">15</property>
+                    <property name="y">60</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkImage" id="logger_availability_status_image_objectinstantiator">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="stock">gtk-no</property>
+                  </object>
+                  <packing>
+                    <property name="x">15</property>
+                    <property name="y">30</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="logger_availability_status_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">&lt;b&gt;Status:&lt;/b&gt;</property>
+                    <property name="use_markup">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">5</property>
+                    <property name="y">5</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkImage" id="logger_availability_status_image_framework">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="stock">gtk-no</property>
+                  </object>
+                  <packing>
+                    <property name="x">15</property>
+                    <property name="y">90</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="logger_availability_status_label_objectinstantiator">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Gazebo Plugin: Object Instantiator</property>
+                  </object>
+                  <packing>
+                    <property name="x">45</property>
+                    <property name="y">30</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="logger_availability_status_label_robotcontroller">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Gazebo Plugin: Robot Controller</property>
+                  </object>
+                  <packing>
+                    <property name="x">45</property>
+                    <property name="y">60</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="logger_availability_status_label_framework">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Robotic Software Framework Plugin</property>
+                  </object>
+                  <packing>
+                    <property name="x">45</property>
+                    <property name="y">90</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="position">3</property>
+              </packing>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel" id="logger_availability_tablabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Components</property>
+              </object>
+              <packing>
+                <property name="position">3</property>
                 <property name="tab_fill">False</property>
               </packing>
             </child>

@@ -53,9 +53,11 @@ namespace SceneReconstruction {
       double                        old_value;
 
       // request message to detect selection through gui
-      boost::shared_ptr<gazebo::msgs::Request const> guiReq;
+      boost::shared_ptr<gazebo::msgs::Request const>  guiReq;
       boost::shared_ptr<gazebo::msgs::Response const> guiRes;
-      gazebo::transport::SubscriberPtr resSub, reqSub;
+      gazebo::transport::SubscriberPtr                resSub,
+                                                      reqSub;
+      gazebo::transport::PublisherPtr                 worldPub;
 
     private:
       void OnReqMsg(ConstRequestPtr&);
@@ -66,5 +68,11 @@ namespace SceneReconstruction {
       void on_button_pause_clicked();
       bool on_scale_button_event(GdkEventButton*);
       bool on_scale_key_event(GdkEventKey*);
+
+    public:
+      /** sets the sensitivity of the tab
+       * @param enabled true to enable, false to disable the tab
+       */
+      void set_enabled(bool);
  };
 }

@@ -19,6 +19,11 @@ namespace SceneReconstruction {
     public:
       /** Refrerence to the Gtk::Builder to access the necessary widgets */
       Glib::RefPtr<Gtk::Builder>     _builder;
+
+      /** sets the sensitivity of the tab
+       * @param enabled true to enable, false to disable the tab
+       */
+      virtual void set_enabled(bool enabled) = 0;
   };
 }
 

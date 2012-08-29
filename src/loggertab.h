@@ -41,7 +41,7 @@ namespace SceneReconstruction {
                                    *old_cerr;
 
     private:
-      void logmsg(std::string, std::string, std::string);
+      void logmsg(std::string, std::string, std::string, std::string);
 
     public:
       /** logs events to the treeview with timestamp and additional text
@@ -52,14 +52,34 @@ namespace SceneReconstruction {
 
       /** logs msgs to the treeview with timestamp and additional text
        * @param dir direction of the message
+       * @param topic topic of the message
        * @param _msg the msg to log
        */
-      void msglog(std::string, ConstResponsePtr&);
+      void msglog(std::string, std::string, ConstResponsePtr&);
 
       /** logs msgs to the treeview with timestamp and additional text
        * @param dir direction of the message
+       * @param topic topic of the message
        * @param _msg the msg to log
        */
-      void msglog(std::string, ConstRequestPtr&);
+      void msglog(std::string, std::string, gazebo::msgs::WorldControl&);
+
+      /** logs msgs to the treeview with timestamp and additional text
+       * @param dir direction of the message
+       * @param topic topic of the message
+       * @param _msg the msg to log
+       */
+      void msglog(std::string, std::string, ConstRequestPtr&);
+
+      /** sets the sensitivity of the tab
+       * @param enabled true to enable, false to disable the tab
+       */
+      void set_enabled(bool);
+
+      /** switches the image for the given component to represent that the component has responded
+       *  to the availability request
+       * @param comp name of the component
+       */
+      void show_available(std::string);
  };
 }

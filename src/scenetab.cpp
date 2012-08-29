@@ -16,3 +16,4 @@ SceneTab::SceneTab(Glib::RefPtr<Gtk::Builder> &builder) {
 
 SceneTab::~SceneTab() {
 }
+

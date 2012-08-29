@@ -77,7 +77,7 @@ void ObjectInstantiatorTab::OnResponseMsg(ConstResponsePtr& _msg) {
   if(!objReq || objReq->id() != _msg->id()) 
     return;
 
-  logger->msglog("<<", _msg);
+  logger->msglog("<<", "~/SceneReconstruction/ObjectInstantiator/Response", _msg);
 
   if(_msg->request() == "object_list") {
     gazebo::msgs::String_V src;
@@ -272,7 +272,7 @@ void ObjectInstantiatorTab::on_button_show_clicked() {
     objReq->set_data(tmp);
     sceneReqPub->Publish(*(objReq.get()));
     logger->log("object instantiator", "requesting data of selected spawned object from ObjectInstantiatorPlugin");
-    logger->msglog(">>", objReq);
+    logger->msglog(">>", "~/SceneReconstruction/ObjectInstantiator/Request", objReq);
   }
   else
     logger->log("object instantiator", "no object to request data for selected");
@@ -283,7 +283,7 @@ void ObjectInstantiatorTab::on_button_refresh_objects_clicked() {
   objReq.reset(gazebo::msgs::CreateRequest("object_list"));
   sceneReqPub->Publish(*(objReq.get()));
   logger->log("object instantiator", "requesting list of spawned objects from ObjectInstantiatorPlugin");
-  logger->msglog(">>", objReq);
+  logger->msglog(">>", "~/SceneReconstruction/ObjectInstantiator/Request", objReq);
 }
 
 void ObjectInstantiatorTab::on_button_refresh_repository_clicked() {
@@ -291,7 +291,7 @@ void ObjectInstantiatorTab::on_button_refresh_repository_clicked() {
   objReq.reset(gazebo::msgs::CreateRequest("object_repository"));
   sceneReqPub->Publish(*(objReq.get()));
   logger->log("object instantiator", "requesting repository list from ObjectInstantiatorPlugin");
-  logger->msglog(">>", objReq);
+  logger->msglog(">>", "~/SceneReconstruction/ObjectInstantiator/Request", objReq);
 }
 
 bool ObjectInstantiatorTab::on_image_button_release(GdkEventButton *b) {
@@ -325,3 +325,8 @@ void ObjectInstantiatorTab::on_win_button_close_clicked() {
 }
 
 
+void ObjectInstantiatorTab::set_enabled(bool enabled) {
+  Gtk::Widget* tab;
+  _builder->get_widget("objectinstantiator_tab", tab);
+  tab->set_sensitive(enabled);
+}

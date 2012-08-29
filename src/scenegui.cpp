@@ -20,6 +20,18 @@ using namespace SceneReconstruction;
 
 SceneGUI::SceneGUI()
 {
+  plugin_availability["ObjectInstantiator"] = false;
+  plugin_availability["RobotController"]    = false;
+  plugin_availability["Framework"]          = false;
+  missing_plugins                           = 0;
+  std::map<std::string, bool>::iterator plugin;
+  for(plugin =  plugin_availability.begin(); plugin != plugin_availability.end(); plugin++) {
+    if(!plugin->second) {
+      missing_plugins++;
+    }
+  }
+  
+
   // Setup the GUI
   ui_builder = Gtk::Builder::create_from_file("res/ui.glade");
   ui_builder->get_widget("window", window);
@@ -34,6 +46,16 @@ SceneGUI::SceneGUI()
   node = _node;
   node->Init();
 
+  availPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/GUI/Availability/Request");
+  availSub = node->Subscribe("~/SceneReconstruction/GUI/Availability/Response", &SceneGUI::OnResponseMsg, this);
+  worldPub = node->Advertise<gazebo::msgs::WorldControl>("~/world_control");
+
+  // initially pause the world
+  gazebo::msgs::WorldControl start;
+  start.set_pause(true);
+  logger->msglog(">>", "~/world_control", start);
+  worldPub->Publish(start);
+
   // Create all tabs
   ControlTab*            tab1 = new ControlTab(node, logger, ui_builder);
   ModelTab*              tab2 = new ModelTab(node, logger, ui_builder);
@@ -46,15 +68,62 @@ SceneGUI::SceneGUI()
   vec_tabs.push_back(tab3);
   vec_tabs.push_back(tab4);
   vec_tabs.push_back(tab5);
-  vec_tabs.push_back(logger);
 
   window->show_all_children();
+
+  check_components();
 }
 
 SceneGUI::~SceneGUI() {
   node->Fini();
   gazebo::transport::stop();
   gazebo::transport::fini();
+}
+
+void SceneGUI::check_components() {
+  // disable all tabs but the logger until everything is ready
+  std::vector<SceneTab*>::iterator tab;
+  for(tab =  vec_tabs.begin(); tab != vec_tabs.end(); tab++) {
+    (*tab)->set_enabled(false);
+  }
+
+  // publish availability request
+  avail_request.reset(gazebo::msgs::CreateRequest("status"));
+  logger->msglog(">>", "~/SceneReconstruction/GUI/Availability/Request", avail_request);
+  availPub->Publish(*(avail_request.get()));
+}
+
+void SceneGUI::OnResponseMsg(ConstResponsePtr &_msg) {
+  if(_msg->id() != avail_request->id() && _msg->id() != -1)
+    return;
+
+  logger->msglog("<<", "~/SceneReconstruction/GUI/Availability/Response", _msg);
+ 
+  // receive availability responses;
+  std::map<std::string, bool>::iterator plugin = plugin_availability.find(_msg->response());
+  if(plugin != plugin_availability.end()) {
+    if(!plugin->second) {
+      plugin->second = true;
+      missing_plugins--;
+      logger->show_available(plugin->first);
+      logger->log("available", "component "+plugin->first+" is now available");
+    }
+  }
+
+  if(missing_plugins == 0) {
+    //everything is ready so enable all tabs and reset and pause the world
+    std::vector<SceneTab*>::iterator tab;
+    for(tab =  vec_tabs.begin(); tab != vec_tabs.end(); tab++) {
+      (*tab)->set_enabled(true);
+    }
+
+    // reset time and pause the world
+    gazebo::msgs::WorldControl start;
+    start.set_pause(true);
+    start.set_reset_time(true);
+    logger->msglog(">>", "~/world_control", start);
+    worldPub->Publish(start);
+  }
 }
 
 int main(int argc, char **argv)

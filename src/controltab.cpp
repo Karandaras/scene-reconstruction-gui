@@ -21,6 +21,7 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Gl
   
   reqSub = node->Subscribe("~/request", &ControlTab::OnReqMsg, this);
   resSub = node->Subscribe("~/response", &ControlTab::OnResMsg, this);
+  worldPub = node->Advertise<gazebo::msgs::WorldControl>("~/world_control");
 
   // rng_time setup
   _builder->get_widget("control_scale", rng_time);
@@ -66,7 +67,7 @@ ControlTab::~ControlTab() {
 
 void ControlTab::OnReqMsg(ConstRequestPtr& _msg) {
   if (guiRes && _msg->request() == "entity_info" && _msg->id() == guiRes->id()) {
-    logger->msglog("<<", _msg);
+    logger->msglog("<<", "~/request", _msg);
 
     gazebo::msgs::Model model;
     if (guiRes->has_type() && guiRes->type() == model.GetTypeName()) {
@@ -84,7 +85,7 @@ void ControlTab::OnReqMsg(ConstRequestPtr& _msg) {
 
 void ControlTab::OnResMsg(ConstResponsePtr& _msg) {
   if (guiReq && _msg->request() == "entity_info" && _msg->id() == guiReq->id()) {
-    logger->msglog("<<", _msg);
+    logger->msglog("<<", "~/request", _msg);
 
     gazebo::msgs::Model model;
     if (_msg->has_type() && _msg->type() == model.GetTypeName()) {
@@ -118,14 +119,31 @@ void ControlTab::update_coords(gazebo::msgs::Model model) {
 
 void ControlTab::on_button_stop_clicked() {
   logger->log("control", "STOP");
+
+  gazebo::msgs::WorldControl start;
+  start.set_pause(true);
+  start.set_reset_time(true);
+  start.set_reset_world(true);
+  logger->msglog(">>", "~/world_control", start);
+  worldPub->Publish(start);
 }
 
 void ControlTab::on_button_play_clicked() {
   logger->log("control", "PLAY");
+
+  gazebo::msgs::WorldControl start;
+  start.set_pause(false);
+  logger->msglog(">>", "~/world_control", start);
+  worldPub->Publish(start);
 }
 
 void ControlTab::on_button_pause_clicked() {
   logger->log("control", "PAUSE");
+
+  gazebo::msgs::WorldControl start;
+  start.set_pause(true);
+  logger->msglog(">>", "~/world_control", start);
+  worldPub->Publish(start);
 }
 
 bool ControlTab::on_scale_button_event(GdkEventButton* b) {
@@ -146,3 +164,8 @@ bool ControlTab::on_scale_key_event(GdkEventKey* k) {
   return false;
 }
 
+void ControlTab::set_enabled(bool enabled) {
+  Gtk::Widget* tab;
+  _builder->get_widget("control_tab", tab);
+  tab->set_sensitive(enabled);
+}

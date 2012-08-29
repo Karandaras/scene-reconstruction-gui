@@ -63,7 +63,7 @@ void RobotControllerTab::OnResponseMsg(ConstResponsePtr& _msg) {
     return;
 
   if(_msg->request() == "controller_info") {
-    logger->msglog("<<", _msg);
+    logger->msglog("<<", "~/SceneReconstruction/RobotController/Response", _msg);
 
     gazebo::msgs::SceneRobotController src;
     if(_msg->has_type() && _msg->type() == src.GetTypeName()) {
@@ -129,7 +129,7 @@ void RobotControllerTab::on_button_reload_clicked() {
   robReq.reset(gazebo::msgs::CreateRequest("controller_info"));
   sceneReqPub->Publish(*(robReq.get()));
   logger->log("robot controller", "requesting info from RobotControllerPlugin");
-  logger->msglog(">>", robReq);
+  logger->msglog(">>", "~/SceneReconstruction/RobotController/Request", robReq);
 }
 
 void RobotControllerTab::on_cell_simangle_edited(const Glib::ustring& path, const Glib::ustring& new_text) {
@@ -174,3 +174,8 @@ void RobotControllerTab::on_cell_robangle_edited(const Glib::ustring& path, cons
   it->set_value(4, robangle);
 }
 
+void RobotControllerTab::set_enabled(bool enabled) {
+  Gtk::Widget* tab;
+  _builder->get_widget("robotcontroller_tab", tab);
+  tab->set_sensitive(enabled);
+}

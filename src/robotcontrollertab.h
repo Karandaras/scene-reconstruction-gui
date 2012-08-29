@@ -57,5 +57,11 @@ namespace SceneReconstruction {
       void on_cell_simangle_edited(const Glib::ustring&, const Glib::ustring&);
       void on_cell_offset_edited(const Glib::ustring&, const Glib::ustring&);
       void on_cell_robangle_edited(const Glib::ustring&, const Glib::ustring&);
+
+    public:
+      /** sets the sensitivity of the tab
+       * @param enabled true to enable, false to disable the tab
+       */
+      void set_enabled(bool);
   };
 }

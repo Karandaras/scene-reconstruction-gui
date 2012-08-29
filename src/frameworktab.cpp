@@ -16,7 +16,7 @@ FrameworkTab::FrameworkTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger
   node = _node;
   logger = _logger;
   
-  reqPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/ObjectInstantiator/Request");
+  reqPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/Framework/Request");
   resSub = node->Subscribe("~/SceneReconstruction/GUI/MongoDB", &FrameworkTab::OnResponseMsg, this);
 
   _builder->get_widget("framework_spinbutton_object", spn_object);
@@ -44,7 +44,6 @@ FrameworkTab::FrameworkTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger
 
   _builder->get_widget("framework_textview_object", txt_object);
   txt_object->override_font(Pango::FontDescription("monospace"));
-  txt_object->get_buffer()->set_text(Converter::parse_json("{test:\"test\",blub:{a:b,b:c},b:d}"));
 }
 
 FrameworkTab::~FrameworkTab() {
@@ -52,7 +51,7 @@ FrameworkTab::~FrameworkTab() {
 
 void FrameworkTab::OnResponseMsg(ConstResponsePtr& _msg) {
   if (objReq && _msg->id() == objReq->id()) {
-    logger->msglog("<<", _msg);
+    logger->msglog("<<", "~/SceneReconstruction/GUI/MongoDB", _msg);
 
     if(_msg->response() != "success")
       return;
@@ -116,7 +115,7 @@ void FrameworkTab::OnResponseMsg(ConstResponsePtr& _msg) {
 void FrameworkTab::on_button_databases_refresh_clicked() {
   logger->log("framework", "refreshing databases");
   objReq.reset(gazebo::msgs::CreateRequest("database_names"));
-  logger->msglog(">>", objReq);
+  logger->msglog(">>", "~/SceneReconstruction/Framework/Request", objReq);
   reqPub->Publish(*(objReq.get()));
 }
 
@@ -127,7 +126,7 @@ void FrameworkTab::on_button_databases_select_clicked() {
     logger->log("framework", "selecting database "+tmp);
     objReq.reset(gazebo::msgs::CreateRequest("select_database"));
     objReq->set_data(tmp);
-    logger->msglog(">>", objReq);
+    logger->msglog(">>", "~/SceneReconstruction/Framework/Request", objReq);
     reqPub->Publish(*(objReq.get()));
   }
   else {
@@ -147,7 +146,7 @@ void FrameworkTab::on_button_collections_refresh_clicked() {
     logger->log("framework", "refreshing collections");
   }
 
-  logger->msglog(">>", objReq);
+  logger->msglog(">>", "~/SceneReconstruction/Framework/Request", objReq);
   reqPub->Publish(*(objReq.get()));
 }
 
@@ -158,7 +157,7 @@ void FrameworkTab::on_button_collections_select_clicked() {
     logger->log("framework", "selecting collection "+tmp);
     objReq.reset(gazebo::msgs::CreateRequest("select_collection"));
     objReq->set_data(tmp);
-    logger->msglog(">>", objReq);
+    logger->msglog(">>", "~/SceneReconstruction/Framework/Request", objReq);
     reqPub->Publish(*(objReq.get()));
   }
   else {
@@ -170,8 +169,13 @@ void FrameworkTab::on_button_object_value_changed() {
   logger->log("framework", "select object %d", (int)spn_object->get_value());
   objReq.reset(gazebo::msgs::CreateRequest("select_object"));
   objReq->set_dbl_data(spn_object->get_value());
-  logger->msglog(">>", objReq);
+  logger->msglog(">>", "~/SceneReconstruction/Framework/Request", objReq);
   reqPub->Publish(*(objReq.get()));
 }
 
 
+void FrameworkTab::set_enabled(bool enabled) {
+  Gtk::Widget* tab;
+  _builder->get_widget("framework_tab", tab);
+  tab->set_sensitive(enabled);
+}

@@ -71,5 +71,11 @@ namespace SceneReconstruction {
       void on_win_combo_changed();
       void on_win_button_close_clicked();
       bool on_image_button_release(GdkEventButton*);
+
+    public:
+      /** sets the sensitivity of the tab
+       * @param enabled true to enable, false to disable the tab
+       */
+      void set_enabled(bool);
   };
 }

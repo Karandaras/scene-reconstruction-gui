@@ -71,7 +71,7 @@ void LoggerTab::log(std::string event, std::string text, ...)
   va_end(Args);
 }
 
-void LoggerTab::logmsg(std::string dir, std::string type, std::string msg)
+void LoggerTab::logmsg(std::string dir, std::string type, std::string topic, std::string msg)
 {
   char * time_buffer;
   time_buffer = (char *) malloc (8);  //hh:mm:ss
@@ -84,12 +84,13 @@ void LoggerTab::logmsg(std::string dir, std::string type, std::string msg)
   row.set_value(0, (Glib::ustring)dir);
   row.set_value(1, (Glib::ustring)time_buffer);
   row.set_value(2, (Glib::ustring)type);
-  row.set_value(3, (Glib::ustring)msg);
+  row.set_value(3, (Glib::ustring)topic);
+  row.set_value(4, (Glib::ustring)msg);
 
   free(time_buffer);
 }
 
-void LoggerTab::msglog(std::string dir, ConstRequestPtr &_msg)
+void LoggerTab::msglog(std::string dir, std::string topic, ConstRequestPtr &_msg)
 {
   std::ostringstream msg;
   msg << "Request: ";
@@ -105,10 +106,39 @@ void LoggerTab::msglog(std::string dir, ConstRequestPtr &_msg)
     msg << _msg->dbl_data();
   }
 
-  logmsg(dir, "Request", msg.str());
+  logmsg(dir, "Request", topic, msg.str());
 }
 
-void LoggerTab::msglog(std::string dir, ConstResponsePtr &_msg)
+void LoggerTab::msglog(std::string dir, std::string topic, gazebo::msgs::WorldControl &_msg)
+{
+  std::ostringstream msg;
+  if(_msg.has_pause()) {
+    msg << "Pause: ";
+    msg << (_msg.pause()?"true":"false");
+  }
+  if(_msg.has_step()) {
+    if(msg.str().length()>0)
+      msg << ", ";
+    msg << "Step: ";
+    msg << (_msg.step()?"true":"false");
+  }
+  if(_msg.has_reset_time()) {
+    if(msg.str().length()>0)
+      msg << ", ";
+    msg << "Reset Time: ";
+    msg << (_msg.reset_time()?"true":"false");
+  }
+  if(_msg.has_reset_world()) {
+    if(msg.str().length()>0)
+      msg << ", ";
+    msg << "Reset World: ";
+    msg << (_msg.reset_world()?"true":"false");
+  }
+
+  logmsg(dir, "WorldControl", topic, msg.str());
+}
+
+void LoggerTab::msglog(std::string dir, std::string topic, ConstResponsePtr &_msg)
 {
   std::ostringstream msg;
   msg << "Request: ";
@@ -120,8 +150,27 @@ void LoggerTab::msglog(std::string dir, ConstResponsePtr &_msg)
   if(_msg->has_type()) {
     msg << ", Type: ";
     msg << _msg->type();
+
+    gazebo::msgs::String error;
+    if(_msg->response() != "success" && _msg->type() == error.GetTypeName() && _msg->has_serialized_data()) {
+      error.ParseFromString(_msg->serialized_data());
+      msg << ", Error: ";
+      msg << error.data();
+    }
   }
 
-  logmsg(dir, "Reponse", msg.str());
+  logmsg(dir, "Reponse", topic, msg.str());
 }
 
+void LoggerTab::set_enabled(bool enabled) {
+  Gtk::Widget* tab;
+  _builder->get_widget("logger_tab", tab);
+  tab->set_sensitive(enabled);
+}
+
+void LoggerTab::show_available(std::string comp) {
+  Gtk::Image *img;
+  std::transform(comp.begin(), comp.end(), comp.begin(), ::tolower);
+  _builder->get_widget("logger_availability_status_image_"+comp, img);
+  img->set(Gtk::Stock::YES, Gtk::ICON_SIZE_BUTTON);
+}

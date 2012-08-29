@@ -48,5 +48,11 @@ namespace SceneReconstruction {
       void fill_model_treeview(gazebo::msgs::Model);
       void OnReqMsg(ConstRequestPtr&);
       void OnResMsg(ConstResponsePtr&);
+
+    public:
+      /** sets the sensitivity of the tab
+       * @param enabled true to enable, false to disable the tab
+       */
+      void set_enabled(bool);
   };
 }
