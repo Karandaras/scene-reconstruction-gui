@@ -1,4 +1,4 @@
-#include "math/Pose.hh"
+#include <gazebo/math/Pose.hh>
 
 #include "controltab.h"
 #include "converter.h"

@@ -1,4 +1,4 @@
-#include "math/Pose.hh"
+#include <gazebo/math/Pose.hh>
 
 #include "frameworktab.h"
 #include "converter.h"
@@ -96,10 +96,19 @@ void FrameworkTab::OnResponseMsg(ConstResponsePtr& _msg) {
       }
     }
     else if(_msg->request() == "select_collection") {
-      gazebo::msgs::Int src;
+      gazebo::msgs::String_V src;
       if(_msg->has_type() && _msg->type() == src.GetTypeName()) {
         src.ParseFromString(_msg->serialized_data());
-        spn_object->set_range(0.0,(double) src.data());
+        char* t;
+        double max = strtod(src.data(0).c_str(), &t);
+        if(*t != 0) {
+          max = 0.0;
+        }
+        spn_object->set_range(0.0,max);
+
+        if(src.data_size()>1) {
+          txt_object->get_buffer()->set_text(Converter::parse_json(src.data(1)));
+        }
       }
     }
     else if(_msg->request() == "select_object") {

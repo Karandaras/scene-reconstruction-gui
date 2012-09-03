@@ -4,10 +4,10 @@
 
 #include <google/protobuf/message.h>
 
-#include "transport/Transport.hh"
-#include "transport/TransportTypes.hh"
-#include "transport/Node.hh"
-#include "gazebo_config.h"
+#include <gazebo/transport/Transport.hh>
+#include <gazebo/transport/TransportTypes.hh>
+#include <gazebo/transport/Node.hh>
+#include <gazebo/gazebo_config.h>
 
 #include "scenetab.h"
 #include "loggertab.h"
@@ -27,23 +27,23 @@ namespace SceneReconstruction {
 
     private:
      // gazebo node
-      gazebo::transport::NodePtr               node;
+      gazebo::transport::NodePtr       node;
 
       // vector for all tabs
-      std::vector<SceneTab*>                   vec_tabs;
-      LoggerTab*                               logger;
-      Glib::RefPtr<Gtk::Builder>               ui_builder;
-      gazebo::transport::PublisherPtr          availPub,
-                                               worldPub;
-      gazebo::transport::SubscriberPtr         availSub;
+      std::vector<SceneTab*>           vec_tabs;
+      LoggerTab                       *logger;
+      Glib::RefPtr<Gtk::Builder>       ui_builder;
+      gazebo::transport::PublisherPtr  worldPub;
+      gazebo::transport::SubscriberPtr availSub;
 
-      std::map<std::string, bool>              plugin_availability;
-      unsigned int                             missing_plugins;
-      boost::shared_ptr<gazebo::msgs::Request> avail_request;
+      std::map<std::string, bool>                                       plugin_availability;
+      unsigned int                                                      missing_plugins;
+      std::map< std::string, gazebo::transport::PublisherPtr >          availPubs;
+      std::map< std::string, boost::shared_ptr<gazebo::msgs::Request> > avail_requests;
 
     public:
       /** Gtk::Window for the GUI */
-      Gtk::Window                             *window;
+      Gtk::Window                     *window;
 
     private:
       void check_components();

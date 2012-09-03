@@ -5,11 +5,11 @@
 
 #include <google/protobuf/message.h>
 
-#include "common/Time.hh"
-#include "transport/Transport.hh"
-#include "transport/TransportTypes.hh"
-#include "transport/Node.hh"
-#include "gazebo_config.h"
+#include <gazebo/common/Time.hh>
+#include <gazebo/transport/Transport.hh>
+#include <gazebo/transport/TransportTypes.hh>
+#include <gazebo/transport/Node.hh>
+#include <gazebo/gazebo_config.h>
 
 #include "scenetab.h"
 #include "loggingtools.h"

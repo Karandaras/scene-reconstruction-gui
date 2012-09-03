@@ -11,10 +11,10 @@
 #include <iostream>
 #include <google/protobuf/message.h>
 
-#include "transport/Transport.hh"
-#include "transport/TransportTypes.hh"
-#include "gazebo_config.h"
-#include "math/Pose.hh"
+#include <gazebo/transport/Transport.hh>
+#include <gazebo/transport/TransportTypes.hh>
+#include <gazebo/gazebo_config.h>
+#include <gazebo/math/Pose.hh>
 
 namespace SceneReconstruction {
   /** @class Converter "converter.h"
@@ -240,6 +240,14 @@ namespace SceneReconstruction {
             tabs--;
             out << "\n" << shift(tabs);
           }
+          else if(json[i] == '[') {
+            tabs++;
+            out << "\n" << shift(tabs);
+          }
+          else if(json[i] == ']') {
+            tabs--;
+            out << "\n" << shift(tabs);
+          }
 
           out << json[i];
 
@@ -247,16 +255,23 @@ namespace SceneReconstruction {
             tabs++;
             out << "\n" << shift(tabs);
           }
-          else if(json[i] == ',') {
-            out << "\n" << shift(tabs);
-          }
           else if(json[i] == '}') {
             tabs--;
+          }
+          else if(json[i] == '[') {
+            tabs++;
+            out << "\n" << shift(tabs);
+          }
+          else if(json[i] == ']') {
+            tabs--;
+          }
+          else if(json[i] == ',') {
+            out << "\n" << shift(tabs);
           }
         }
         return out.str();
       }
-
+    
     private:
       static std::string shift(unsigned int count) {
         std::string result = "";

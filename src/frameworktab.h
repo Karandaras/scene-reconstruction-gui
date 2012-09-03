@@ -7,10 +7,10 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "transport/Node.hh"
-#include "transport/Transport.hh"
-#include "transport/TransportTypes.hh"
-#include "gazebo_config.h"
+#include <gazebo/transport/Node.hh>
+#include <gazebo/transport/Transport.hh>
+#include <gazebo/transport/TransportTypes.hh>
+#include <gazebo/gazebo_config.h>
 
 #include "scenetab.h"
 #include "loggertab.h"

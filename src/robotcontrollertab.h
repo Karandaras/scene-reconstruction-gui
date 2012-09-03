@@ -4,10 +4,10 @@
 
 #include <google/protobuf/message.h>
 
-#include "transport/Transport.hh"
-#include "transport/TransportTypes.hh"
-#include "transport/Node.hh"
-#include "gazebo_config.h"
+#include <gazebo/transport/Transport.hh>
+#include <gazebo/transport/TransportTypes.hh>
+#include <gazebo/transport/Node.hh>
+#include <gazebo/gazebo_config.h>
 
 #include "scenetab.h"
 #include "loggertab.h"
