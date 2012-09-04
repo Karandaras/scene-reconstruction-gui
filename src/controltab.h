@@ -39,6 +39,7 @@ namespace SceneReconstruction {
       LoggerTab                    *logger;
       // timeline to display current time and allow navigation
       Gtk::Scale                   *rng_time;
+      Gtk::Label                   *lbl_max_time;
 
       // buttons for basic commands
       Gtk::ToolButton              *btn_stop;
@@ -56,10 +57,12 @@ namespace SceneReconstruction {
       boost::shared_ptr<gazebo::msgs::Request const>  guiReq;
       boost::shared_ptr<gazebo::msgs::Response const> guiRes;
       gazebo::transport::SubscriberPtr                resSub,
-                                                      reqSub;
+                                                      reqSub,
+                                                      timeSub;
       gazebo::transport::PublisherPtr                 worldPub;
 
     private:
+      void OnTimeMsg(ConstDoublePtr&);
       void OnReqMsg(ConstRequestPtr&);
       void OnResMsg(ConstResponsePtr&);
       void update_coords(gazebo::msgs::Model);

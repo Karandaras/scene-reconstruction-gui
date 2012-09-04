@@ -131,7 +131,7 @@ void ObjectInstantiatorTab::OnResponseMsg(ConstResponsePtr& _msg) {
       src1.ParseFromString(_msg->serialized_data());
       src2.ParseFromString(objRes->serialized_data());
     }
-    if((_msg->has_type() && _msg->type() == src2.GetTypeName()) && (objRes->has_type() && objRes->type() == src1.GetTypeName())) {
+    else if((_msg->has_type() && _msg->type() == src2.GetTypeName()) && (objRes->has_type() && objRes->type() == src1.GetTypeName())) {
       src2.ParseFromString(_msg->serialized_data());
       src1.ParseFromString(objRes->serialized_data());
     }
@@ -140,7 +140,7 @@ void ObjectInstantiatorTab::OnResponseMsg(ConstResponsePtr& _msg) {
       return;
     }
     
-    if(!src1.has_objectid() || src1.objectid() != src2.objectid()) {
+    if(!src1.has_objectids() || src1.objectids() != src2.objectids()) {
       logger->log("object instantiator", "received messages refer to different objectids");
       return;
     }
@@ -180,10 +180,10 @@ void ObjectInstantiatorTab::OnResponseMsg(ConstResponsePtr& _msg) {
       row.set_value(1, src1.child_frame());
     }
 
-    if(src1.has_objectid()) {
+    if(src1.has_objectids()) {
       row = *(dat_store->append());
-      row.set_value(0, (Glib::ustring)"ObjectID");
-      row.set_value(1, src1.objectid());
+      row.set_value(0, (Glib::ustring)"ObjectIDs");
+      row.set_value(1, src1.objectids());
     }
 
     if(src1.has_name()) {
@@ -195,12 +195,12 @@ void ObjectInstantiatorTab::OnResponseMsg(ConstResponsePtr& _msg) {
     images.clear();
     img_store->clear();
 
-    if(src2.images_size() > 0 && src2.image_names_size() == src2.images_size()) {
+    if(src2.images_size() > 0) {
       for(int i=0; i<src2.images_size(); i++) {
         row = *(img_store->append());
-        row.set_value(0, src2.image_names(i));
+        row.set_value(0, src2.images(i).name());
         // TODO: use data obtained from the framework to create an image
-        images[src2.image_names(i)] = Gdk::Pixbuf::create_from_file("res/noimg.png");
+        images[src2.images(i).name()] = Gdk::Pixbuf::create_from_file("res/noimg.png");
       }
     }
     else {

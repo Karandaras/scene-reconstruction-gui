@@ -243,130 +243,136 @@
             <property name="can_focus">False</property>
             <property name="orientation">vertical</property>
             <child>
-              <object class="GtkPaned" id="control_paned">
-                <property name="height_request">80</property>
+              <object class="GtkFixed" id="control_fixed">
+                <property name="width_request">215</property>
+                <property name="height_request">75</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="position">215</property>
-                <property name="position_set">True</property>
+                <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkFixed" id="control_fixed">
-                    <property name="width_request">215</property>
-                    <property name="height_request">75</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <child>
-                      <object class="GtkToolbar" id="control_toolbar">
-                        <property name="width_request">205</property>
-                        <property name="height_request">65</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="hexpand">True</property>
-                        <property name="toolbar_style">both</property>
-                        <property name="show_arrow">False</property>
-                        <property name="icon_size">4</property>
-                        <child>
-                          <object class="GtkToolButton" id="control_toolbutton_stop">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="use_action_appearance">False</property>
-                            <property name="label" translatable="yes">Stop</property>
-                            <property name="use_underline">True</property>
-                            <property name="stock_id">gtk-media-stop</property>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="homogeneous">True</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkToolButton" id="control_toolbutton_play">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="use_action_appearance">False</property>
-                            <property name="label" translatable="yes">Play</property>
-                            <property name="use_underline">True</property>
-                            <property name="stock_id">gtk-media-play</property>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="homogeneous">True</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkToolButton" id="control_toolbutton_pause">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="use_action_appearance">False</property>
-                            <property name="label" translatable="yes">Pause</property>
-                            <property name="use_underline">True</property>
-                            <property name="stock_id">gtk-media-pause</property>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="homogeneous">True</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="x">5</property>
-                        <property name="y">5</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkSeparator" id="control_toolbar_separator_left">
-                        <property name="height_request">65</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="orientation">vertical</property>
-                      </object>
-                      <packing>
-                        <property name="x">5</property>
-                        <property name="y">6</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkSeparator" id="control_toolbar_separator_right">
-                        <property name="height_request">65</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="orientation">vertical</property>
-                      </object>
-                      <packing>
-                        <property name="x">209</property>
-                        <property name="y">6</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="resize">False</property>
-                    <property name="shrink">False</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkViewport" id="control_viewport">
-                    <property name="width_request">416</property>
-                    <property name="height_request">75</property>
+                  <object class="GtkToolbar" id="control_toolbar">
+                    <property name="width_request">205</property>
+                    <property name="height_request">65</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="hexpand">True</property>
+                    <property name="toolbar_style">both</property>
+                    <property name="show_arrow">False</property>
+                    <property name="icon_size">4</property>
                     <child>
-                      <object class="GtkScale" id="control_scale">
-                        <property name="width_request">416</property>
-                        <property name="height_request">75</property>
+                      <object class="GtkToolButton" id="control_toolbutton_stop">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="hexpand">True</property>
-                        <property name="adjustment">control_adjustment</property>
-                        <property name="fill_level">100</property>
-                        <property name="round_digits">2</property>
-                        <property name="digits">2</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="label" translatable="yes">Stop</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-media-stop</property>
                       </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton" id="control_toolbutton_play">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="label" translatable="yes">Play</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-media-play</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton" id="control_toolbutton_pause">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="label" translatable="yes">Pause</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-media-pause</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
-                    <property name="resize">True</property>
-                    <property name="shrink">False</property>
+                    <property name="x">5</property>
+                    <property name="y">5</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSeparator" id="control_toolbar_separator_left">
+                    <property name="height_request">65</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="orientation">vertical</property>
+                  </object>
+                  <packing>
+                    <property name="x">5</property>
+                    <property name="y">6</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSeparator" id="control_toolbar_separator_right">
+                    <property name="height_request">65</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="orientation">vertical</property>
+                  </object>
+                  <packing>
+                    <property name="x">209</property>
+                    <property name="y">6</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScale" id="control_scale">
+                    <property name="width_request">410</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="adjustment">control_adjustment</property>
+                    <property name="restrict_to_fill_level">False</property>
+                    <property name="fill_level">0</property>
+                    <property name="round_digits">2</property>
+                    <property name="digits">2</property>
+                    <property name="value_pos">bottom</property>
+                  </object>
+                  <packing>
+                    <property name="x">220</property>
+                    <property name="y">26</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="control_label_min_time">
+                    <property name="width_request">135</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="xalign">0</property>
+                    <property name="label" translatable="yes">0.00</property>
+                  </object>
+                  <packing>
+                    <property name="x">219</property>
+                    <property name="y">5</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="control_label_max_time">
+                    <property name="width_request">135</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="xalign">1</property>
+                    <property name="label" translatable="yes">100.00</property>
+                    <property name="justify">right</property>
+                  </object>
+                  <packing>
+                    <property name="x">500</property>
+                    <property name="y">5</property>
                   </packing>
                 </child>
               </object>

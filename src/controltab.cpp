@@ -21,12 +21,14 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Gl
   
   reqSub = node->Subscribe("~/request", &ControlTab::OnReqMsg, this);
   resSub = node->Subscribe("~/response", &ControlTab::OnResMsg, this);
+  timeSub = node->Subscribe("~/SceneReconstruction/GUI/Time", &ControlTab::OnTimeMsg, this);
   worldPub = node->Advertise<gazebo::msgs::WorldControl>("~/world_control");
 
   // rng_time setup
   _builder->get_widget("control_scale", rng_time);
   rng_time->signal_button_release_event().connect(sigc::mem_fun(*this,&ControlTab::on_scale_button_event), false);
   rng_time->signal_key_release_event().connect(sigc::mem_fun(*this,&ControlTab::on_scale_key_event), false);
+  _builder->get_widget("control_label_max_time", lbl_max_time);
 
   // btn_stop
   _builder->get_widget("control_toolbutton_stop", btn_stop);
@@ -63,6 +65,14 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Gl
 }
 
 ControlTab::~ControlTab() {
+}
+
+void ControlTab::OnTimeMsg(ConstDoublePtr& _msg) {
+  double rnd = _msg->data()/1000.0;
+  rnd = ((int)(rnd * 100 + 0.5))/100.0;
+  rng_time->set_range(0.0, rnd);
+  lbl_max_time->set_text(Converter::to_ustring(rnd));
+  logger->log("control", "Range for scale set to (0.0 , " + Converter::to_ustring(rnd) + ")");
 }
 
 void ControlTab::OnReqMsg(ConstRequestPtr& _msg) {
