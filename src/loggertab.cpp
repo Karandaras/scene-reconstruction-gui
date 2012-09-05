@@ -3,8 +3,8 @@
 using namespace SceneReconstruction;
 
 /** @class LoggerTab "loggertab.h"
- * Tab for the GUI that is used for logging.
- * @author Bastian Klingen
+ *  Tab for the GUI that is used for logging.
+ *  @author Bastian Klingen
  */
 
 LoggerTab::LoggerTab(Glib::RefPtr<Gtk::Builder>& builder) : SceneTab::SceneTab(builder) {
@@ -159,7 +159,34 @@ void LoggerTab::msglog(std::string dir, std::string topic, ConstResponsePtr &_ms
     }
   }
 
-  logmsg(dir, "Reponse", topic, msg.str());
+  logmsg(dir, "Response", topic, msg.str());
+}
+
+void LoggerTab::msglog(std::string dir, std::string topic, ConstDoublePtr &_msg)
+{
+  std::ostringstream msg;
+  msg << "Data: ";
+  msg << _msg->data();
+
+  logmsg(dir, "Double", topic, msg.str());
+}
+
+void LoggerTab::msglog(std::string dir, std::string topic, ConstWorldStatisticsPtr &_msg)
+{
+  std::ostringstream msg;
+  msg << "Simulation Time: ";
+  msg << _msg->sim_time().sec() << "." << _msg->sim_time().nsec();
+  msg << ", Pause Time: ";
+  msg << _msg->pause_time().sec() << "." << _msg->pause_time().nsec();
+  msg << ", Real Time: ";
+  msg << _msg->real_time().sec() << "." << _msg->real_time().nsec();
+  msg << ", Paused: ";
+  if(_msg->has_model_count()) {
+    msg << ", Model Count: ";
+    msg << _msg->model_count();
+  }
+
+  logmsg(dir, "WorldStatistics", topic, msg.str());
 }
 
 void LoggerTab::set_enabled(bool enabled) {

@@ -4,8 +4,8 @@
 using namespace SceneReconstruction;
 
 /** @class ModelTab "modeltab.h"
- * Tab for the GUI that displays additional data about the selected object.
- * @author Bastian Klingen
+ *  Tab for the GUI that displays additional data about the selected object.
+ *  @author Bastian Klingen
  */
 
 ModelTab::ModelTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Glib::RefPtr<Gtk::Builder>& builder) : SceneTab::SceneTab(builder)

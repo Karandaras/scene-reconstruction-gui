@@ -6,8 +6,8 @@
 using namespace SceneReconstruction;
 
 /** @class DIKWTab "dikwtab.h"
- * Tab for the GUI that builds and represents the DIKW Graph.
- * @author Bastian Klingen
+ *  Tab for the GUI that builds and represents the DIKW Graph.
+ *  @author Bastian Klingen
  */
 
 DIKWTab::DIKWTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Glib::RefPtr<Gtk::Builder>& builder)

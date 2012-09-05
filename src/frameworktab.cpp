@@ -6,8 +6,8 @@
 using namespace SceneReconstruction;
 
 /** @class FrameworkTab "frameworktab.h"
- * Tab for the GUI that allows the user to receive data from the database of the framework
- * @author Bastian Klingen
+ *  Tab for the GUI that allows the user to receive data from the database of the framework
+ *  @author Bastian Klingen
  */
 
 FrameworkTab::FrameworkTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Glib::RefPtr<Gtk::Builder>& builder)

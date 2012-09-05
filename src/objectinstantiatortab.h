@@ -14,16 +14,16 @@
 
 namespace SceneReconstruction {
   /** @class ObjectInstantiatorTab "objectinstantiatortab.h"
-   * Tab for the GUI that displays data of the ObjectInstantiator Gazebo Plugin
-   * @author Bastian Klingen
+   *  Tab for the GUI that displays data of the ObjectInstantiator Gazebo Plugin
+   *  @author Bastian Klingen
    */
   class ObjectInstantiatorTab : public SceneTab
   {
     public:
       /** Constructor
-       * @param _node Gazebo Node Pointer to use
-       * @param _logger LoggerTab to use
-       * @param builder the ui_builder to access the needed parts
+       *  @param _node Gazebo Node Pointer to use
+       *  @param _logger LoggerTab to use
+       *  @param builder the ui_builder to access the needed parts
        */
       ObjectInstantiatorTab(gazebo::transport::NodePtr&, LoggerTab*, Glib::RefPtr<Gtk::Builder>&);
       /** Destructor */
@@ -74,7 +74,7 @@ namespace SceneReconstruction {
 
     public:
       /** sets the sensitivity of the tab
-       * @param enabled true to enable, false to disable the tab
+       *  @param enabled true to enable, false to disable the tab
        */
       void set_enabled(bool);
   };

@@ -17,16 +17,16 @@
 
 namespace SceneReconstruction {
   /** @class FrameworkTab "frameworktab.h"
- * Tab for the GUI that allows the user to receive data from the database of the framework
-   * @author Bastian Klingen
+   *  Tab for the GUI that allows the user to receive data from the database of the framework
+   *  @author Bastian Klingen
    */
   class FrameworkTab : public SceneTab
   {
     public:
       /** Constructor
-       * @param _node Gazebo Node Pointer to use
-       * @param _logger LoggerTab to use
-       * @param builder the ui_builder to access the needed parts
+       *  @param _node Gazebo Node Pointer to use
+       *  @param _logger LoggerTab to use
+       *  @param builder the ui_builder to access the needed parts
        */
       FrameworkTab(gazebo::transport::NodePtr&, LoggerTab*, Glib::RefPtr<Gtk::Builder>&);
       /** Destructor */
@@ -63,7 +63,7 @@ namespace SceneReconstruction {
 
     public:
       /** sets the sensitivity of the tab
-       * @param enabled true to enable, false to disable the tab
+       *  @param enabled true to enable, false to disable the tab
        */
       void set_enabled(bool);
  };

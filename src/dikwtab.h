@@ -17,27 +17,38 @@
 
 namespace SceneReconstruction {
 /** @class DIKWTab "dikwtab.h"
- * Tab for the GUI that builds and represents the DIKW Graph.
- * @author Bastian Klingen
+ *  Tab for the GUI that builds and represents the DIKW Graph.
+ *  @author Bastian Klingen
  */
   class DIKWTab : public SceneTab
   {
     public:
       /** Constructor
-       * @param _node Gazebo Node Pointer to use
-       * @param _logger LoggerTab to use
-       * @param builder the ui_builder to access the needed parts
+       *  @param _node Gazebo Node Pointer to use
+       *  @param _logger LoggerTab to use
+       *  @param builder the ui_builder to access the needed parts
        */
       DIKWTab(gazebo::transport::NodePtr&, LoggerTab*, Glib::RefPtr<Gtk::Builder>&);
       /** Destructor */
       ~DIKWTab();
 
     private:
+      /** simple structure to contruct and store the DIK Graph
+       */
       typedef struct {
+        /** simple structure for the edges of the DIK Graph
+         */
         struct DIKEdge {
+          /** node from which the edge comes */
           std::string from;
+          /** node to which the edge points */
           std::string to;
+          /** label of the edge */
           std::string label;
+          /** equality operator
+           *  @param rhs an edge to compare with
+           *  @return true if edges are equal
+           */
           bool operator==(const DIKEdge& rhs) const
           {
               if(from != rhs.from)
@@ -49,6 +60,10 @@ namespace SceneReconstruction {
               else
                 return true;
           }
+          /** equality operator
+           *  @param rhs string representation of an edge to compare with
+           *  @return true if edges are equal
+           */
           bool operator==(const std::string& rhs) const
           {
               if(toString() != rhs)
@@ -56,17 +71,31 @@ namespace SceneReconstruction {
               else
                 return true;
           }
+          /** get the string representation of the edge
+           *  @return string representation of this edge
+           */
           std::string toString() const
           {
             return "\""+from+"\" --"+(label!=""?"\""+label+"\"":"")+"--> \""+to+"\"";
           }
         };
 
+        /** simple structure for the nodes of the DIK Graph
+         */
         struct DIKNode {
+          /** name of the node */
           std::string node;
+          /** list of pointers to parent nodes */
           std::list<DIKNode*> parents;
+          /** list of pointers to child nodes */
           std::list<DIKNode*> children;
 
+          /** equality operator
+           *  only checks for names since the graph does not allow two
+           *  nodes with equal names
+           *  @param rhs node name
+           *  @return true if names are equal
+           */
           bool operator==(const std::string& rhs) const
           {
               if(node != rhs)
@@ -74,15 +103,23 @@ namespace SceneReconstruction {
               else
                 return true;
           }
+
+          /** get the name of the node
+           *  @return name of the node
+           */
           std::string toString() const
           {
             return node;
           }
         };
 
+        /** list of knowledge nodes */
         std::list<DIKNode>  knowledge_nodes;
+        /** list of information nodes */
         std::list<DIKNode>  information_nodes;
+        /** list of data nodes */
         std::list<DIKNode>  data_nodes;
+        /** list of edges */
         std::list<DIKEdge>  edges;
       } DIKGraph;
 
@@ -142,7 +179,7 @@ namespace SceneReconstruction {
 
     public:
       /** sets the sensitivity of the tab
-       * @param enabled true to enable, false to disable the tab
+       *  @param enabled true to enable, false to disable the tab
        */
       void set_enabled(bool);
  };

@@ -16,14 +16,14 @@
 
 namespace SceneReconstruction {
   /** @class LoggerTab "loggertab.h"
-   * Tab for the GUI that is used for logging.
-   * @author Bastian Klingen
+   *  Tab for the GUI that is used for logging.
+   *  @author Bastian Klingen
    */
   class LoggerTab : public SceneTab
   {
     public:
       /** Constructor
-       * @param builder the ui_builder to access the needed parts
+       *  @param builder the ui_builder to access the needed parts
        */
       LoggerTab(Glib::RefPtr<Gtk::Builder>&);
       /** Destructor */
@@ -45,40 +45,54 @@ namespace SceneReconstruction {
 
     public:
       /** logs events to the treeview with timestamp and additional text
-       * @param event short eventname
-       * @param text longer description, can optionally contain embedded format tags (see sprintf)
+       *  @param event short eventname
+       *  @param text longer description, can optionally contain embedded format tags (see sprintf)
        */
       void log(std::string, std::string, ...);
 
-      /** logs msgs to the treeview with timestamp and additional text
-       * @param dir direction of the message
-       * @param topic topic of the message
-       * @param _msg the msg to log
+      /** logs msgs to the treeview with timestamp and topic
+       *  @param dir direction of the message
+       *  @param topic topic of the message
+       *  @param _msg the msg to log
        */
       void msglog(std::string, std::string, ConstResponsePtr&);
 
-      /** logs msgs to the treeview with timestamp and additional text
-       * @param dir direction of the message
-       * @param topic topic of the message
-       * @param _msg the msg to log
+      /** logs msgs to the treeview with timestamp and topic
+       *  @param dir direction of the message
+       *  @param topic topic of the message
+       *  @param _msg the msg to log
        */
       void msglog(std::string, std::string, gazebo::msgs::WorldControl&);
 
-      /** logs msgs to the treeview with timestamp and additional text
-       * @param dir direction of the message
-       * @param topic topic of the message
-       * @param _msg the msg to log
+      /** logs msgs to the treeview with timestamp and topic
+       *  @param dir direction of the message
+       *  @param topic topic of the message
+       *  @param _msg the msg to log
        */
       void msglog(std::string, std::string, ConstRequestPtr&);
 
+      /** logs msgs to the treeview with timestamp and topic
+       *  @param dir direction of the message
+       *  @param topic topic of the message
+       *  @param _msg the msg to log
+       */
+      void msglog(std::string, std::string, ConstDoublePtr&);
+
+      /** logs msgs to the treeview with timestamp and topic
+       *  @param dir direction of the message
+       *  @param topic topic of the message
+       *  @param _msg the msg to log
+       */
+      void msglog(std::string, std::string, ConstWorldStatisticsPtr&);
+
       /** sets the sensitivity of the tab
-       * @param enabled true to enable, false to disable the tab
+       *  @param enabled true to enable, false to disable the tab
        */
       void set_enabled(bool);
 
-      /** switches the image for the given component to represent that the component has responded
-       *  to the availability request
-       * @param comp name of the component
+      /** switches the image for the given component to represent that the
+       *  component has respondedto the availability request
+       *  @param comp name of the component
        */
       void show_available(std::string);
  };

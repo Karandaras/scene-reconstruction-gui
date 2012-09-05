@@ -14,8 +14,8 @@
 
 namespace SceneReconstruction {
   /** @class SceneGUI "scenegui.h"
-   * Main Class that creates the GUI
-   * @author Bastian Klingen
+   *  Main Class that creates the GUI
+   *  @author Bastian Klingen
    */
   class SceneGUI
   {

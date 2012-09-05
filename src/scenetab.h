@@ -4,13 +4,13 @@
 
 namespace SceneReconstruction {
   /** @class SceneTab "scenetab.h"
-   * Base tab class that needs to be extended
-   * @author Bastian Klingen
+   *  Base tab class that needs to be extended
+   *  @author Bastian Klingen
    */
   class SceneTab {
     public:
       /** Constructor
-       * @param builder the ui_builder to access the needed parts
+       *  @param builder the ui_builder to access the needed parts
        */
       SceneTab(Glib::RefPtr<Gtk::Builder>&);
       /** Destructor */
@@ -21,7 +21,7 @@ namespace SceneReconstruction {
       Glib::RefPtr<Gtk::Builder>     _builder;
 
       /** sets the sensitivity of the tab
-       * @param enabled true to enable, false to disable the tab
+       *  @param enabled true to enable, false to disable the tab
        */
       virtual void set_enabled(bool enabled) = 0;
   };

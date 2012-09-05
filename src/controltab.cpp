@@ -6,10 +6,10 @@
 using namespace SceneReconstruction;
 
 /** @class ControlTab "controltab.h"
- * Tab for the GUI that allows the user to control the scene recontruction
- * by jumping to specific times or (un)pausing. It also displays coordinates
- * of the currently selected object.
- * @author Bastian Klingen
+ *  Tab for the GUI that allows the user to control the scene recontruction
+ *  by jumping to specific times or (un)pausing. It also displays coordinates
+ *  of the currently selected object.
+ *  @author Bastian Klingen
  */
 
 ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Glib::RefPtr<Gtk::Builder>& builder)
@@ -18,17 +18,21 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Gl
   node = _node;
   logger = _logger;
   old_value = 0.0;
+  time_offset = 0.0;
   
   reqSub = node->Subscribe("~/request", &ControlTab::OnReqMsg, this);
   resSub = node->Subscribe("~/response", &ControlTab::OnResMsg, this);
   timeSub = node->Subscribe("~/SceneReconstruction/GUI/Time", &ControlTab::OnTimeMsg, this);
+  worldSub = node->Subscribe("~/world_stats", &ControlTab::OnWorldStatsMsg, this);
   worldPub = node->Advertise<gazebo::msgs::WorldControl>("~/world_control");
 
   // rng_time setup
   _builder->get_widget("control_scale", rng_time);
   rng_time->signal_button_release_event().connect(sigc::mem_fun(*this,&ControlTab::on_scale_button_event), false);
   rng_time->signal_key_release_event().connect(sigc::mem_fun(*this,&ControlTab::on_scale_key_event), false);
+  rng_time->signal_format_value().connect(sigc::mem_fun(*this,&ControlTab::on_scale_format_value), false);
   _builder->get_widget("control_label_max_time", lbl_max_time);
+  _builder->get_widget("control_label_min_time", lbl_min_time);
 
   // btn_stop
   _builder->get_widget("control_toolbutton_stop", btn_stop);
@@ -68,11 +72,24 @@ ControlTab::~ControlTab() {
 }
 
 void ControlTab::OnTimeMsg(ConstDoublePtr& _msg) {
-  double rnd = _msg->data()/1000.0;
-  rnd = ((int)(rnd * 100 + 0.5))/100.0;
-  rng_time->set_range(0.0, rnd);
-  lbl_max_time->set_text(Converter::to_ustring(rnd));
-  logger->log("control", "Range for scale set to (0.0 , " + Converter::to_ustring(rnd) + ")");
+  rng_time->set_range(0.0, _msg->data());
+  Glib::ustring time = Converter::to_ustring_time(_msg->data());
+  lbl_max_time->set_text(time);
+  size_t p;
+  while((p = time.find_first_not_of("0:")) != Glib::ustring::npos) {
+    time = time.replace(p,1,"0");
+  }
+    
+  lbl_min_time->set_text(time);
+  logger->log("control", "Range for scale set to (0.0 , " + Converter::to_ustring(_msg->data()) + ")");
+}
+
+void ControlTab::OnWorldStatsMsg(ConstWorldStatisticsPtr& _msg) {
+  double val;
+  val  = _msg->sim_time().sec()*1000;
+  val += _msg->sim_time().nsec()/1000;
+  val += time_offset;
+  rng_time->set_value(val);
 }
 
 void ControlTab::OnReqMsg(ConstRequestPtr& _msg) {
@@ -159,15 +176,29 @@ void ControlTab::on_button_pause_clicked() {
 bool ControlTab::on_scale_button_event(GdkEventButton* b) {
   if(rng_time->get_value() != old_value) {
     logger->log("control", "Time changed from %.2f to %.2f using button %d of the mouse on rng_time", old_value, rng_time->get_value(), b->button);
+    gazebo::msgs::WorldControl start;
+    start.set_reset_time(true);
+    logger->msglog(">>", "~/world_control", start);
+    worldPub->Publish(start);
+    time_offset = rng_time->get_value();
     old_value = rng_time->get_value();
   }
 
   return false;
 }
 
+Glib::ustring ControlTab::on_scale_format_value(double value) {
+  return Converter::to_ustring_time(value);
+}
+
 bool ControlTab::on_scale_key_event(GdkEventKey* k) {
   if((k->keyval == GDK_KEY_Left || k->keyval == GDK_KEY_Right || k->keyval == GDK_KEY_Up || k->keyval == GDK_KEY_Down || k->keyval == GDK_KEY_KP_Left || k->keyval == GDK_KEY_KP_Right || k->keyval == GDK_KEY_KP_Up || k->keyval == GDK_KEY_KP_Down || k->keyval == GDK_KEY_Home || k->keyval == GDK_KEY_End || k->keyval == GDK_KEY_Page_Up || k->keyval == GDK_KEY_Page_Down) && old_value != rng_time->get_value()) {
     logger->log("control", "Time changed from %.2f to %.2f using key %s of the keyboard on rng_time", old_value, rng_time->get_value(), gdk_keyval_name(k->keyval));
+    gazebo::msgs::WorldControl start;
+    start.set_reset_time(true);
+    logger->msglog(">>", "~/world_control", start);
+    worldPub->Publish(start);
+    time_offset = rng_time->get_value();
     old_value = rng_time->get_value();
   }
 

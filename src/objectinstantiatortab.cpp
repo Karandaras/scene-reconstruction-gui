@@ -4,8 +4,8 @@
 using namespace SceneReconstruction;
 
 /** @class ObjectInstantiatorTab "robotcontrollertab.h"
- * Tab for the GUI that displays data of the ObjectInstantiator Gazebo Plugin
- * @author Bastian Klingen
+ *  Tab for the GUI that displays data of the ObjectInstantiator Gazebo Plugin
+ *  @author Bastian Klingen
  */
 
 ObjectInstantiatorTab::ObjectInstantiatorTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Glib::RefPtr<Gtk::Builder>& builder)

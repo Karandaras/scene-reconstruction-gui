@@ -4,8 +4,8 @@
 using namespace SceneReconstruction;
 
 /** @class RobotControllerTab "robotcontrollertab.h"
- * Tab for the GUI that displays data of the RobotController Gazebo Plugin
- * @author Bastian Klingen
+ *  Tab for the GUI that displays data of the RobotController Gazebo Plugin
+ *  @author Bastian Klingen
  */
 
 RobotControllerTab::RobotControllerTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Glib::RefPtr<Gtk::Builder>& builder)

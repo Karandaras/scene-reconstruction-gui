@@ -6,15 +6,15 @@
 namespace SceneReconstruction {
   template <class charT = char, class traits = std::char_traits<charT> >
   /** @class TextBufferStreamBuffer "loggingtools.h"
-   * StreamBuffer to log from std::cout to a Gtk::TextBuffer
-   * @author Bastian Klingen
+   *  StreamBuffer to log from std::cout to a Gtk::TextBuffer
+   *  @author Bastian Klingen
    */
 
   class TextBufferStreamBuffer : public std::basic_streambuf<charT, traits>
   {
     public:
       /** Constructor
-       * @param buffer The TextBuffer object of the TextView
+       *  @param buffer The TextBuffer object of the TextView
        */
       TextBufferStreamBuffer(Glib::RefPtr<Gtk::TextBuffer> buffer)
       {
@@ -89,10 +89,10 @@ namespace SceneReconstruction {
       }
     protected:
       /** gets called by the << operator
-        * @param *text pointer to first char of the input to write
-        * @param length length of input
-        * @return std::streamsize number of chars written
-        */
+       *  @param *text pointer to first char of the input to write
+       *  @param length length of input
+       *  @return std::streamsize number of chars written
+       */
       std::streamsize xsputn(const charT * text, std::streamsize length)
       {
         std::ostringstream tmp;
