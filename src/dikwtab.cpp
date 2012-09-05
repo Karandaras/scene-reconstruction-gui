@@ -519,23 +519,19 @@ void DIKWTab::on_nodes_remove_clicked() {
       }
     }
 
-    // remove edges including the removed node
+    // remove edges that are no longer valid
     std::list<DIKGraph::DIKEdge>::iterator edgeiter;
-    edgeiter = graph.edges.begin();
-    while(edgeiter != graph.edges.end()) {
-      if(edgeiter->from == node || edgeiter->to == node)
-        graph.edges.erase(edgeiter);
-      else
-        edgeiter++;
-    }
-    
-    // update edge treeview
+    std::list<DIKGraph::DIKEdge> newedges;
     edg_store->clear();
     Gtk::TreeModel::Row row;
     for(edgeiter = graph.edges.begin(); edgeiter != graph.edges.end(); edgeiter++) {
-      row = *(edg_store->append());
-      row.set_value(0, edgeiter->toString());
+      if(!(edgeiter->from == node || edgeiter->to == node)) {
+        row = *(edg_store->append());
+        row.set_value(0, edgeiter->toString());
+        newedges.push_back(*edgeiter);
+      }
     }
+    graph.edges = newedges;
   }
 
   create_graphviz_dot("");
@@ -546,7 +542,7 @@ void DIKWTab::on_nodes_mark_clicked() {
     Glib::ustring node;
     trv_nodes->get_selection()->get_selected()->get_value(0, node);
     create_graphviz_dot(node);
-    logger->log("dikw", "marked "+node);
+    logger->log("dikw", "marked node: "+node);
   }
 }
 
@@ -578,7 +574,7 @@ void DIKWTab::on_edges_mark_clicked() {
     Glib::ustring edge;
     trv_edges->get_selection()->get_selected()->get_value(0, edge);    
     create_graphviz_dot(edge.substr(1,edge.find("\"",1)-1));
-    logger->log("dikw", "marked "+edge.substr(1,edge.find("\"",1)-1)+" from edge: "+edge);
+    logger->log("dikw", "marked node: "+edge.substr(1,edge.find("\"",1)-1)+" from edge: "+edge);
   }
 }
 

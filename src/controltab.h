@@ -62,7 +62,8 @@ namespace SceneReconstruction {
                                                       reqSub,
                                                       timeSub,
                                                       worldSub;
-      gazebo::transport::PublisherPtr                 worldPub;
+      gazebo::transport::PublisherPtr                 worldPub,
+                                                      controlPub;
 
     private:
       void OnTimeMsg(ConstDoublePtr&);

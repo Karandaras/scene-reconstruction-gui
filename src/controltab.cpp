@@ -24,6 +24,7 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Gl
   resSub = node->Subscribe("~/response", &ControlTab::OnResMsg, this);
   timeSub = node->Subscribe("~/SceneReconstruction/GUI/Time", &ControlTab::OnTimeMsg, this);
   worldSub = node->Subscribe("~/world_stats", &ControlTab::OnWorldStatsMsg, this);
+  controlPub = node->Advertise<gazebo::msgs::SceneFrameworkControl>("~/SceneReconstruction/Framework/Control");
   worldPub = node->Advertise<gazebo::msgs::WorldControl>("~/world_control");
 
   // rng_time setup
@@ -153,6 +154,12 @@ void ControlTab::on_button_stop_clicked() {
   start.set_reset_world(true);
   logger->msglog(">>", "~/world_control", start);
   worldPub->Publish(start);
+
+  gazebo::msgs::SceneFrameworkControl control;
+  control.set_pause(true);
+  control.set_change_offset(true);
+  control.set_offset(0.0);
+  controlPub->Publish(control);
 }
 
 void ControlTab::on_button_play_clicked() {
@@ -162,6 +169,10 @@ void ControlTab::on_button_play_clicked() {
   start.set_pause(false);
   logger->msglog(">>", "~/world_control", start);
   worldPub->Publish(start);
+
+  gazebo::msgs::SceneFrameworkControl control;
+  control.set_pause(false);
+  controlPub->Publish(control);
 }
 
 void ControlTab::on_button_pause_clicked() {
@@ -171,6 +182,10 @@ void ControlTab::on_button_pause_clicked() {
   start.set_pause(true);
   logger->msglog(">>", "~/world_control", start);
   worldPub->Publish(start);
+
+  gazebo::msgs::SceneFrameworkControl control;
+  control.set_pause(true);
+  controlPub->Publish(control);
 }
 
 bool ControlTab::on_scale_button_event(GdkEventButton* b) {
@@ -182,6 +197,11 @@ bool ControlTab::on_scale_button_event(GdkEventButton* b) {
     worldPub->Publish(start);
     time_offset = rng_time->get_value();
     old_value = rng_time->get_value();
+
+    gazebo::msgs::SceneFrameworkControl control;
+    control.set_change_offset(true);
+    control.set_offset(time_offset);
+    controlPub->Publish(control);
   }
 
   return false;
@@ -200,6 +220,11 @@ bool ControlTab::on_scale_key_event(GdkEventKey* k) {
     worldPub->Publish(start);
     time_offset = rng_time->get_value();
     old_value = rng_time->get_value();
+
+    gazebo::msgs::SceneFrameworkControl control;
+    control.set_change_offset(true);
+    control.set_offset(time_offset);
+    controlPub->Publish(control);
   }
 
   return false;
