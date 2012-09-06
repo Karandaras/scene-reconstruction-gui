@@ -189,6 +189,88 @@ void LoggerTab::msglog(std::string dir, std::string topic, ConstWorldStatisticsP
   logmsg(dir, "WorldStatistics", topic, msg.str());
 }
 
+void LoggerTab::msglog(std::string dir, std::string topic, gazebo::msgs::SceneRobotController &_msg)
+{
+  std::ostringstream msg;
+
+  int sn, rn, o, sa, ra;
+  sn = _msg.simulator_name_size();
+  rn = _msg.robot_name_size();
+  o  = _msg.offset_size();
+  sa = _msg.simulator_angle_size();
+  ra = _msg.robot_angle_size();
+
+  msg << "Position (X: ";
+  if(_msg.has_pos_x()) {
+    msg << _msg.pos_x();
+  }  
+  else {
+    msg << "0.0";
+  }
+
+  msg << ", Y: ";
+  if(_msg.has_pos_y()) {
+    msg << _msg.pos_y();
+  }
+  else {
+    msg << "0.0";
+  }
+
+  msg << ", Z: ";
+  if(_msg.has_pos_z()) {
+    msg << _msg.pos_z();
+  }
+  else {
+    msg << "0.0";
+  }
+
+  msg << "), Rotation (W: ";
+  if (_msg.has_rot_w()) {
+    msg << _msg.rot_w();
+  }
+  else {
+    msg << "0.0";
+  }
+
+  msg << ", X: ";
+  if (_msg.has_rot_x()) {
+    msg << _msg.rot_x();
+  }
+  else {
+    msg << "0.0";
+  }
+
+  msg << ", Y: ";
+  if (_msg.has_rot_y()) {
+    msg << _msg.rot_y();
+  }
+  else {
+    msg << "0.0";
+  }
+
+  msg << ", Z: ";
+  if (_msg.has_rot_z()) {
+    msg << _msg.rot_z();
+  }
+  else {
+    msg << "0.0";
+  }
+  msg << ")";
+
+  if(sn == rn && rn == o && o == sa && sa == ra && ra == sn) {
+    for(int i=0; i<sn; i++) {
+      msg << ", Joint(";
+      msg << _msg.simulator_name(i) << ", ";
+      msg << _msg.robot_name(i) << ", ";
+      msg << _msg.offset(i) << ", ";
+      msg << _msg.simulator_angle(i) << ", ";
+      msg << _msg.robot_angle(i) << ")";
+    }
+  }
+
+  logmsg(dir, "SceneRobotController", topic, msg.str());
+}
+
 void LoggerTab::set_enabled(bool enabled) {
   Gtk::Widget* tab;
   _builder->get_widget("logger_tab", tab);

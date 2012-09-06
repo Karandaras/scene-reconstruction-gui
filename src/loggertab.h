@@ -69,6 +69,13 @@ namespace SceneReconstruction {
        *  @param topic topic of the message
        *  @param _msg the msg to log
        */
+      void msglog(std::string, std::string, gazebo::msgs::SceneRobotController&);
+
+      /** logs msgs to the treeview with timestamp and topic
+       *  @param dir direction of the message
+       *  @param topic topic of the message
+       *  @param _msg the msg to log
+       */
       void msglog(std::string, std::string, ConstRequestPtr&);
 
       /** logs msgs to the treeview with timestamp and topic

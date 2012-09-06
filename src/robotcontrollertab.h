@@ -47,7 +47,8 @@ namespace SceneReconstruction {
 
       // subscriber and publisher
       gazebo::transport::SubscriberPtr         sceneResSub;
-      gazebo::transport::PublisherPtr          sceneReqPub;
+      gazebo::transport::PublisherPtr          sceneReqPub,
+                                               setupPub;
       boost::shared_ptr<gazebo::msgs::Request> robReq;
  
     private:

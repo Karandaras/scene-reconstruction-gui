@@ -15,6 +15,7 @@ RobotControllerTab::RobotControllerTab(gazebo::transport::NodePtr& _node, Logger
   logger = _logger;
 
   sceneReqPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/RobotController/Request");
+  setupPub = node->Advertise<gazebo::msgs::SceneRobotController>("~/SceneReconstruction/RobotController/Setup");
   sceneResSub = node->Subscribe("~/SceneReconstruction/RobotController/Response", &RobotControllerTab::OnResponseMsg, this);
 
   _builder->get_widget("robotcontroller_treeview", trv_robot);
@@ -84,7 +85,7 @@ void RobotControllerTab::OnResponseMsg(ConstResponsePtr& _msg) {
   	      ent_posz->set_text(Converter::to_ustring(src.pos_z()));
 	      }
         else {
-  	      ent_posz->set_text("");
+  	      ent_posz->set_text("0.0");
         }
       }
 
@@ -95,10 +96,10 @@ void RobotControllerTab::OnResponseMsg(ConstResponsePtr& _msg) {
 	      ent_rotz->set_text(Converter::to_ustring(src.rot_z()));
       }
       else {
-	      ent_rotw->set_text("");
-	      ent_rotx->set_text("");
-	      ent_roty->set_text("");
-	      ent_rotz->set_text("");
+	      ent_rotw->set_text("0.0");
+	      ent_rotx->set_text("0.0");
+	      ent_roty->set_text("0.0");
+	      ent_rotz->set_text("0.0");
       }
 
       if(sn == rn && rn == o && o == sa && sa == ra && ra == sn) {
@@ -121,14 +122,66 @@ void RobotControllerTab::OnResponseMsg(ConstResponsePtr& _msg) {
 }
 
 void RobotControllerTab::on_button_send_clicked() {
-  logger->log("robot controller", "SEND");
+  logger->log("robot controller", "sending data to the robotcontrollerplugin");
+  gazebo::msgs::SceneRobotController src;
+  Gtk::TreeModel::Children rows = rob_store->children();
+  for(Gtk::TreeModel::Children::iterator it = rows.begin(); it != rows.end(); it++) {
+    Gtk::TreeModel::Row row = *it;
+
+    Glib::ustring simulator_name;
+    row.get_value(0, simulator_name);
+    src.add_simulator_name(simulator_name);
+
+    Glib::ustring robot_name;
+    row.get_value(1, robot_name);
+    src.add_robot_name(robot_name);
+
+    double offset;
+    row.get_value(2, offset);
+    src.add_offset(offset);
+
+    double simulator_angle;
+    row.get_value(3, simulator_angle);
+    src.add_simulator_angle(simulator_angle);
+
+    double robot_angle;
+    row.get_value(4, robot_angle);
+    src.add_robot_angle(robot_angle);
+  }
+
+  double pos_x = 0.0;
+  double pos_y = 0.0;
+  double pos_z = 0.0;
+  double rot_w = 0.0;
+  double rot_x = 0.0;
+  double rot_y = 0.0;
+  double rot_z = 0.0;
+
+  pos_x = strtod(ent_posx->get_text().c_str(), NULL);
+  pos_y = strtod(ent_posy->get_text().c_str(), NULL);
+  pos_z = strtod(ent_posz->get_text().c_str(), NULL);
+  rot_w = strtod(ent_rotw->get_text().c_str(), NULL);
+  rot_x = strtod(ent_rotx->get_text().c_str(), NULL);
+  rot_y = strtod(ent_roty->get_text().c_str(), NULL);
+  rot_z = strtod(ent_rotz->get_text().c_str(), NULL);
+
+  src.set_pos_x(pos_x);
+  src.set_pos_y(pos_y);
+  src.set_pos_z(pos_z);
+  src.set_rot_w(rot_w);
+  src.set_rot_x(rot_x);
+  src.set_rot_y(rot_y);
+  src.set_rot_z(rot_z);
+
+  setupPub->Publish(src);
+  
+  logger->msglog(">>", "~/SceneReconstruction/RobotController/Setup", src);
 }
 
 void RobotControllerTab::on_button_reload_clicked() {
-  logger->log("robot controller", "RELOAD");
+  logger->log("robot controller", "requesting info from RobotControllerPlugin");
   robReq.reset(gazebo::msgs::CreateRequest("controller_info"));
   sceneReqPub->Publish(*(robReq.get()));
-  logger->log("robot controller", "requesting info from RobotControllerPlugin");
   logger->msglog(">>", "~/SceneReconstruction/RobotController/Request", robReq);
 }
 
