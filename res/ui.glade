@@ -142,14 +142,6 @@
       <column type="gchararray"/>
     </columns>
   </object>
-  <object class="GtkTreeStore" id="objectinstantiator_treestore_objectdata">
-    <columns>
-      <!-- column-name description -->
-      <column type="gchararray"/>
-      <!-- column-name value -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
   <object class="GtkWindow" id="objectinstantiator_objectdata_window">
     <property name="width_request">800</property>
     <property name="height_request">600</property>
@@ -210,6 +202,14 @@
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkTreeStore" id="objectinstantiator_treestore_objectdata">
+    <columns>
+      <!-- column-name description -->
+      <column type="gchararray"/>
+      <!-- column-name value -->
+      <column type="gchararray"/>
+    </columns>
   </object>
   <object class="GtkListStore" id="robotcontroller_liststore">
     <columns>
@@ -401,7 +401,7 @@
                     <property name="search_column">0</property>
                     <property name="enable_tree_lines">True</property>
                     <child internal-child="selection">
-                      <object class="GtkTreeSelection" id="treeview-selection1"/>
+                      <object class="GtkTreeSelection" id="control_treeview_selection"/>
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="control_treeview_column_description">
@@ -857,7 +857,7 @@
                     <property name="search_column">0</property>
                     <property name="enable_grid_lines">both</property>
                     <child internal-child="selection">
-                      <object class="GtkTreeSelection" id="treeview-selection12"/>
+                      <object class="GtkTreeSelection" id="robotcontroller_treeview_selection"/>
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="robotcontroller_treeview_column_simulatorname">
@@ -977,7 +977,7 @@
                         <property name="headers_clickable">False</property>
                         <property name="search_column">0</property>
                         <child internal-child="selection">
-                          <object class="GtkTreeSelection" id="treeview-selection"/>
+                          <object class="GtkTreeSelection" id="objectinstantiator_treeview_spawnedobjects_selection"/>
                         </child>
                         <child>
                           <object class="GtkTreeViewColumn" id="objectinstantiator_treeview_column_spawnedobjects">
@@ -1132,7 +1132,7 @@
                         <property name="enable_grid_lines">horizontal</property>
                         <property name="enable_tree_lines">True</property>
                         <child internal-child="selection">
-                          <object class="GtkTreeSelection" id="treeview-selection9"/>
+                          <object class="GtkTreeSelection" id="objectinstantiator_treeview_objectdata_selection"/>
                         </child>
                         <child>
                           <object class="GtkTreeViewColumn" id="objectinstantiator_treeview_column_objectdata_description">
@@ -1192,7 +1192,7 @@
                         <property name="headers_clickable">False</property>
                         <property name="search_column">0</property>
                         <child internal-child="selection">
-                          <object class="GtkTreeSelection" id="treeview-selection10"/>
+                          <object class="GtkTreeSelection" id="objectinstantiator_treeview_objectrepository_selection"/>
                         </child>
                         <child>
                           <object class="GtkTreeViewColumn" id="objectinstantiator_treeview_column_objectrepository">
@@ -1589,96 +1589,8 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkBox" id="framework_box_databses">
-                <property name="width_request">150</property>
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkScrolledWindow" id="framework_scrolledwindow_databases">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="shadow_type">in</property>
-                    <child>
-                      <object class="GtkTreeView" id="framework_treeview_databases">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="model">framework_liststore_databases</property>
-                        <child internal-child="selection">
-                          <object class="GtkTreeSelection" id="treeview-selection11"/>
-                        </child>
-                        <child>
-                          <object class="GtkTreeViewColumn" id="framework_treeviewcolumn_databases">
-                            <property name="title" translatable="yes">Databases</property>
-                            <child>
-                              <object class="GtkCellRendererText" id="framework_cellrenderertext_databases"/>
-                              <attributes>
-                                <attribute name="text">0</attribute>
-                              </attributes>
-                            </child>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkToolbar" id="framework_toolbar_databases">
-                    <property name="height_request">67</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="toolbar_style">both</property>
-                    <property name="icon_size">4</property>
-                    <child>
-                      <object class="GtkToolButton" id="framework_toolbutton_databases_refresh">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
-                        <property name="label" translatable="yes">Refresh</property>
-                        <property name="use_underline">True</property>
-                        <property name="stock_id">gtk-refresh</property>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="homogeneous">True</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkToolButton" id="framework_toolbutton_databases_select">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
-                        <property name="label" translatable="yes">Select</property>
-                        <property name="use_underline">True</property>
-                        <property name="stock_id">gtk-find</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="homogeneous">True</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkBox" id="framework_box_collections">
-                <property name="width_request">150</property>
+                <property name="width_request">200</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
@@ -1692,8 +1604,10 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="model">framework_liststore_collections</property>
+                        <property name="headers_clickable">False</property>
+                        <property name="search_column">0</property>
                         <child internal-child="selection">
-                          <object class="GtkTreeSelection" id="treeview-selection13"/>
+                          <object class="GtkTreeSelection" id="framework_treeview_collections_selection"/>
                         </child>
                         <child>
                           <object class="GtkTreeViewColumn" id="framework_treeviewcolumn_collections">
@@ -1746,7 +1660,7 @@
                         <property name="stock_id">gtk-find</property>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
+                        <property name="expand">True</property>
                         <property name="homogeneous">True</property>
                       </packing>
                     </child>
@@ -1761,7 +1675,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -2096,7 +2010,7 @@
                                 <property name="headers_clickable">False</property>
                                 <property name="search_column">0</property>
                                 <child internal-child="selection">
-                                  <object class="GtkTreeSelection" id="treeview-selection14"/>
+                                  <object class="GtkTreeSelection" id="dikw_treeview_nodes_selection"/>
                                 </child>
                                 <child>
                                   <object class="GtkTreeViewColumn" id="dikw_treeview_column_nodes">
@@ -2186,7 +2100,7 @@
                                 <property name="headers_clickable">False</property>
                                 <property name="search_column">0</property>
                                 <child internal-child="selection">
-                                  <object class="GtkTreeSelection" id="treeview-selection15"/>
+                                  <object class="GtkTreeSelection" id="dikw_treeview_edges_selection"/>
                                 </child>
                                 <child>
                                   <object class="GtkTreeViewColumn" id="dikw_treeview_column_edges">

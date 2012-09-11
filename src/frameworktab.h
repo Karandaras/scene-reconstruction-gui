@@ -36,14 +36,10 @@ namespace SceneReconstruction {
       gazebo::transport::NodePtr    node;
       LoggerTab                    *logger;
 
-      Gtk::ToolButton              *btn_databases_refresh;
-      Gtk::ToolButton              *btn_databases_select;
       Gtk::ToolButton              *btn_collections_refresh;
       Gtk::ToolButton              *btn_collections_select;
       Gtk::SpinButton              *spn_object;
 
-      Gtk::TreeView                *trv_databases;
-      Glib::RefPtr<Gtk::ListStore>  dat_store;
       Gtk::TreeView                *trv_collections;
       Glib::RefPtr<Gtk::ListStore>  col_store;
       Gtk::TextView                *txt_object;
@@ -55,8 +51,6 @@ namespace SceneReconstruction {
 
     private:
       void OnResponseMsg(ConstResponsePtr&);
-      void on_button_databases_refresh_clicked();
-      void on_button_databases_select_clicked();
       void on_button_collections_refresh_clicked();
       void on_button_collections_select_clicked();
       void on_button_object_value_changed();
