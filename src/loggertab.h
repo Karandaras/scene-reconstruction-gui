@@ -85,13 +85,6 @@ namespace SceneReconstruction {
        */
       void msglog(std::string, std::string, ConstDoublePtr&);
 
-      /** logs msgs to the treeview with timestamp and topic
-       *  @param dir direction of the message
-       *  @param topic topic of the message
-       *  @param _msg the msg to log
-       */
-      void msglog(std::string, std::string, ConstWorldStatisticsPtr&);
-
       /** sets the sensitivity of the tab
        *  @param enabled true to enable, false to disable the tab
        */

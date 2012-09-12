@@ -24,6 +24,7 @@ SceneGUI::SceneGUI()
   plugin_availability["ObjectInstantiator"] = true;
   plugin_availability["RobotController"]    = false;
   plugin_availability["Framework"]          = false;
+  plugin_availability["AnalysisToolbox"]    = true;
   missing_plugins                           = 0;
   std::map<std::string, bool>::iterator plugin;
   for(plugin =  plugin_availability.begin(); plugin != plugin_availability.end(); plugin++) {
@@ -97,6 +98,9 @@ void SceneGUI::check_components() {
       avail_requests[plugin->first].reset(gazebo::msgs::CreateRequest("status"));
       availPubs[plugin->first]->Publish(*(avail_requests[plugin->first].get()));
       logger->msglog(">>", "~/SceneReconstruction/GUI/Availability/Request/"+plugin->first, avail_requests[plugin->first]);
+    }
+    else {
+      logger->show_available(plugin->first);
     }
   }
 }

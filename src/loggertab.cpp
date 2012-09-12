@@ -171,24 +171,6 @@ void LoggerTab::msglog(std::string dir, std::string topic, ConstDoublePtr &_msg)
   logmsg(dir, "Double", topic, msg.str());
 }
 
-void LoggerTab::msglog(std::string dir, std::string topic, ConstWorldStatisticsPtr &_msg)
-{
-  std::ostringstream msg;
-  msg << "Simulation Time: ";
-  msg << _msg->sim_time().sec() << "." << _msg->sim_time().nsec();
-  msg << ", Pause Time: ";
-  msg << _msg->pause_time().sec() << "." << _msg->pause_time().nsec();
-  msg << ", Real Time: ";
-  msg << _msg->real_time().sec() << "." << _msg->real_time().nsec();
-  msg << ", Paused: ";
-  if(_msg->has_model_count()) {
-    msg << ", Model Count: ";
-    msg << _msg->model_count();
-  }
-
-  logmsg(dir, "WorldStatistics", topic, msg.str());
-}
-
 void LoggerTab::msglog(std::string dir, std::string topic, gazebo::msgs::SceneRobotController &_msg)
 {
   std::ostringstream msg;

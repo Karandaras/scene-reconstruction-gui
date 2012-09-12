@@ -77,18 +77,18 @@ void ControlTab::OnTimeMsg(ConstDoublePtr& _msg) {
   Glib::ustring time = Converter::to_ustring_time(_msg->data());
   lbl_max_time->set_text(time);
   size_t p;
-  while((p = time.find_first_not_of("0:")) != Glib::ustring::npos) {
+  while((p = time.find_first_not_of("0:.")) != Glib::ustring::npos) {
     time = time.replace(p,1,"0");
   }
     
   lbl_min_time->set_text(time);
-  logger->log("control", "Range for scale set to (0.0 , " + Converter::to_ustring(_msg->data()) + ")");
+  logger->log("control", "Range for scale set to (" + Converter::to_ustring_time(0.0) + " , " + Converter::to_ustring_time(_msg->data()) + ")");
 }
 
 void ControlTab::OnWorldStatsMsg(ConstWorldStatisticsPtr& _msg) {
   double val;
   val  = _msg->sim_time().sec()*1000;
-  val += _msg->sim_time().nsec()/1000;
+  val += _msg->sim_time().nsec()/1000000;
   val += time_offset;
   rng_time->set_value(val);
 }
@@ -147,6 +147,8 @@ void ControlTab::update_coords(gazebo::msgs::Model model) {
 
 void ControlTab::on_button_stop_clicked() {
   logger->log("control", "STOP");
+  time_offset = 0.0;
+  rng_time->set_value(0.0);
 
   gazebo::msgs::WorldControl start;
   start.set_pause(true);
@@ -158,7 +160,7 @@ void ControlTab::on_button_stop_clicked() {
   gazebo::msgs::SceneFrameworkControl control;
   control.set_pause(true);
   control.set_change_offset(true);
-  control.set_offset(0.0);
+  control.set_offset(time_offset);
   controlPub->Publish(control);
 }
 

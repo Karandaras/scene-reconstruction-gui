@@ -79,7 +79,7 @@ namespace SceneReconstruction {
 
         if(sec < 10)
           convert << "0";
-        convert << sec << ":";
+        convert << sec << ".";
 
         if(msec < 100)
           convert << "0";

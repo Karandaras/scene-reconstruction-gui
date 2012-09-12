@@ -1482,7 +1482,7 @@
                   </object>
                   <packing>
                     <property name="x">15</property>
-                    <property name="y">60</property>
+                    <property name="y">90</property>
                   </packing>
                 </child>
                 <child>
@@ -1493,7 +1493,7 @@
                   </object>
                   <packing>
                     <property name="x">15</property>
-                    <property name="y">30</property>
+                    <property name="y">60</property>
                   </packing>
                 </child>
                 <child>
@@ -1516,7 +1516,7 @@
                   </object>
                   <packing>
                     <property name="x">15</property>
-                    <property name="y">90</property>
+                    <property name="y">120</property>
                   </packing>
                 </child>
                 <child>
@@ -1527,7 +1527,7 @@
                   </object>
                   <packing>
                     <property name="x">45</property>
-                    <property name="y">30</property>
+                    <property name="y">60</property>
                   </packing>
                 </child>
                 <child>
@@ -1538,7 +1538,7 @@
                   </object>
                   <packing>
                     <property name="x">45</property>
-                    <property name="y">60</property>
+                    <property name="y">90</property>
                   </packing>
                 </child>
                 <child>
@@ -1549,7 +1549,29 @@
                   </object>
                   <packing>
                     <property name="x">45</property>
-                    <property name="y">90</property>
+                    <property name="y">120</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkImage" id="logger_availability_status_image_analysistoolbox">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="stock">gtk-no</property>
+                  </object>
+                  <packing>
+                    <property name="x">15</property>
+                    <property name="y">30</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="logger_availability_status_label_analysistoolbox">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Gazebo Plugin: Analysis Toolbox</property>
+                  </object>
+                  <packing>
+                    <property name="x">45</property>
+                    <property name="y">30</property>
                   </packing>
                 </child>
               </object>
