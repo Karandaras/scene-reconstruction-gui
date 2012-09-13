@@ -21,7 +21,7 @@ using namespace SceneReconstruction;
 
 SceneGUI::SceneGUI()
 {
-  plugin_availability["ObjectInstantiator"] = true;
+  plugin_availability["ObjectInstantiator"] = false;
   plugin_availability["RobotController"]    = false;
   plugin_availability["Framework"]          = false;
   plugin_availability["AnalysisToolbox"]    = true;
