@@ -79,27 +79,27 @@ void RobotControllerTab::OnResponseMsg(ConstResponsePtr& _msg) {
       ra = src.robot_angle_size();
 
       if(src.has_pos_x() && src.has_pos_y()) {	
-	      ent_posx->set_text(Converter::to_ustring(src.pos_x()));
-	      ent_posy->set_text(Converter::to_ustring(src.pos_y()));
+	      ent_posx->set_text(Converter::to_ustring(src.pos_x(), 3));
+	      ent_posy->set_text(Converter::to_ustring(src.pos_y(), 3));
 	      if(src.has_pos_z()) {
-  	      ent_posz->set_text(Converter::to_ustring(src.pos_z()));
+  	      ent_posz->set_text(Converter::to_ustring(src.pos_z(), 3));
 	      }
         else {
-  	      ent_posz->set_text("0.0");
+  	      ent_posz->set_text(Converter::to_ustring(0.0, 3));
         }
       }
 
       if (src.has_rot_w() && src.has_rot_x() && src.has_rot_y() && src.has_rot_z()) {
-	      ent_rotw->set_text(Converter::to_ustring(src.rot_w()));
-	      ent_rotx->set_text(Converter::to_ustring(src.rot_x()));
-	      ent_roty->set_text(Converter::to_ustring(src.rot_y()));
-	      ent_rotz->set_text(Converter::to_ustring(src.rot_z()));
+	      ent_rotw->set_text(Converter::to_ustring(src.rot_w(), 3));
+	      ent_rotx->set_text(Converter::to_ustring(src.rot_x(), 3));
+	      ent_roty->set_text(Converter::to_ustring(src.rot_y(), 3));
+	      ent_rotz->set_text(Converter::to_ustring(src.rot_z(), 3));
       }
       else {
-	      ent_rotw->set_text("0.0");
-	      ent_rotx->set_text("0.0");
-	      ent_roty->set_text("0.0");
-	      ent_rotz->set_text("0.0");
+	      ent_rotw->set_text(Converter::to_ustring(0.0, 3));
+	      ent_rotx->set_text(Converter::to_ustring(0.0, 3));
+	      ent_roty->set_text(Converter::to_ustring(0.0, 3));
+	      ent_rotz->set_text(Converter::to_ustring(0.0, 3));
       }
 
       if(sn == rn && rn == o && o == sa && sa == ra && ra == sn) {
@@ -157,13 +157,13 @@ void RobotControllerTab::on_button_send_clicked() {
   double rot_y = 0.0;
   double rot_z = 0.0;
 
-  pos_x = strtod(ent_posx->get_text().c_str(), NULL);
-  pos_y = strtod(ent_posy->get_text().c_str(), NULL);
-  pos_z = strtod(ent_posz->get_text().c_str(), NULL);
-  rot_w = strtod(ent_rotw->get_text().c_str(), NULL);
-  rot_x = strtod(ent_rotx->get_text().c_str(), NULL);
-  rot_y = strtod(ent_roty->get_text().c_str(), NULL);
-  rot_z = strtod(ent_rotz->get_text().c_str(), NULL);
+  pos_x = Converter::ustring_to_double(ent_posx->get_text());
+  pos_y = Converter::ustring_to_double(ent_posy->get_text());
+  pos_z = Converter::ustring_to_double(ent_posz->get_text());
+  rot_w = Converter::ustring_to_double(ent_rotw->get_text());
+  rot_x = Converter::ustring_to_double(ent_rotx->get_text());
+  rot_y = Converter::ustring_to_double(ent_roty->get_text());
+  rot_z = Converter::ustring_to_double(ent_rotz->get_text());
 
   src.set_pos_x(pos_x);
   src.set_pos_y(pos_y);
@@ -189,7 +189,7 @@ void RobotControllerTab::on_cell_simangle_edited(const Glib::ustring& path, cons
   logger->log("robot controller", "Simulation Angle changed");  
   Gtk::TreeIter it = rob_store->get_iter(path);
   
-  double simangle =  strtod(new_text.data(), NULL);
+  double simangle =  Converter::ustring_to_double(new_text.data());
   double offset;
   it->get_value(3, offset);
   double robangle = simangle - offset;
@@ -203,7 +203,7 @@ void RobotControllerTab::on_cell_offset_edited(const Glib::ustring& path, const 
   logger->log("robot controller", "Offset changed");
   Gtk::TreeIter it = rob_store->get_iter(path);
 
-  double offset = strtod(new_text.data(), NULL);
+  double offset = Converter::ustring_to_double(new_text.data());
   double robangle;
   it->get_value(4, robangle);
   double simangle = robangle + offset;
@@ -219,7 +219,7 @@ void RobotControllerTab::on_cell_robangle_edited(const Glib::ustring& path, cons
 
   double offset;
   it->get_value(3, offset);
-  double robangle = strtod(new_text.data(), NULL);
+  double robangle = Converter::ustring_to_double(new_text.data());
   double simangle = robangle + offset;
 
   it->set_value(2, simangle);

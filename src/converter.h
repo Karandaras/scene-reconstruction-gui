@@ -49,10 +49,8 @@ namespace SceneReconstruction {
        *  @param in input as double
        *  @return Glib::ustring representation of in
        */
-      static Glib::ustring to_ustring(double in) {
-        std::stringstream convert;
-        convert << in;
-        Glib::ustring ret(convert.str());
+      static Glib::ustring to_ustring(double in, unsigned int precision=6) {
+        Glib::ustring ret = Glib::ustring::format(std::fixed, std::setprecision(precision), in);
         return ret;
       }
 
@@ -307,6 +305,23 @@ namespace SceneReconstruction {
         return out.str();
       }
     
+      static double ustring_to_double(Glib::ustring val, double result=0.0) {
+        char *ret;
+        result = strtod(val.c_str(), &ret);
+        while(*ret != 0) {
+          size_t pos = val.find(*ret);
+          if(*ret == ',')
+            val = val.replace(pos, 1, ".");
+          else if(*ret == '.')
+            val = val.replace(pos, 1, ",");
+          else
+            break;
+
+          result = strtod(val.c_str(), &ret);
+        }
+        return result;
+      }
+
     private:
       static std::string shift(unsigned int count) {
         std::string result = "";
