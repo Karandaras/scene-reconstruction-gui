@@ -101,26 +101,6 @@ void DIKWTab::OnResponseMsg(ConstResponsePtr& _msg) {
       }
     }
   }
-  else if(_msg->request() == "select_database") {
-    logger->log("dikw", "received collections for nodelist");
-
-    gazebo::msgs::String_V src;
-    if(_msg->has_type() && _msg->type() == src.GetTypeName()) {
-      src.ParseFromString(_msg->serialized_data());
-      int n = src.data_size();
-      db_collections.clear();
-      for(int i=0; i<n; i++) {
-        db_collections.push_back(src.data(i));
-      }
-      if(com_type->get_active_text() == "Node") {
-        logger->log("dikw", "updating nodelist");
-        com_right->remove_all();
-        std::list<std::string>::iterator iter;
-        for(iter = db_collections.begin(); iter != db_collections.end(); iter++)
-          com_right->append(*iter);
-      }
-    }
-  }
 }
 
 void DIKWTab::create_graphviz_dot(std::string markupnode) {

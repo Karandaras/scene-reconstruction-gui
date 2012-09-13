@@ -40,7 +40,7 @@ FrameworkTab::~FrameworkTab() {
 }
 
 void FrameworkTab::OnResponseMsg(ConstResponsePtr& _msg) {
-  if (objReq && _msg->id() == objReq->id()) {
+  if ((objReq && _msg->id() == objReq->id()) || (!objReq && _msg->id() == -1)){
     logger->msglog("<<", "~/SceneReconstruction/GUI/MongoDB", _msg);
 
     if(_msg->response() != "success")
