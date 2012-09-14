@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
-  <object class="GtkAdjustment" id="control_adjustment">
-    <property name="upper">100</property>
-    <property name="step_increment">1</property>
-    <property name="page_increment">10</property>
-  </object>
   <object class="GtkTreeStore" id="control_treestore">
     <columns>
       <!-- column-name description -->
@@ -287,13 +282,14 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkToolButton" id="control_toolbutton_pause">
+                      <object class="GtkToggleToolButton" id="control_toolbutton_pause">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Pause</property>
                         <property name="use_underline">True</property>
                         <property name="stock_id">gtk-media-pause</property>
+                        <property name="active">True</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -336,7 +332,6 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="hexpand">True</property>
-                    <property name="adjustment">control_adjustment</property>
                     <property name="restrict_to_fill_level">False</property>
                     <property name="fill_level">0</property>
                     <property name="round_digits">2</property>
@@ -446,64 +441,6 @@
             <property name="label" translatable="yes">Control</property>
           </object>
           <packing>
-            <property name="tab_fill">False</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkScrolledWindow" id="model_tab">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="shadow_type">in</property>
-            <child>
-              <object class="GtkTreeView" id="model_treeview">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="model">model_treestore</property>
-                <property name="enable_grid_lines">horizontal</property>
-                <property name="enable_tree_lines">True</property>
-                <child internal-child="selection">
-                  <object class="GtkTreeSelection" id="model_treeview_selection">
-                    <property name="mode">none</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkTreeViewColumn" id="model_treeview_column_description">
-                    <property name="min_width">200</property>
-                    <property name="title" translatable="yes">Description</property>
-                    <child>
-                      <object class="GtkCellRendererText" id="model_cellrenderertext_description"/>
-                      <attributes>
-                        <attribute name="text">0</attribute>
-                      </attributes>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkTreeViewColumn" id="model_treeview_column_value">
-                    <property name="title" translatable="yes">Value</property>
-                    <child>
-                      <object class="GtkCellRendererText" id="model_cellrenderertext_value"/>
-                      <attributes>
-                        <attribute name="text">1</attribute>
-                      </attributes>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child type="tab">
-          <object class="GtkLabel" id="model_tablabel">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="label" translatable="yes">Model Info</property>
-          </object>
-          <packing>
-            <property name="position">1</property>
             <property name="tab_fill">False</property>
           </packing>
         </child>
@@ -726,18 +663,6 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="robotcontroller_label_orientation_w">
-                            <property name="width_request">55</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">W</property>
-                          </object>
-                          <packing>
-                            <property name="x">190</property>
-                            <property name="y">20</property>
-                          </packing>
-                        </child>
-                        <child>
                           <object class="GtkLabel" id="robotcontroller_label_orientation_x">
                             <property name="width_request">55</property>
                             <property name="visible">True</property>
@@ -745,7 +670,7 @@
                             <property name="label" translatable="yes">X</property>
                           </object>
                           <packing>
-                            <property name="x">250</property>
+                            <property name="x">190</property>
                             <property name="y">20</property>
                           </packing>
                         </child>
@@ -757,7 +682,7 @@
                             <property name="label" translatable="yes">Y</property>
                           </object>
                           <packing>
-                            <property name="x">310</property>
+                            <property name="x">250</property>
                             <property name="y">20</property>
                           </packing>
                         </child>
@@ -769,21 +694,20 @@
                             <property name="label" translatable="yes">Z</property>
                           </object>
                           <packing>
-                            <property name="x">370</property>
+                            <property name="x">310</property>
                             <property name="y">20</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkEntry" id="robotcontroller_entry_orientation_w">
+                          <object class="GtkLabel" id="robotcontroller_label_orientation_w">
+                            <property name="width_request">55</property>
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="invisible_char">●</property>
-                            <property name="width_chars">5</property>
-                            <property name="invisible_char_set">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">W</property>
                           </object>
                           <packing>
-                            <property name="x">190</property>
-                            <property name="y">40</property>
+                            <property name="x">370</property>
+                            <property name="y">20</property>
                           </packing>
                         </child>
                         <child>
@@ -795,7 +719,7 @@
                             <property name="invisible_char_set">True</property>
                           </object>
                           <packing>
-                            <property name="x">250</property>
+                            <property name="x">190</property>
                             <property name="y">40</property>
                           </packing>
                         </child>
@@ -808,12 +732,25 @@
                             <property name="invisible_char_set">True</property>
                           </object>
                           <packing>
-                            <property name="x">310</property>
+                            <property name="x">250</property>
                             <property name="y">40</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkEntry" id="robotcontroller_entry_orientation_z">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="width_chars">5</property>
+                            <property name="invisible_char_set">True</property>
+                          </object>
+                          <packing>
+                            <property name="x">310</property>
+                            <property name="y">40</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="robotcontroller_entry_orientation_w">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="invisible_char">●</property>
@@ -940,7 +877,7 @@
             </child>
           </object>
           <packing>
-            <property name="position">2</property>
+            <property name="position">1</property>
           </packing>
         </child>
         <child type="tab">
@@ -950,7 +887,7 @@
             <property name="label" translatable="yes">Robot Controller</property>
           </object>
           <packing>
-            <property name="position">2</property>
+            <property name="position">1</property>
             <property name="tab_fill">False</property>
           </packing>
         </child>
@@ -1252,7 +1189,7 @@
             </child>
           </object>
           <packing>
-            <property name="position">3</property>
+            <property name="position">2</property>
           </packing>
         </child>
         <child type="tab">
@@ -1262,7 +1199,7 @@
             <property name="label" translatable="yes">Object Instantiator</property>
           </object>
           <packing>
-            <property name="position">3</property>
+            <property name="position">2</property>
             <property name="tab_fill">False</property>
           </packing>
         </child>
@@ -1592,7 +1529,7 @@
             </child>
           </object>
           <packing>
-            <property name="position">4</property>
+            <property name="position">3</property>
           </packing>
         </child>
         <child type="tab">
@@ -1602,7 +1539,7 @@
             <property name="label" translatable="yes">Log</property>
           </object>
           <packing>
-            <property name="position">4</property>
+            <property name="position">3</property>
             <property name="tab_fill">False</property>
           </packing>
         </child>
@@ -1750,7 +1687,7 @@
             </child>
           </object>
           <packing>
-            <property name="position">5</property>
+            <property name="position">4</property>
           </packing>
         </child>
         <child type="tab">
@@ -1760,7 +1697,7 @@
             <property name="label" translatable="yes">Framework</property>
           </object>
           <packing>
-            <property name="position">5</property>
+            <property name="position">4</property>
             <property name="tab_fill">False</property>
           </packing>
         </child>
@@ -2209,7 +2146,7 @@
             </child>
           </object>
           <packing>
-            <property name="position">6</property>
+            <property name="position">5</property>
           </packing>
         </child>
         <child type="tab">
@@ -2219,7 +2156,7 @@
             <property name="label" translatable="yes">DIK</property>
           </object>
           <packing>
-            <property name="position">6</property>
+            <property name="position">5</property>
             <property name="tab_fill">False</property>
           </packing>
         </child>

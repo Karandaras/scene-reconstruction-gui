@@ -207,32 +207,32 @@ void LoggerTab::msglog(std::string dir, std::string topic, gazebo::msgs::SceneRo
   }
 
   msg << "), Rotation (W: ";
-  if (_msg.has_rot_w()) {
-    msg << _msg.rot_w();
+  if (_msg.has_ori_w()) {
+    msg << _msg.ori_w();
   }
   else {
     msg << "0.0";
   }
 
   msg << ", X: ";
-  if (_msg.has_rot_x()) {
-    msg << _msg.rot_x();
+  if (_msg.has_ori_x()) {
+    msg << _msg.ori_x();
   }
   else {
     msg << "0.0";
   }
 
   msg << ", Y: ";
-  if (_msg.has_rot_y()) {
-    msg << _msg.rot_y();
+  if (_msg.has_ori_y()) {
+    msg << _msg.ori_y();
   }
   else {
     msg << "0.0";
   }
 
   msg << ", Z: ";
-  if (_msg.has_rot_z()) {
-    msg << _msg.rot_z();
+  if (_msg.has_ori_z()) {
+    msg << _msg.ori_z();
   }
   else {
     msg << "0.0";

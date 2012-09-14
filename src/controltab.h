@@ -45,7 +45,7 @@ namespace SceneReconstruction {
       // buttons for basic commands
       Gtk::ToolButton              *btn_stop;
       Gtk::ToolButton              *btn_play;
-      Gtk::ToolButton              *btn_pause;
+      Gtk::ToggleToolButton        *btn_pause;
 
       // data display
       Gtk::TreeView                *trv_data;
@@ -56,21 +56,33 @@ namespace SceneReconstruction {
       double                        time_offset;
 
       // request message to detect selection through gui
-      boost::shared_ptr<gazebo::msgs::Request const>  guiReq;
-      boost::shared_ptr<gazebo::msgs::Response const> guiRes;
       gazebo::transport::SubscriberPtr                resSub,
-                                                      reqSub,
                                                       timeSub,
+                                                      responseSub,
                                                       worldSub;
       gazebo::transport::PublisherPtr                 worldPub,
-                                                      controlPub;
+                                                      controlPub,
+                                                      framePub,
+                                                      objectPub,
+                                                      reqPub,
+                                                      robotPub;
+
+      std::string                                     selected_model,
+                                                      model_frame;
+      gazebo::msgs::Pose                              gazebo,
+                                                      robot,
+                                                      sensor;
+      gazebo::msgs::Request                          *robotRequest,
+                                                     *objectRequest;
+      gazebo::msgs::TransformRequest                  frameRequest;
 
     private:
       void OnTimeMsg(ConstDoublePtr&);
       void OnWorldStatsMsg(ConstWorldStatisticsPtr&);
-      void OnReqMsg(ConstRequestPtr&);
       void OnResMsg(ConstResponsePtr&);
+      void OnResponseMsg(ConstResponsePtr&);
       void update_coords(gazebo::msgs::Model);
+      void update_coords();
       void on_button_stop_clicked();
       void on_button_play_clicked();
       void on_button_pause_clicked();

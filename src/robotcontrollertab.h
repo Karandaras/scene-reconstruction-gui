@@ -40,10 +40,10 @@ namespace SceneReconstruction {
       Gtk::Entry                              *ent_posx;
       Gtk::Entry                              *ent_posy;
       Gtk::Entry                              *ent_posz;
-      Gtk::Entry                              *ent_rotw;
-      Gtk::Entry                              *ent_rotx;
-      Gtk::Entry                              *ent_roty;
-      Gtk::Entry                              *ent_rotz;
+      Gtk::Entry                              *ent_oriw;
+      Gtk::Entry                              *ent_orix;
+      Gtk::Entry                              *ent_oriy;
+      Gtk::Entry                              *ent_oriz;
 
       // subscriber and publisher
       gazebo::transport::SubscriberPtr         sceneResSub;

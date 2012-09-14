@@ -46,10 +46,10 @@ RobotControllerTab::RobotControllerTab(gazebo::transport::NodePtr& _node, Logger
   _builder->get_widget("robotcontroller_entry_position_y", ent_posy);
   _builder->get_widget("robotcontroller_entry_position_z", ent_posz);
 
-  _builder->get_widget("robotcontroller_entry_orientation_w", ent_rotw);
-  _builder->get_widget("robotcontroller_entry_orientation_x", ent_rotx);
-  _builder->get_widget("robotcontroller_entry_orientation_y", ent_roty);
-  _builder->get_widget("robotcontroller_entry_orientation_z", ent_rotz);
+  _builder->get_widget("robotcontroller_entry_orientation_w", ent_oriw);
+  _builder->get_widget("robotcontroller_entry_orientation_x", ent_orix);
+  _builder->get_widget("robotcontroller_entry_orientation_y", ent_oriy);
+  _builder->get_widget("robotcontroller_entry_orientation_z", ent_oriz);
 
   // btn_send
   _builder->get_widget("robotcontroller_toolbutton_reload", btn_reload);
@@ -89,17 +89,17 @@ void RobotControllerTab::OnResponseMsg(ConstResponsePtr& _msg) {
         }
       }
 
-      if (src.has_rot_w() && src.has_rot_x() && src.has_rot_y() && src.has_rot_z()) {
-	      ent_rotw->set_text(Converter::to_ustring(src.rot_w(), 3));
-	      ent_rotx->set_text(Converter::to_ustring(src.rot_x(), 3));
-	      ent_roty->set_text(Converter::to_ustring(src.rot_y(), 3));
-	      ent_rotz->set_text(Converter::to_ustring(src.rot_z(), 3));
+      if (src.has_ori_w() && src.has_ori_x() && src.has_ori_y() && src.has_ori_z()) {
+	      ent_oriw->set_text(Converter::to_ustring(src.ori_w(), 3));
+	      ent_orix->set_text(Converter::to_ustring(src.ori_x(), 3));
+	      ent_oriy->set_text(Converter::to_ustring(src.ori_y(), 3));
+	      ent_oriz->set_text(Converter::to_ustring(src.ori_z(), 3));
       }
       else {
-	      ent_rotw->set_text(Converter::to_ustring(0.0, 3));
-	      ent_rotx->set_text(Converter::to_ustring(0.0, 3));
-	      ent_roty->set_text(Converter::to_ustring(0.0, 3));
-	      ent_rotz->set_text(Converter::to_ustring(0.0, 3));
+	      ent_oriw->set_text(Converter::to_ustring(0.0, 3));
+	      ent_orix->set_text(Converter::to_ustring(0.0, 3));
+	      ent_oriy->set_text(Converter::to_ustring(0.0, 3));
+	      ent_oriz->set_text(Converter::to_ustring(0.0, 3));
       }
 
       if(sn == rn && rn == o && o == sa && sa == ra && ra == sn) {
@@ -152,26 +152,26 @@ void RobotControllerTab::on_button_send_clicked() {
   double pos_x = 0.0;
   double pos_y = 0.0;
   double pos_z = 0.0;
-  double rot_w = 0.0;
-  double rot_x = 0.0;
-  double rot_y = 0.0;
-  double rot_z = 0.0;
+  double ori_w = 0.0;
+  double ori_x = 0.0;
+  double ori_y = 0.0;
+  double ori_z = 0.0;
 
   pos_x = Converter::ustring_to_double(ent_posx->get_text());
   pos_y = Converter::ustring_to_double(ent_posy->get_text());
   pos_z = Converter::ustring_to_double(ent_posz->get_text());
-  rot_w = Converter::ustring_to_double(ent_rotw->get_text());
-  rot_x = Converter::ustring_to_double(ent_rotx->get_text());
-  rot_y = Converter::ustring_to_double(ent_roty->get_text());
-  rot_z = Converter::ustring_to_double(ent_rotz->get_text());
+  ori_w = Converter::ustring_to_double(ent_oriw->get_text());
+  ori_x = Converter::ustring_to_double(ent_orix->get_text());
+  ori_y = Converter::ustring_to_double(ent_oriy->get_text());
+  ori_z = Converter::ustring_to_double(ent_oriz->get_text());
 
   src.set_pos_x(pos_x);
   src.set_pos_y(pos_y);
   src.set_pos_z(pos_z);
-  src.set_rot_w(rot_w);
-  src.set_rot_x(rot_x);
-  src.set_rot_y(rot_y);
-  src.set_rot_z(rot_z);
+  src.set_ori_w(ori_w);
+  src.set_ori_x(ori_x);
+  src.set_ori_y(ori_y);
+  src.set_ori_z(ori_z);
 
   setupPub->Publish(src);
   

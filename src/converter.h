@@ -144,15 +144,15 @@ namespace SceneReconstruction {
       }
 
       /** converts a quaternionen given by four doubles to Glib::ustring 
-       *  @param w double w value
        *  @param x double x value
        *  @param y double y value
        *  @param z double z value
+       *  @param w double w value
        *  @param round precision for rounding, -1 to disable
        *  @param as_euler choose euler or quaternion representation
        *  @return Glib::ustring representation of in
        */
-      static Glib::ustring convert(double w, double x, double y, double z, int round = -1, bool as_euler = false) {
+      static Glib::ustring convert(double x, double y, double z, double w, int round = -1, bool as_euler = false) {
         std::stringstream convert;
         if(round == -1 && !as_euler) {
           convert << "W: ";
@@ -184,14 +184,14 @@ namespace SceneReconstruction {
             convert << v.z;
           }
           else {
-            convert << "W: ";
-            convert << q.w;
-            convert << " X: ";
+            convert << "X: ";
             convert << q.x;
             convert << " Y: ";
             convert << q.y;
             convert << " Z: ";
             convert << q.z;
+            convert << " W: ";
+            convert << q.w;
           }
         }
         
@@ -225,14 +225,14 @@ namespace SceneReconstruction {
           convert << v.z;
         }
         else {
-          convert << "W: ";
-          convert << q.w;
-          convert << " X: ";
+          convert << "X: ";
           convert << q.x;
           convert << " Y: ";
           convert << q.y;
           convert << " Z: ";
           convert << q.z;
+          convert << " W: ";
+          convert << q.w;
         }
         
         Glib::ustring ret(convert.str());
@@ -241,7 +241,7 @@ namespace SceneReconstruction {
 
       /** converts gazebo::msgs::Pose to Glib::ustring 
        *  @param in input as gazebo::msgs::Pose
-       *  @param part part of the pose to display, 1 for position, 2 for orientation
+       *  @param part part of the pose to display, 0 for position, 1 for orientation, else both
        *  @param round precision for rounding, -1 to disable
        *  @param as_euler choose euler or quaternion representation
        *  @return Glib::ustring representation of in
@@ -254,7 +254,7 @@ namespace SceneReconstruction {
           return convert(in.orientation(), round, as_euler);
         }
         else
-          return "";
+          return "Position("+convert(in.position(), round)+") Orientation("+convert(in.orientation(), round, as_euler)+")";
       }
 
       /** converts JSON-Style input to a more human-readable output
@@ -305,9 +305,16 @@ namespace SceneReconstruction {
         return out.str();
       }
     
-      static double ustring_to_double(Glib::ustring val, double result=0.0) {
+      
+      /** converts Glib::ustring input to a double
+       *  replaces . with , or , with .
+       *  @param val Glib::ustring representation of the double
+       *  @param def the default value in case conversion is not possible
+       *  @return double value
+       */
+      static double ustring_to_double(Glib::ustring val, double def=0.0) {
         char *ret;
-        result = strtod(val.c_str(), &ret);
+        def = strtod(val.c_str(), &ret);
         while(*ret != 0) {
           size_t pos = val.find(*ret);
           if(*ret == ',')
@@ -317,9 +324,9 @@ namespace SceneReconstruction {
           else
             break;
 
-          result = strtod(val.c_str(), &ret);
+          def = strtod(val.c_str(), &ret);
         }
-        return result;
+        return def;
       }
 
     private:

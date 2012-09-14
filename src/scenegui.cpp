@@ -7,7 +7,6 @@
 #include "scenegui.h"
 #include "controltab.h"
 #include "robotcontrollertab.h"
-#include "modeltab.h"
 #include "objectinstantiatortab.h"
 #include "frameworktab.h"
 #include "dikwtab.h"
@@ -59,18 +58,16 @@ SceneGUI::SceneGUI()
 
   // Create all tabs
   ControlTab*            tab1 = new ControlTab(node, logger, ui_builder);
-  ModelTab*              tab2 = new ModelTab(node, logger, ui_builder);
-  RobotControllerTab*    tab3 = new RobotControllerTab(node, logger, ui_builder);
-  ObjectInstantiatorTab* tab4 = new ObjectInstantiatorTab(node, logger, ui_builder);
-  FrameworkTab*          tab5 = new FrameworkTab(node, logger, ui_builder);
-  DIKWTab*               tab6 = new DIKWTab(node, logger, ui_builder);
+  RobotControllerTab*    tab2 = new RobotControllerTab(node, logger, ui_builder);
+  ObjectInstantiatorTab* tab3 = new ObjectInstantiatorTab(node, logger, ui_builder);
+  FrameworkTab*          tab4 = new FrameworkTab(node, logger, ui_builder);
+  DIKWTab*               tab5 = new DIKWTab(node, logger, ui_builder);
 
   vec_tabs.push_back(tab1);
   vec_tabs.push_back(tab2);
   vec_tabs.push_back(tab3);
   vec_tabs.push_back(tab4);
   vec_tabs.push_back(tab5);
-  vec_tabs.push_back(tab6);
 
   window->show_all_children();
 

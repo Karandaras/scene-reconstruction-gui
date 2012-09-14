@@ -19,13 +19,18 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Gl
   logger = _logger;
   old_value = 0.0;
   time_offset = 0.0;
+  selected_model = "";
   
-  reqSub = node->Subscribe("~/request", &ControlTab::OnReqMsg, this);
   resSub = node->Subscribe("~/response", &ControlTab::OnResMsg, this);
   timeSub = node->Subscribe("~/SceneReconstruction/GUI/Time", &ControlTab::OnTimeMsg, this);
   worldSub = node->Subscribe("~/world_stats", &ControlTab::OnWorldStatsMsg, this);
+  responseSub = node->Subscribe("~/SceneReconstruction/GUI/Response", &ControlTab::OnResponseMsg, this);
+  reqPub = node->Advertise<gazebo::msgs::Request>("~/request");
   controlPub = node->Advertise<gazebo::msgs::SceneFrameworkControl>("~/SceneReconstruction/Framework/Control");
   worldPub = node->Advertise<gazebo::msgs::WorldControl>("~/world_control");
+  robotPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/RobotController/Request");
+  objectPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/ObjectInstantiator/Request");
+  framePub = node->Advertise<gazebo::msgs::TransformRequest>("~/SceneReconstruction/Framework/TransformRequest");
 
   // rng_time setup
   _builder->get_widget("control_scale", rng_time);
@@ -57,16 +62,21 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Gl
 
   Gtk::TreeModel::Row childrow = *(dat_store->append(row.children()));
   childrow.set_value(0,(Glib::ustring)"Gazebo");
-  childrow.set_value(1,(Glib::ustring)"X: 0 Y: 0 Z: 0");
+  childrow.set_value(1,(Glib::ustring)"Position (X: 0 Y: 0 Z: 0) Orientation (X: 0 Y: 0 Z: 0 W: 0)");
 
   childrow = *(dat_store->append(row.children()));
   childrow.set_value(0,(Glib::ustring)"Robot");
-  childrow.set_value(1,(Glib::ustring)"X: 0 Y: 0 Z: 0");
+  childrow.set_value(1,(Glib::ustring)"Position (X: 0 Y: 0 Z: 0) Orientation (X: 0 Y: 0 Z: 0 W: 0)");
 
   childrow = *(dat_store->append(row.children()));
   childrow.set_value(0,(Glib::ustring)"Sensor");
-  childrow.set_value(1,(Glib::ustring)"X: 0 Y: 0 Z: 0");
+  childrow.set_value(1,(Glib::ustring)"Position (X: 0 Y: 0 Z: 0) Orientation (X: 0 Y: 0 Z: 0 W: 0)");
   trv_data->expand_all();
+
+  gazebo::math::Pose rob;
+  robot = gazebo::msgs::Convert(rob);
+  robotRequest = gazebo::msgs::CreateRequest("get_offset");
+  robotPub->Publish(*robotRequest);
 }
 
 ControlTab::~ControlTab() {
@@ -91,56 +101,133 @@ void ControlTab::OnWorldStatsMsg(ConstWorldStatisticsPtr& _msg) {
   val += _msg->sim_time().nsec()/1000000;
   val += time_offset;
   rng_time->set_value(val);
-}
+  old_value = rng_time->get_value();
 
-void ControlTab::OnReqMsg(ConstRequestPtr& _msg) {
-  if (guiRes && _msg->request() == "entity_info" && _msg->id() == guiRes->id()) {
-    logger->msglog("<<", "~/request", _msg);
+  if(val > rng_time->get_value()) {
+    btn_pause->set_active(false);
 
-    gazebo::msgs::Model model;
-    if (guiRes->has_type() && guiRes->type() == model.GetTypeName()) {
-      model.ParseFromString(guiRes->serialized_data());
-      logger->log("control", "Coords of Model " + model.name() + " received.");
-      update_coords(model);
-    } else {
-      guiRes.reset();
-      guiReq = _msg;
+    gazebo::msgs::WorldControl start;
+    start.set_pause(true);
+    logger->msglog(">>", "~/world_control", start);
+    worldPub->Publish(start);
+
+    gazebo::msgs::SceneFrameworkControl control;
+    control.set_pause(true);
+    controlPub->Publish(control);
+    
+    if(selected_model != "") {
+      reqPub->Publish(*gazebo::msgs::CreateRequest("entity_info", selected_model));
     }
-  } else {
-    guiReq = _msg;
   }
 }
 
 void ControlTab::OnResMsg(ConstResponsePtr& _msg) {
-  if (guiReq && _msg->request() == "entity_info" && _msg->id() == guiReq->id()) {
-    logger->msglog("<<", "~/request", _msg);
+  if (_msg->request() == "entity_info") {
+    logger->msglog("<<", "~/response", _msg);
 
     gazebo::msgs::Model model;
     if (_msg->has_type() && _msg->type() == model.GetTypeName()) {
       model.ParseFromString(_msg->serialized_data());
       logger->log("control", "Coords of Model " + model.name() + " received.");
+      selected_model = model.name();
       update_coords(model);
-    } else {
-      guiReq.reset();
-      guiRes = _msg;
     }
-  } else {
-    guiRes = _msg;
+  }
+}
+
+void ControlTab::OnResponseMsg(ConstResponsePtr& _msg) {
+  logger->msglog("<<", "~/SceneReconstruction/GUI/Response", _msg);
+  if (_msg->request() == robotRequest->request() && _msg->id() == robotRequest->id()) {
+    if (_msg->has_type() && _msg->type() == robot.GetTypeName())
+      robot.ParseFromString(_msg->serialized_data());
+  }
+  else if (_msg->request() == objectRequest->request() && _msg->id() == objectRequest->id()) {
+    gazebo::msgs::String obj;
+    if (_msg->has_type() && _msg->type() == obj.GetTypeName() && _msg->response() == "success") {
+      obj.ParseFromString(_msg->serialized_data());
+      model_frame = obj.data();
+
+      // TODO: request sensor position from framework
+      gazebo::msgs::Request tmp = *gazebo::msgs::CreateRequest("transform_request");
+      frameRequest.set_id(tmp.id());
+      frameRequest.set_request(tmp.request());
+      frameRequest.set_source_frame("/map");
+      frameRequest.set_target_frame(model_frame);
+      frameRequest.set_pos_x(gazebo.position().x() + robot.position().x());
+      frameRequest.set_pos_y(gazebo.position().y() + robot.position().y());
+      frameRequest.set_pos_z(gazebo.position().z() + robot.position().z());
+      frameRequest.set_ori_w(gazebo.orientation().w() + robot.orientation().w());
+      frameRequest.set_ori_x(gazebo.orientation().x() + robot.orientation().x());
+      frameRequest.set_ori_y(gazebo.orientation().y() + robot.orientation().y());
+      frameRequest.set_ori_z(gazebo.orientation().z() + robot.orientation().z());
+      framePub->Publish(frameRequest);
+    }
+    else {
+      gazebo::math::Pose tmp_pose = gazebo::msgs::Convert(robot);
+      tmp_pose.pos.x += gazebo.position().x();
+      tmp_pose.pos.y += gazebo.position().y();
+      tmp_pose.pos.z += gazebo.position().z();
+      tmp_pose.rot.w += gazebo.orientation().w();
+      tmp_pose.rot.x += gazebo.orientation().x();
+      tmp_pose.rot.y += gazebo.orientation().y();
+      tmp_pose.rot.z += gazebo.orientation().z();
+
+      sensor = gazebo::msgs::Convert(tmp_pose);
+      sensor.set_name("/base_link");
+    }
+  }
+  else if (_msg->request() == frameRequest.request() && _msg->id() == frameRequest.id()) {
+    if (_msg->has_type() && _msg->type() == sensor.GetTypeName())
+      sensor.ParseFromString(_msg->serialized_data());
   }
 }
 
 void ControlTab::update_coords(gazebo::msgs::Model model) {
+  // Update Coords-Treeview
+  if(model.has_pose()) {
+    gazebo = model.pose();
+  }
+
+  gazebo::math::Pose sen;
+  sensor = gazebo::msgs::Convert(sen);
+  objectRequest = gazebo::msgs::CreateRequest("get_object", model.name());
+  objectPub->Publish(*objectRequest);
+
+  update_coords();
+}
+
+void ControlTab::update_coords() {
   // Update Coords-Treeview
   Gtk::TreeModel::Children rows = trv_data->get_model()->children();
   for(Gtk::TreeModel::Children::iterator iter = rows.begin(); iter != rows.end(); ++iter) {
     Gtk::TreeModel::Row row = *iter;
     Glib::ustring tmp;
     row.get_value(0, tmp);
-    if(tmp == "Coordinates" && model.has_pose()) {
+    if(tmp == "Coordinates") {
       Gtk::TreeModel::Children childrows = row.children();
-      Gtk::TreeModel::Children::iterator childiter = childrows.begin();
-      Gtk::TreeModel::Row childrow = *childiter;
-      childrow.set_value(1, Converter::convert(model.pose(), 0, 3));
+      Gtk::TreeModel::Children::iterator childiter;
+      Gtk::TreeModel::Row childrow;
+
+      childiter = childrows.begin();
+      childrow = *childiter;
+      childrow.set_value(1, Converter::convert(gazebo, 2, 3));
+    
+      gazebo::math::Pose tmp_pose = gazebo::msgs::Convert(robot);
+      tmp_pose.pos.x += gazebo.position().x();
+      tmp_pose.pos.y += gazebo.position().y();
+      tmp_pose.pos.z += gazebo.position().z();
+      tmp_pose.rot.w += gazebo.orientation().w();
+      tmp_pose.rot.x += gazebo.orientation().x();
+      tmp_pose.rot.y += gazebo.orientation().y();
+      tmp_pose.rot.z += gazebo.orientation().z();
+      childiter++;
+      childrow = *childiter;
+      childrow.set_value(1, Converter::convert(gazebo::msgs::Convert(tmp_pose), 2, 3));
+
+      childiter++;
+      childrow = *childiter;
+      childrow.set_value(0, "Frame("+sensor.name()+")");
+      childrow.set_value(1, Converter::convert(sensor, 2, 3));
     }
   }
 }
@@ -149,6 +236,7 @@ void ControlTab::on_button_stop_clicked() {
   logger->log("control", "STOP");
   time_offset = 0.0;
   rng_time->set_value(0.0);
+  btn_pause->set_active(true);
 
   gazebo::msgs::WorldControl start;
   start.set_pause(true);
@@ -166,6 +254,7 @@ void ControlTab::on_button_stop_clicked() {
 
 void ControlTab::on_button_play_clicked() {
   logger->log("control", "PLAY");
+  btn_pause->set_active(false);
 
   gazebo::msgs::WorldControl start;
   start.set_pause(false);
@@ -179,15 +268,29 @@ void ControlTab::on_button_play_clicked() {
 
 void ControlTab::on_button_pause_clicked() {
   logger->log("control", "PAUSE");
+  if(!btn_pause->get_active()) {
+    btn_pause->set_active(true);
+    gazebo::msgs::WorldControl start;
+    start.set_pause(true);
+    logger->msglog(">>", "~/world_control", start);
+    worldPub->Publish(start);
 
-  gazebo::msgs::WorldControl start;
-  start.set_pause(true);
-  logger->msglog(">>", "~/world_control", start);
-  worldPub->Publish(start);
+    gazebo::msgs::SceneFrameworkControl control;
+    control.set_pause(true);
+    controlPub->Publish(control);
+  }
+  else {
+    btn_pause->set_active(false);
 
-  gazebo::msgs::SceneFrameworkControl control;
-  control.set_pause(true);
-  controlPub->Publish(control);
+    gazebo::msgs::WorldControl start;
+    start.set_pause(false);
+    logger->msglog(">>", "~/world_control", start);
+    worldPub->Publish(start);
+
+    gazebo::msgs::SceneFrameworkControl control;
+    control.set_pause(false);
+    controlPub->Publish(control);
+  }
 }
 
 bool ControlTab::on_scale_button_event(GdkEventButton* b) {

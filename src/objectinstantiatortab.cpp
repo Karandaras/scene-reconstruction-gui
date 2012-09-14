@@ -174,12 +174,6 @@ void ObjectInstantiatorTab::OnResponseMsg(ConstResponsePtr& _msg) {
       row.set_value(1, src1.frame());
     }
 
-    if(src1.has_child_frame()) {
-      row = *(dat_store->append());
-      row.set_value(0, (Glib::ustring)"Childframe");
-      row.set_value(1, src1.child_frame());
-    }
-
     if(src1.has_objectids()) {
       row = *(dat_store->append());
       row.set_value(0, (Glib::ustring)"ObjectIDs");
