@@ -109,6 +109,25 @@ void LoggerTab::msglog(std::string dir, std::string topic, ConstRequestPtr &_msg
   logmsg(dir, "Request", topic, msg.str());
 }
 
+void LoggerTab::msglog(std::string dir, std::string topic, gazebo::msgs::Request &_msg)
+{
+  std::ostringstream msg;
+  msg << "Request: ";
+  msg << _msg.request();
+  msg << ", ID: ";
+  msg << _msg.id();
+  if(_msg.has_data() && _msg.data() != "") {
+    msg << ", Data: ";
+    msg << _msg.data();
+  }
+  if(_msg.has_dbl_data()) {
+    msg << ", Double Data: ";
+    msg << _msg.dbl_data();
+  }
+
+  logmsg(dir, "Request", topic, msg.str());
+}
+
 void LoggerTab::msglog(std::string dir, std::string topic, gazebo::msgs::WorldControl &_msg)
 {
   std::ostringstream msg;

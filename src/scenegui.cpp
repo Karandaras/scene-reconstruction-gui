@@ -47,7 +47,6 @@ SceneGUI::SceneGUI()
   node = _node;
   node->Init();
 
-  availSub = node->Subscribe("~/SceneReconstruction/GUI/Availability/Response", &SceneGUI::OnResponseMsg, this);
   worldPub = node->Advertise<gazebo::msgs::WorldControl>("~/world_control");
 
   // initially pause the world
@@ -72,6 +71,8 @@ SceneGUI::SceneGUI()
   window->show_all_children();
 
   check_components();
+
+  availSub = node->Subscribe("~/SceneReconstruction/GUI/Availability/Response", &SceneGUI::OnResponseMsg, this);
 }
 
 SceneGUI::~SceneGUI() {
@@ -104,7 +105,7 @@ void SceneGUI::check_components() {
 
 void SceneGUI::OnResponseMsg(ConstResponsePtr &_msg) {
   std::map< std::string, boost::shared_ptr<gazebo::msgs::Request> >::iterator avail_request = avail_requests.find(_msg->response());
-  if(avail_request == avail_requests.end())
+  if(avail_request == avail_requests.end() && _msg->id() != -1)
     return;
   if(_msg->id() != avail_request->second->id() && _msg->id() != -1)
     return;

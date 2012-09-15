@@ -16,8 +16,6 @@ DIKWTab::DIKWTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Glib::Re
   node = _node;
   logger = _logger;  
 
-  resSub = node->Subscribe("~/SceneReconstruction/GUI/MongoDB", &DIKWTab::OnResponseMsg, this);
-
   Gtk::Box *box_type;
   _builder->get_widget("dikw_box_top_left", box_type);
   com_type = Gtk::manage(new Gtk::ComboBoxText(false));
@@ -72,6 +70,8 @@ DIKWTab::DIKWTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Glib::Re
   _builder->get_widget("dikw_graph_window", win_show);
   _builder->get_widget("dikw_graph_window_image", win_image);
   create_graphviz_dot("");
+
+  resSub = node->Subscribe("~/SceneReconstruction/GUI/MongoDB", &DIKWTab::OnResponseMsg, this);
 }
 
 DIKWTab::~DIKWTab() {

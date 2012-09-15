@@ -15,9 +15,6 @@ FrameworkTab::FrameworkTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger
 {
   node = _node;
   logger = _logger;
-  
-  reqPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/Framework/Request");
-  resSub = node->Subscribe("~/SceneReconstruction/GUI/MongoDB", &FrameworkTab::OnResponseMsg, this);
 
   _builder->get_widget("framework_spinbutton_object", spn_object);
   spn_object->signal_value_changed().connect(sigc::mem_fun(*this,&FrameworkTab::on_button_object_value_changed), false);
@@ -34,6 +31,9 @@ FrameworkTab::FrameworkTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger
 
   _builder->get_widget("framework_textview_object", txt_object);
   txt_object->override_font(Pango::FontDescription("monospace"));
+  
+  reqPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/Framework/Request");
+  resSub = node->Subscribe("~/SceneReconstruction/GUI/MongoDB", &FrameworkTab::OnResponseMsg, this);
 }
 
 FrameworkTab::~FrameworkTab() {

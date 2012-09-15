@@ -14,10 +14,6 @@ RobotControllerTab::RobotControllerTab(gazebo::transport::NodePtr& _node, Logger
   node = _node;
   logger = _logger;
 
-  sceneReqPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/RobotController/Request");
-  setupPub = node->Advertise<gazebo::msgs::SceneRobotController>("~/SceneReconstruction/RobotController/Setup");
-  sceneResSub = node->Subscribe("~/SceneReconstruction/RobotController/Response", &RobotControllerTab::OnResponseMsg, this);
-
   _builder->get_widget("robotcontroller_treeview", trv_robot);
   rob_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("robotcontroller_liststore"));
   rob_store->clear();
@@ -54,6 +50,10 @@ RobotControllerTab::RobotControllerTab(gazebo::transport::NodePtr& _node, Logger
   // btn_send
   _builder->get_widget("robotcontroller_toolbutton_reload", btn_reload);
   btn_reload->signal_clicked().connect(sigc::mem_fun(*this,&RobotControllerTab::on_button_reload_clicked));
+
+  sceneReqPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/RobotController/Request");
+  setupPub = node->Advertise<gazebo::msgs::SceneRobotController>("~/SceneReconstruction/RobotController/Setup");
+  sceneResSub = node->Subscribe("~/SceneReconstruction/RobotController/Response", &RobotControllerTab::OnResponseMsg, this);
 }
 
 RobotControllerTab::~RobotControllerTab() {
