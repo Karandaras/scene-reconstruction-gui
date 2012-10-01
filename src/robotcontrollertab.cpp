@@ -17,25 +17,6 @@ RobotControllerTab::RobotControllerTab(gazebo::transport::NodePtr& _node, Logger
   _builder->get_widget("robotcontroller_treeview", trv_robot);
   rob_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("robotcontroller_liststore"));
   rob_store->clear();
-  std::vector<Gtk::CellRenderer*> rob_col_simangle = trv_robot->get_column(2)->get_cells();
-  for(unsigned int i=0; i<rob_col_simangle.size(); i++) {
-    dynamic_cast<Gtk::CellRendererText*>(rob_col_simangle[i])->property_editable() = true;
-    dynamic_cast<Gtk::CellRendererText*>(rob_col_simangle[i])->signal_edited().connect(sigc::mem_fun(*this,&RobotControllerTab::on_cell_simangle_edited));
-  }
-  std::vector<Gtk::CellRenderer*> rob_col_offset = trv_robot->get_column(3)->get_cells();
-  for(unsigned int i=0; i<rob_col_offset.size(); i++) {
-    dynamic_cast<Gtk::CellRendererText*>(rob_col_offset[i])->property_editable() = true;
-    dynamic_cast<Gtk::CellRendererText*>(rob_col_offset[i])->signal_edited().connect(sigc::mem_fun(*this,&RobotControllerTab::on_cell_offset_edited));
-  }
-  std::vector<Gtk::CellRenderer*> rob_col_robangle = trv_robot->get_column(4)->get_cells();
-  for(unsigned int i=0; i<rob_col_robangle.size(); i++) {
-    dynamic_cast<Gtk::CellRendererText*>(rob_col_robangle[i])->property_editable() = true;
-    dynamic_cast<Gtk::CellRendererText*>(rob_col_robangle[i])->signal_edited().connect(sigc::mem_fun(*this,&RobotControllerTab::on_cell_robangle_edited));
-  }
-
-  // btn_send
-  _builder->get_widget("robotcontroller_toolbutton_send", btn_send);
-  btn_send->signal_clicked().connect(sigc::mem_fun(*this,&RobotControllerTab::on_button_send_clicked));
 
   // tbl_position
   _builder->get_widget("robotcontroller_entry_position_x", ent_posx);
@@ -47,188 +28,62 @@ RobotControllerTab::RobotControllerTab(gazebo::transport::NodePtr& _node, Logger
   _builder->get_widget("robotcontroller_entry_orientation_y", ent_oriy);
   _builder->get_widget("robotcontroller_entry_orientation_z", ent_oriz);
 
-  // btn_send
-  _builder->get_widget("robotcontroller_toolbutton_reload", btn_reload);
-  btn_reload->signal_clicked().connect(sigc::mem_fun(*this,&RobotControllerTab::on_button_reload_clicked));
-
-  sceneReqPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/RobotController/Request");
-  setupPub = node->Advertise<gazebo::msgs::SceneRobotController>("~/SceneReconstruction/RobotController/Setup");
-  sceneResSub = node->Subscribe("~/SceneReconstruction/RobotController/Response", &RobotControllerTab::OnResponseMsg, this);
+  controllerSub = node->Subscribe("~/SceneReconstruction/RobotController/ControllerInfo", &RobotControllerTab::OnControllerInfoMsg, this);
 }
 
 RobotControllerTab::~RobotControllerTab() {
 }
 
-void RobotControllerTab::OnResponseMsg(ConstResponsePtr& _msg) {
-  if(!robReq || robReq->id() != _msg->id()) 
-    return;
+void RobotControllerTab::OnControllerInfoMsg(ConstSceneRobotControllerPtr& _msg) {
+  logger->msglog("<<", "~/SceneReconstruction/RobotController/ControllerInfo", *_msg);
+  logger->log("robot controller", "receiving info from RobotControllerPlugin");
 
-  if(_msg->request() == "controller_info") {
-    logger->msglog("<<", "~/SceneReconstruction/RobotController/Response", _msg);
+  int sn, rn, gr, sn2, o, sa, ra;
+  sn  = _msg->simulator_name_size();
+  rn  = _msg->robot_name_size();
+  gr  = _msg->gripper_size();
+  sn2 = _msg->simulator_name2_size();
+  o   = _msg->offset_size();
+  sa  = _msg->simulator_angle_size();
+  ra  = _msg->robot_angle_size();
 
-    gazebo::msgs::SceneRobotController src;
-    if(_msg->has_type() && _msg->type() == src.GetTypeName()) {
-      src.ParseFromString(_msg->serialized_data());
-      logger->log("robot controller", "receiving info from RobotControllerPlugin");
-
-      int sn, rn, o, sa, ra;
-      sn = src.simulator_name_size();
-      rn = src.robot_name_size();
-      o  = src.offset_size();
-      sa = src.simulator_angle_size();
-      ra = src.robot_angle_size();
-
-      if(src.has_pos_x() && src.has_pos_y()) {	
-	      ent_posx->set_text(Converter::to_ustring(src.pos_x(), 3));
-	      ent_posy->set_text(Converter::to_ustring(src.pos_y(), 3));
-	      if(src.has_pos_z()) {
-  	      ent_posz->set_text(Converter::to_ustring(src.pos_z(), 3));
-	      }
-        else {
-  	      ent_posz->set_text(Converter::to_ustring(0.0, 3));
-        }
-      }
-
-      if (src.has_ori_w() && src.has_ori_x() && src.has_ori_y() && src.has_ori_z()) {
-	      ent_oriw->set_text(Converter::to_ustring(src.ori_w(), 3));
-	      ent_orix->set_text(Converter::to_ustring(src.ori_x(), 3));
-	      ent_oriy->set_text(Converter::to_ustring(src.ori_y(), 3));
-	      ent_oriz->set_text(Converter::to_ustring(src.ori_z(), 3));
-      }
-      else {
-	      ent_oriw->set_text(Converter::to_ustring(0.0, 3));
-	      ent_orix->set_text(Converter::to_ustring(0.0, 3));
-	      ent_oriy->set_text(Converter::to_ustring(0.0, 3));
-	      ent_oriz->set_text(Converter::to_ustring(0.0, 3));
-      }
-
-      if(sn == rn && rn == o && o == sa && sa == ra && ra == sn) {
-        rob_store->clear();
-        Gtk::TreeModel::Row row;
-
-        for(int i=0; i<sn; i++) {
-          row = *(rob_store->append());
-          row.set_value(0, (Glib::ustring)src.simulator_name(i));
-          row.set_value(1, (Glib::ustring)src.robot_name(i));
-          row.set_value(2, src.offset(i));
-          row.set_value(3, src.simulator_angle(i));
-	        row.set_value(4, src.robot_angle(i));
-        }
-      }
+  if(_msg->has_pos_x() && _msg->has_pos_y()) {	
+    ent_posx->set_text(Converter::to_ustring(_msg->pos_x(), 3));
+    ent_posy->set_text(Converter::to_ustring(_msg->pos_y(), 3));
+    if(_msg->has_pos_z()) {
+      ent_posz->set_text(Converter::to_ustring(_msg->pos_z(), 3));
     }
-
-    robReq.reset();
-  }
-}
-
-void RobotControllerTab::on_button_send_clicked() {
-  logger->log("robot controller", "sending data to the robotcontrollerplugin");
-  gazebo::msgs::SceneRobotController src;
-  Gtk::TreeModel::Children rows = rob_store->children();
-  for(Gtk::TreeModel::Children::iterator it = rows.begin(); it != rows.end(); it++) {
-    Gtk::TreeModel::Row row = *it;
-
-    Glib::ustring simulator_name;
-    row.get_value(0, simulator_name);
-    src.add_simulator_name(simulator_name);
-
-    Glib::ustring robot_name;
-    row.get_value(1, robot_name);
-    src.add_robot_name(robot_name);
-
-    double offset;
-    row.get_value(2, offset);
-    src.add_offset(offset);
-
-    double simulator_angle;
-    row.get_value(3, simulator_angle);
-    src.add_simulator_angle(simulator_angle);
-
-    double robot_angle;
-    row.get_value(4, robot_angle);
-    src.add_robot_angle(robot_angle);
+    else {
+      ent_posz->set_text(Converter::to_ustring(0.0, 3));
+    }
   }
 
-  double pos_x = 0.0;
-  double pos_y = 0.0;
-  double pos_z = 0.0;
-  double ori_w = 0.0;
-  double ori_x = 0.0;
-  double ori_y = 0.0;
-  double ori_z = 0.0;
+  if (_msg->has_ori_w() && _msg->has_ori_x() && _msg->has_ori_y() && _msg->has_ori_z()) {
+    ent_oriw->set_text(Converter::to_ustring(_msg->ori_w(), 3));
+    ent_orix->set_text(Converter::to_ustring(_msg->ori_x(), 3));
+    ent_oriy->set_text(Converter::to_ustring(_msg->ori_y(), 3));
+    ent_oriz->set_text(Converter::to_ustring(_msg->ori_z(), 3));
+  }
+  else {
+    ent_oriw->set_text(Converter::to_ustring(0.0, 3));
+    ent_orix->set_text(Converter::to_ustring(0.0, 3));
+    ent_oriy->set_text(Converter::to_ustring(0.0, 3));
+    ent_oriz->set_text(Converter::to_ustring(0.0, 3));
+  }
 
-  pos_x = Converter::ustring_to_double(ent_posx->get_text());
-  pos_y = Converter::ustring_to_double(ent_posy->get_text());
-  pos_z = Converter::ustring_to_double(ent_posz->get_text());
-  ori_w = Converter::ustring_to_double(ent_oriw->get_text());
-  ori_x = Converter::ustring_to_double(ent_orix->get_text());
-  ori_y = Converter::ustring_to_double(ent_oriy->get_text());
-  ori_z = Converter::ustring_to_double(ent_oriz->get_text());
+  if(sn == rn && rn == gr && gr == sn2 && sn2 == o && o == sa && sa == ra && ra == sn) {
+    rob_store->clear();
+    Gtk::TreeModel::Row row;
 
-  src.set_pos_x(pos_x);
-  src.set_pos_y(pos_y);
-  src.set_pos_z(pos_z);
-  src.set_ori_w(ori_w);
-  src.set_ori_x(ori_x);
-  src.set_ori_y(ori_y);
-  src.set_ori_z(ori_z);
-
-  setupPub->Publish(src);
-  
-  logger->msglog(">>", "~/SceneReconstruction/RobotController/Setup", src);
-}
-
-void RobotControllerTab::on_button_reload_clicked() {
-  logger->log("robot controller", "requesting info from RobotControllerPlugin");
-  robReq.reset(gazebo::msgs::CreateRequest("controller_info"));
-  sceneReqPub->Publish(*(robReq.get()));
-  logger->msglog(">>", "~/SceneReconstruction/RobotController/Request", robReq);
-}
-
-void RobotControllerTab::on_cell_simangle_edited(const Glib::ustring& path, const Glib::ustring& new_text) {
-  logger->log("robot controller", "Simulation Angle changed");  
-  Gtk::TreeIter it = rob_store->get_iter(path);
-  
-  double simangle =  Converter::ustring_to_double(new_text.data());
-  double offset;
-  it->get_value(3, offset);
-  double robangle = simangle - offset;
-
-  it->set_value(2, simangle);
-  it->set_value(3, offset);
-  it->set_value(4, robangle);
-}
-
-void RobotControllerTab::on_cell_offset_edited(const Glib::ustring& path, const Glib::ustring& new_text) {
-  logger->log("robot controller", "Offset changed");
-  Gtk::TreeIter it = rob_store->get_iter(path);
-
-  double offset = Converter::ustring_to_double(new_text.data());
-  double robangle;
-  it->get_value(4, robangle);
-  double simangle = robangle + offset;
-
-  it->set_value(2, simangle);
-  it->set_value(3, offset);
-  it->set_value(4, robangle);
-}
-
-void RobotControllerTab::on_cell_robangle_edited(const Glib::ustring& path, const Glib::ustring& new_text) {
-  logger->log("robot controller", "Robot Angle changed");
-  Gtk::TreeIter it = rob_store->get_iter(path);
-
-  double offset;
-  it->get_value(3, offset);
-  double robangle = Converter::ustring_to_double(new_text.data());
-  double simangle = robangle + offset;
-
-  it->set_value(2, simangle);
-  it->set_value(3, offset);
-  it->set_value(4, robangle);
-}
-
-void RobotControllerTab::set_enabled(bool enabled) {
-  Gtk::Widget* tab;
-  _builder->get_widget("robotcontroller_tab", tab);
-  tab->set_sensitive(enabled);
+    for(int i=0; i<sn; i++) {
+      row = *(rob_store->append());
+      row.set_value(0, (Glib::ustring)_msg->simulator_name(i));
+      row.set_value(1, (Glib::ustring)_msg->robot_name(i));
+      row.set_value(2, _msg->gripper(i));
+      row.set_value(3, (Glib::ustring)_msg->simulator_name2(i));
+      row.set_value(4, _msg->offset(i));
+      row.set_value(5, _msg->simulator_angle(i));
+      row.set_value(6, _msg->robot_angle(i));
+    }
+  }
 }

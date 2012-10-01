@@ -116,9 +116,3 @@ void FrameworkTab::on_button_object_value_changed() {
   reqPub->Publish(*(objReq.get()));
 }
 
-
-void FrameworkTab::set_enabled(bool enabled) {
-  Gtk::Widget* tab;
-  _builder->get_widget("framework_tab", tab);
-  tab->set_sensitive(enabled);
-}

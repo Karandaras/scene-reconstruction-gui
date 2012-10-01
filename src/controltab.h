@@ -52,8 +52,10 @@ namespace SceneReconstruction {
       Glib::RefPtr<Gtk::TreeStore>  dat_store;
 
       // temporary variable to detect changes in navigation
-      double                        old_value;
-      double                        time_offset;
+      double                        old_value,
+                                    ent_info_time,
+                                    time_offset;
+      bool                          coords_updated;
 
       // request message to detect selection through gui
       gazebo::transport::SubscriberPtr                resSub,
@@ -64,17 +66,16 @@ namespace SceneReconstruction {
                                                       controlPub,
                                                       framePub,
                                                       objectPub,
-                                                      reqPub,
-                                                      robotPub;
-
+                                                      robotPub,
+                                                      reqPub;
       std::string                                     selected_model,
                                                       model_frame;
       gazebo::msgs::Pose                              gazebo,
-                                                      robot,
                                                       sensor;
+      gazebo::msgs::Vector3d                          robot;
       gazebo::msgs::Request                          *robotRequest,
                                                      *objectRequest;
-      gazebo::msgs::TransformRequest                  frameRequest;
+      gazebo::msgs::TransformRequest                 *frameRequest;
 
     private:
       void OnTimeMsg(ConstDoublePtr&);
@@ -85,15 +86,9 @@ namespace SceneReconstruction {
       void update_coords();
       void on_button_stop_clicked();
       void on_button_play_clicked();
-      void on_button_pause_clicked();
+      void on_button_pause_toggled();
       bool on_scale_button_event(GdkEventButton*);
       bool on_scale_key_event(GdkEventKey*);
       Glib::ustring on_scale_format_value(double);
-
-    public:
-      /** sets the sensitivity of the tab
-       *  @param enabled true to enable, false to disable the tab
-       */
-      void set_enabled(bool);
- };
+  };
 }

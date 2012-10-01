@@ -190,7 +190,7 @@ void LoggerTab::msglog(std::string dir, std::string topic, ConstDoublePtr &_msg)
   logmsg(dir, "Double", topic, msg.str());
 }
 
-void LoggerTab::msglog(std::string dir, std::string topic, gazebo::msgs::SceneRobotController &_msg)
+void LoggerTab::msglog(std::string dir, std::string topic, const gazebo::msgs::SceneRobotController &_msg)
 {
   std::ostringstream msg;
 
@@ -270,12 +270,6 @@ void LoggerTab::msglog(std::string dir, std::string topic, gazebo::msgs::SceneRo
   }
 
   logmsg(dir, "SceneRobotController", topic, msg.str());
-}
-
-void LoggerTab::set_enabled(bool enabled) {
-  Gtk::Widget* tab;
-  _builder->get_widget("logger_tab", tab);
-  tab->set_sensitive(enabled);
 }
 
 void LoggerTab::show_available(std::string comp) {

@@ -69,7 +69,7 @@ namespace SceneReconstruction {
        *  @param topic topic of the message
        *  @param _msg the msg to log
        */
-      void msglog(std::string, std::string, gazebo::msgs::SceneRobotController&);
+      void msglog(std::string, std::string, const gazebo::msgs::SceneRobotController&);
 
       /** logs msgs to the treeview with timestamp and topic
        *  @param dir direction of the message
@@ -91,11 +91,6 @@ namespace SceneReconstruction {
        *  @param _msg the msg to log
        */
       void msglog(std::string, std::string, ConstDoublePtr&);
-
-      /** sets the sensitivity of the tab
-       *  @param enabled true to enable, false to disable the tab
-       */
-      void set_enabled(bool);
 
       /** switches the image for the given component to represent that the
        *  component has respondedto the availability request

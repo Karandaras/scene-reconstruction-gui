@@ -104,63 +104,7 @@ void DIKWTab::OnResponseMsg(ConstResponsePtr& _msg) {
 }
 
 void DIKWTab::create_graphviz_dot(std::string markupnode) {
-  std::list<DIKGraph::DIKNode>::iterator iter;
-  std::list<DIKGraph::DIKEdge>::iterator edgeiter;
-  // standard "header" of the graph
-  std::string dot = "digraph G {\n"\
-                    "  ranksep=1;\n"\
-                    "  edge[style=invis];\n"\
-                    "  node[shape=box,fontsize=20,fixedsize=true,width=2];\n"\
-                    "  \"Knowledge\" -> \"Information\" -> \"Data\";\n"\
-                    "  edge[style=solid,dir=back];\n"\
-                    "  node[shape=ellipse,fontsize=14,fixedsize=false,width=0.75];\n";
-
-  //find nodes and edges connected to the markupnode
-  marked_nodes.clear();
-  if(markupnode != "") {
-    marked_nodes.push_back(markupnode);
-    //mark nodes pointing to marked nodes
-    mark_children(get_node(markupnode));
-
-    //mark nodes pointed from marked nodes
-    mark_parents(get_node(markupnode));
-  }
-  
-  // create knowledge nodes
-  dot            += "  subgraph knowledge {\n"\
-                    "    rank = same;\n"\
-                    "    \"Knowledge\";\n";
-  for(iter = graph.knowledge_nodes.begin(); iter != graph.knowledge_nodes.end(); iter++) {
-    dot          += "    \""+(iter->node)+"\""+(is_marked(iter->node)?" [style=bold,color=red]":"")+";\n";
-  }
-  dot            += "  }\n";
-
-  // create information nodes
-  dot            += "  subgraph information {\n"\
-                    "    rank = same;\n"\
-                    "    \"Information\";\n";
-  for(iter = graph.information_nodes.begin(); iter != graph.information_nodes.end(); iter++) {
-    dot          += "    \""+(iter->node)+"\""+(is_marked(iter->node)?" [style=bold,color=red]":"")+";\n";
-  }
-  dot            += "  }\n";
-
-  // create data nodes
-  dot            += "  subgraph data {\n"\
-                    "    rank = same;\n"\
-                    "    \"Data\";\n";
-  for(iter = graph.data_nodes.begin(); iter != graph.data_nodes.end(); iter++) {
-    dot          += "    \""+(iter->node)+"\""+(is_marked(iter->node)?" [style=bold,color=red]":"")+";\n";
-  }
-  dot            += "  }\n";
-
-  // create edges
-  for(edgeiter = graph.edges.begin(); edgeiter != graph.edges.end(); edgeiter++) {
-    dot          += "    \""+(edgeiter->to)+"\" -> \""+(edgeiter->from)+"\""+style_edge(edgeiter->label, is_marked(edgeiter->from) && is_marked(edgeiter->to))+";\n";
-  }
-
-  // end the graph
-  dot            += "}";
-
+  std::string dot = graph.get_dot(markupnode);
   char tmpdot [L_tmpnam];
   tmpnam(tmpdot);
   std::ofstream tmpdotf;
@@ -243,96 +187,6 @@ void DIKWTab::create_graphviz_dot(std::string markupnode) {
 */
 }
 
-bool DIKWTab::is_marked(std::string node) {
-  return (find(marked_nodes.begin(), marked_nodes.end(), node) != marked_nodes.end());
-}
-
-bool DIKWTab::is_node(std::string node) {
-  std::list<DIKGraph::DIKNode>::iterator iter;
-  for(iter = graph.knowledge_nodes.begin(); iter != graph.knowledge_nodes.end(); iter++)
-    if(*iter == node)
-      return true;
-  for(iter = graph.information_nodes.begin(); iter != graph.information_nodes.end(); iter++)
-    if(*iter == node)
-      return true;
-  for(iter = graph.data_nodes.begin(); iter != graph.data_nodes.end(); iter++)
-    if(*iter == node)
-      return true;
-
-  return false;
-}
-
-DIKWTab::DIKGraph::DIKNode* DIKWTab::get_node(std::string node) {
-  DIKGraph::DIKNode* n = new DIKGraph::DIKNode;
-  std::list<DIKGraph::DIKNode>::iterator iter;
-  iter = find(graph.knowledge_nodes.begin(), graph.knowledge_nodes.end(), node);
-  if(iter != graph.knowledge_nodes.end()) {
-    n=&(*iter);
-    return n;
-  }
-  iter = find(graph.information_nodes.begin(), graph.information_nodes.end(), node);
-  if(iter != graph.information_nodes.end()) {
-    n=&(*iter);
-    return n;
-  }
-  iter = find(graph.data_nodes.begin(), graph.data_nodes.end(), node);
-  if(iter != graph.data_nodes.end()) {
-    n=&(*iter);
-    return n;
-  }
-
-  return n;
-}
-
-void DIKWTab::mark_children(DIKGraph::DIKNode* node) {
-  std::list<DIKGraph::DIKNode*>::iterator iter;
-  for(iter = node->children.begin(); iter != node->children.end(); iter++) {
-    if(!is_marked((*iter)->node)) {
-      marked_nodes.push_back((*iter)->node);
-      mark_children(*iter);
-    }
-  }
-}
-
-void DIKWTab::mark_parents(DIKGraph::DIKNode* node) {
-  std::list<DIKGraph::DIKNode*>::iterator iter;
-  for(iter = node->parents.begin(); iter != node->parents.end(); iter++) {
-    if(!is_marked((*iter)->node)) {
-      marked_nodes.push_back((*iter)->node);
-      mark_parents(*iter);
-    }
-  }
-}
-
-bool DIKWTab::is_edge(DIKGraph::DIKEdge edge) {
-  return (find(graph.edges.begin(), graph.edges.end(), edge) != graph.edges.end());
-}
-
-std::string DIKWTab::level_of_node(std::string node) {
-  if (find(graph.knowledge_nodes.begin(), graph.knowledge_nodes.end(), node) != graph.knowledge_nodes.end())
-    return "knowledge";
-  else if (find(graph.information_nodes.begin(), graph.information_nodes.end(), node) != graph.information_nodes.end())
-    return "information";
-  else if (find(graph.data_nodes.begin(), graph.data_nodes.end(), node) != graph.data_nodes.end())
-    return "data";
-  else
-    return "";
-}
-
-std::string DIKWTab::style_edge(std::string label, bool marked) {
-  std::string style = "";
-  if(!label.empty() || marked) {
-    style += " [dir=back";
-      if(!label.empty())
-        style += ",label=\""+label+"\"";
-      if(marked)
-        style += ",style=bold,color=red";
-    style += "]";
-  }
-
-  return style;
-}
-
 void DIKWTab::on_type_changed() {
   if(com_type->get_active_text() == "Node") {
     lbl_left->set_text("Level");
@@ -373,7 +227,7 @@ void DIKWTab::on_type_changed() {
 
 void DIKWTab::on_add_clicked() {
   if(com_type->get_active_text() == "Node") {
-    if(!is_node(com_right->get_entry_text())) {
+    if(!graph.is_node(com_right->get_entry_text())) {
       if(com_left->get_active_text() == "Knowledge") {
         logger->log("dikw", "knowledge node \""+com_right->get_entry_text()+"\" added");
         DIKGraph::DIKNode node;
@@ -406,7 +260,7 @@ void DIKWTab::on_add_clicked() {
       }
     }
     else {
-      logger->log("dikw", "node \""+com_right->get_entry_text()+"\" already exists at level "+level_of_node(com_right->get_entry_text()));
+      logger->log("dikw", "node \""+com_right->get_entry_text()+"\" already exists at level "+graph.level_of_node(com_right->get_entry_text()));
     }
   }
   else if(com_type->get_active_text() == "Edge") {
@@ -414,11 +268,11 @@ void DIKWTab::on_add_clicked() {
     edge.from = com_left->get_entry_text();
     edge.to = com_right->get_entry_text();
     edge.label = ent_label->get_text();
-    if(!is_edge(edge) && is_node(edge.from) && is_node(edge.to)) {
+    if(!graph.is_edge(edge) && graph.is_node(edge.from) && graph.is_node(edge.to)) {
       logger->log("dikw", "edge "+edge.toString()+" added");
       graph.edges.push_back(edge);
-      DIKGraph::DIKNode *from = get_node(edge.from);
-      DIKGraph::DIKNode *to   = get_node(edge.to);
+      DIKGraph::DIKNode *from = graph.get_node(edge.from);
+      DIKGraph::DIKNode *to   = graph.get_node(edge.to);
       from->parents.push_back(to);
       to->children.push_back(from);
       Gtk::TreeModel::Row row;
@@ -427,11 +281,11 @@ void DIKWTab::on_add_clicked() {
     }
     else {
       std::string error = "edge not added";
-      if(is_edge(edge))
+      if(graph.is_edge(edge))
         error += ", edge already exists";
-      if(!is_node(com_left->get_entry_text()))
+      if(!graph.is_node(com_left->get_entry_text()))
         error += ", node \""+com_left->get_entry_text()+"\" is not known";
-      if(!is_node(com_right->get_entry_text()))
+      if(!graph.is_node(com_right->get_entry_text()))
         error += ", node \""+com_right->get_entry_text()+"\" is not known";
 
       logger->log("dikw", error);
@@ -447,13 +301,13 @@ void DIKWTab::on_nodes_remove_clicked() {
     trv_nodes->get_selection()->get_selected()->get_value(0, node);
     nds_store->erase(trv_nodes->get_selection()->get_selected());
     logger->log("dikw", "removed node: "+node);
-    if(level_of_node(node) == "knowledge") {
+    if(graph.level_of_node(node) == "knowledge") {
       std::list<DIKGraph::DIKNode>::iterator iter;
       iter = find(graph.knowledge_nodes.begin(), graph.knowledge_nodes.end(), (std::string)node);
       if(iter != graph.knowledge_nodes.end()) {
         std::list<DIKGraph::DIKNode*>::iterator subiter;
         DIKGraph::DIKNode *p;
-        p = get_node(node);
+        p = graph.get_node(node);
         for(subiter = iter->children.begin(); subiter != iter->children.end(); subiter++) {
           (*subiter)->parents.remove(p);
         }
@@ -464,13 +318,13 @@ void DIKWTab::on_nodes_remove_clicked() {
         graph.knowledge_nodes.erase(iter);
       }
     }
-    else if(level_of_node(node) == "information") {
+    else if(graph.level_of_node(node) == "information") {
       std::list<DIKGraph::DIKNode>::iterator iter;
       iter = find(graph.information_nodes.begin(), graph.information_nodes.end(), (std::string)node);
       if(iter != graph.information_nodes.end()) {
         std::list<DIKGraph::DIKNode*>::iterator subiter;
         DIKGraph::DIKNode *p;
-        p = get_node(node);
+        p = graph.get_node(node);
         for(subiter = iter->children.begin(); subiter != iter->children.end(); subiter++) {
           (*subiter)->parents.remove(p);
         }
@@ -481,13 +335,13 @@ void DIKWTab::on_nodes_remove_clicked() {
         graph.information_nodes.erase(iter);
       }
     }
-    else if(level_of_node(node) == "data") {
+    else if(graph.level_of_node(node) == "data") {
       std::list<DIKGraph::DIKNode>::iterator iter;
       iter = find(graph.data_nodes.begin(), graph.data_nodes.end(), (std::string)node);
       if(iter != graph.data_nodes.end()) {
         std::list<DIKGraph::DIKNode*>::iterator subiter;
         DIKGraph::DIKNode *p;
-        p = get_node(node);
+        p = graph.get_node(node);
         for(subiter = iter->children.begin(); subiter != iter->children.end(); subiter++) {
           (*subiter)->parents.remove(p);
         }
@@ -538,9 +392,9 @@ void DIKWTab::on_edges_remove_clicked() {
     if(iter != graph.edges.end()) {
       DIKGraph::DIKNode *from;
       DIKGraph::DIKNode *to;
-      from = get_node(iter->from);
+      from = graph.get_node(iter->from);
       from->parents.remove(to);
-      to   = get_node(iter->to);
+      to   = graph.get_node(iter->to);
       to->children.remove(from);
       graph.edges.erase(iter);
     }
@@ -573,11 +427,4 @@ bool DIKWTab::on_image_button_release(GdkEventButton *b) {
 
   return false;
 }
-
-void DIKWTab::set_enabled(bool enabled) {
-  Gtk::Widget* tab;
-  _builder->get_widget("dikw_tab", tab);
-  tab->set_sensitive(enabled);
-}
-
 

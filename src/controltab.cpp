@@ -1,4 +1,3 @@
-#include <gazebo/math/Pose.hh>
 
 #include "controltab.h"
 #include "converter.h"
@@ -56,7 +55,7 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Gl
   childrow.set_value(1,(Glib::ustring)"Position (X: 0 Y: 0 Z: 0) Orientation (X: 0 Y: 0 Z: 0 W: 0)");
 
   childrow = *(dat_store->append(row.children()));
-  childrow.set_value(0,(Glib::ustring)"Robot");
+  childrow.set_value(0,(Glib::ustring)"Robot (\"/map\")");
   childrow.set_value(1,(Glib::ustring)"Position (X: 0 Y: 0 Z: 0) Orientation (X: 0 Y: 0 Z: 0 W: 0)");
 
   childrow = *(dat_store->append(row.children()));
@@ -67,14 +66,13 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Gl
   reqPub = node->Advertise<gazebo::msgs::Request>("~/request");
   controlPub = node->Advertise<gazebo::msgs::SceneFrameworkControl>("~/SceneReconstruction/Framework/Control");
   worldPub = node->Advertise<gazebo::msgs::WorldControl>("~/world_control");
-  robotPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/RobotController/Request");
   objectPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/ObjectInstantiator/Request");
   framePub = node->Advertise<gazebo::msgs::TransformRequest>("~/SceneReconstruction/Framework/TransformRequest");
+  robotPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/RobotController/Request");
 
-  gazebo::math::Pose rob;
+  gazebo::math::Vector3 rob;
   robot = gazebo::msgs::Convert(rob);
-  robotRequest = gazebo::msgs::CreateRequest("get_offset");
-  robotPub->Publish(*robotRequest);
+  robotRequest = gazebo::msgs::CreateRequest("get_data");
 
   gazebo::msgs::WorldControl start;
   start.set_pause(true);
@@ -154,8 +152,10 @@ void ControlTab::OnResMsg(ConstResponsePtr& _msg) {
 void ControlTab::OnResponseMsg(ConstResponsePtr& _msg) {
   logger->msglog("<<", "~/SceneReconstruction/GUI/Response", _msg);
   if (robotRequest) {
-    if (_msg->request() == robotRequest->request() && _msg->id() == robotRequest->id() && _msg->has_type() && _msg->type() == robot.GetTypeName())
+    if (_msg->request() == robotRequest->request() && _msg->id() == robotRequest->id() && _msg->has_type() && _msg->type() == robot.GetTypeName() && _msg->response() != "unknown") {
       robot.ParseFromString(_msg->serialized_data());
+      selected_model = _msg->response();
+    }
   }
   
   if (objectRequest) {
@@ -170,29 +170,23 @@ void ControlTab::OnResponseMsg(ConstResponsePtr& _msg) {
         frameRequest = new gazebo::msgs::TransformRequest;
         frameRequest->set_id(tmp->id());
         frameRequest->set_request(tmp->request());
-        frameRequest->set_source_frame("/map");
+        frameRequest->set_source_frame("/gazebo");
         frameRequest->set_target_frame(model_frame);
-        frameRequest->set_pos_x(gazebo.position().x() - robot.position().x());
-        frameRequest->set_pos_y(gazebo.position().y() - robot.position().y());
-        frameRequest->set_pos_z(gazebo.position().z() - robot.position().z());
-        frameRequest->set_ori_w(gazebo.orientation().w() - robot.orientation().w());
-        frameRequest->set_ori_x(gazebo.orientation().x() - robot.orientation().x());
-        frameRequest->set_ori_y(gazebo.orientation().y() - robot.orientation().y());
-        frameRequest->set_ori_z(gazebo.orientation().z() - robot.orientation().z());
+        gazebo::math::Vector3 pos = gazebo::msgs::Convert(gazebo.position()) - gazebo::msgs::Convert(robot);
+        frameRequest->set_pos_x(pos.x);
+        frameRequest->set_pos_y(pos.y);
+        frameRequest->set_pos_z(pos.z);
+        frameRequest->set_ori_w(gazebo.orientation().w());
+        frameRequest->set_ori_x(gazebo.orientation().x());
+        frameRequest->set_ori_y(gazebo.orientation().y());
+        frameRequest->set_ori_z(gazebo.orientation().z());
         framePub->Publish(*frameRequest);
       }
     }
     else {
       logger->log("control", "getting coords for frame: /map");
       gazebo::math::Pose tmp_pose = gazebo::msgs::Convert(gazebo);
-      tmp_pose.pos.x -= robot.position().x();
-      tmp_pose.pos.y -= robot.position().y();
-      tmp_pose.pos.z -= robot.position().z();
-      tmp_pose.rot.w -= robot.orientation().w();
-      tmp_pose.rot.x -= robot.orientation().x();
-      tmp_pose.rot.y -= robot.orientation().y();
-      tmp_pose.rot.z -= robot.orientation().z();
-
+      tmp_pose.pos -= gazebo::msgs::Convert(robot);
       sensor = gazebo::msgs::Convert(tmp_pose);
       sensor.set_name("/map");
 
@@ -203,8 +197,9 @@ void ControlTab::OnResponseMsg(ConstResponsePtr& _msg) {
   if (frameRequest) {
     if (_msg->request() == frameRequest->request() && _msg->id() == frameRequest->id() && _msg->has_type() && _msg->type() == sensor.GetTypeName()) {
       sensor.ParseFromString(_msg->serialized_data());
-      update_coords();
-      
+      delete frameRequest;
+      frameRequest = 0;
+      update_coords();      
     }
   }
 }
@@ -238,20 +233,14 @@ void ControlTab::update_coords() {
     childrow.set_value(1, Converter::convert(gazebo, 2, 3));
   
     gazebo::math::Pose tmp_pose = gazebo::msgs::Convert(gazebo);
-    tmp_pose.pos.x -= robot.position().x();
-    tmp_pose.pos.y -= robot.position().y();
-    tmp_pose.pos.z -= robot.position().z();
-    tmp_pose.rot.w -= robot.orientation().w();
-    tmp_pose.rot.x -= robot.orientation().x();
-    tmp_pose.rot.y -= robot.orientation().y();
-    tmp_pose.rot.z -= robot.orientation().z();
+    tmp_pose.pos -= gazebo::msgs::Convert(robot);
     childiter++;
     childrow = *childiter;
     childrow.set_value(1, Converter::convert(gazebo::msgs::Convert(tmp_pose), 2, 3));
 
     childiter++;
     childrow = *childiter;
-    childrow.set_value(0, "Frame(\""+sensor.name()+"\")");
+    childrow.set_value(0, "Frame (\""+sensor.name()+"\")");
     childrow.set_value(1, Converter::convert(sensor, 2, 3));
   }
   coords_updated = true;
@@ -374,8 +363,3 @@ bool ControlTab::on_scale_key_event(GdkEventKey* k) {
   return false;
 }
 
-void ControlTab::set_enabled(bool enabled) {
-  Gtk::Widget* tab;
-  _builder->get_widget("control_tab", tab);
-  tab->set_sensitive(enabled);
-}

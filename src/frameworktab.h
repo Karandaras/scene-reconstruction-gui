@@ -54,11 +54,5 @@ namespace SceneReconstruction {
       void on_button_collections_refresh_clicked();
       void on_button_collections_select_clicked();
       void on_button_object_value_changed();
-
-    public:
-      /** sets the sensitivity of the tab
-       *  @param enabled true to enable, false to disable the tab
-       */
-      void set_enabled(bool);
  };
 }

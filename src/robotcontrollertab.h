@@ -35,8 +35,6 @@ namespace SceneReconstruction {
 
       Gtk::TreeView                           *trv_robot;
       Glib::RefPtr<Gtk::ListStore>             rob_store;
-      Gtk::ToolButton                         *btn_send;
-      Gtk::ToolButton                         *btn_reload;
       Gtk::Entry                              *ent_posx;
       Gtk::Entry                              *ent_posy;
       Gtk::Entry                              *ent_posz;
@@ -46,23 +44,9 @@ namespace SceneReconstruction {
       Gtk::Entry                              *ent_oriz;
 
       // subscriber and publisher
-      gazebo::transport::SubscriberPtr         sceneResSub;
-      gazebo::transport::PublisherPtr          sceneReqPub,
-                                               setupPub;
-      boost::shared_ptr<gazebo::msgs::Request> robReq;
+      gazebo::transport::SubscriberPtr         controllerSub;
  
     private:
-      void OnResponseMsg(ConstResponsePtr&);
-      void on_button_send_clicked();
-      void on_button_reload_clicked();
-      void on_cell_simangle_edited(const Glib::ustring&, const Glib::ustring&);
-      void on_cell_offset_edited(const Glib::ustring&, const Glib::ustring&);
-      void on_cell_robangle_edited(const Glib::ustring&, const Glib::ustring&);
-
-    public:
-      /** sets the sensitivity of the tab
-       *  @param enabled true to enable, false to disable the tab
-       */
-      void set_enabled(bool);
+      void OnControllerInfoMsg(ConstSceneRobotControllerPtr&);
   };
 }

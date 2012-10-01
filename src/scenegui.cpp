@@ -82,12 +82,6 @@ SceneGUI::~SceneGUI() {
 }
 
 void SceneGUI::check_components() {
-  // disable all tabs but the logger until everything is ready
-  std::vector<SceneTab*>::iterator tab;
-  for(tab =  vec_tabs.begin(); tab != vec_tabs.end(); tab++) {
-    (*tab)->set_enabled(false);
-  }
-
   // publish availability request
   std::map<std::string, bool>::iterator plugin;
   for(plugin =  plugin_availability.begin(); plugin != plugin_availability.end(); plugin++) {
@@ -124,12 +118,6 @@ void SceneGUI::OnResponseMsg(ConstResponsePtr &_msg) {
   }
 
   if(missing_plugins == 0) {
-    //everything is ready so enable all tabs and reset and pause the world
-    std::vector<SceneTab*>::iterator tab;
-    for(tab =  vec_tabs.begin(); tab != vec_tabs.end(); tab++) {
-      (*tab)->set_enabled(true);
-    }
-
     // reset time and pause the world
     gazebo::msgs::WorldControl start;
     start.set_pause(true);

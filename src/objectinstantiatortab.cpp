@@ -136,32 +136,24 @@ void ObjectInstantiatorTab::OnResponseMsg(ConstResponsePtr& _msg) {
       return;
     }
     
-    if(!src1.has_objectids() || src1.objectids() != src2.objectids()) {
-      logger->log("object instantiator", "received messages refer to different objectids");
-      return;
-    }
-
     dat_store->clear();
     Gtk::TreeModel::Row row;
 
     logger->log("object instantiator", "receiving object data from ObjectInstantiatorPlugin");
 
-    if(src1.has_object_type()) {
+    if(src1.has_model()) {
       row = *(dat_store->append());
-      row.set_value(0, (Glib::ustring)"Object Type");
-      row.set_value(1, src1.object_type());
+      row.set_value(0, (Glib::ustring)"Model");
+      row.set_value(1, src1.model());
     }
 
-    if(src1.has_pos_x() && src1.has_pos_y() && src1.has_pos_z()) {
+    if(src1.has_pose()) {
       row = *(dat_store->append());
       row.set_value(0, (Glib::ustring)"Position");
-      row.set_value(1, Converter::convert(src1.pos_x(), src1.pos_y(), src1.pos_z()));
-    }
-
-    if(src1.has_ori_w() && src1.has_ori_x() && src1.has_ori_y() && src1.has_ori_z()) {
+      row.set_value(1, Converter::convert(src1.pose(), 0));
       row = *(dat_store->append());
       row.set_value(0, (Glib::ustring)"Orientation");
-      row.set_value(1, Converter::convert(src1.ori_w(), src1.ori_x(), src1.ori_y(), src1.ori_z()));
+      row.set_value(1, Converter::convert(src1.pose(), 1));
     }
 
     if(src1.has_frame()) {
@@ -170,16 +162,10 @@ void ObjectInstantiatorTab::OnResponseMsg(ConstResponsePtr& _msg) {
       row.set_value(1, src1.frame());
     }
 
-    if(src1.has_objectids()) {
+    if(src1.has_object()) {
       row = *(dat_store->append());
-      row.set_value(0, (Glib::ustring)"ObjectIDs");
-      row.set_value(1, src1.objectids());
-    }
-
-    if(src1.has_name()) {
-      row = *(dat_store->append());
-      row.set_value(0, (Glib::ustring)"Name");
-      row.set_value(1, src1.name());
+      row.set_value(0, (Glib::ustring)"Object");
+      row.set_value(1, src1.object());
     }
 
     images.clear();
@@ -198,6 +184,8 @@ void ObjectInstantiatorTab::OnResponseMsg(ConstResponsePtr& _msg) {
       row.set_value(0, (Glib::ustring)"None");
       images["None"] = Gdk::Pixbuf::create_from_file("res/noimg.png");
     }
+
+    // TODO: process json documents of SceneObjectData message
 
     image_iter = images.begin();
     img_data->set(image_iter->second);
@@ -314,9 +302,3 @@ void ObjectInstantiatorTab::on_win_button_close_clicked() {
   logger->log("object instantiator", "closing originale sized image in new window");
 }
 
-
-void ObjectInstantiatorTab::set_enabled(bool enabled) {
-  Gtk::Widget* tab;
-  _builder->get_widget("objectinstantiator_tab", tab);
-  tab->set_sensitive(enabled);
-}

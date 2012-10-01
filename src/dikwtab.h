@@ -14,6 +14,7 @@
 
 #include "scenetab.h"
 #include "loggertab.h"
+#include "dikgraph.h"
 
 namespace SceneReconstruction {
 /** @class DIKWTab "dikwtab.h"
@@ -33,96 +34,6 @@ namespace SceneReconstruction {
       ~DIKWTab();
 
     private:
-      /** simple structure to contruct and store the DIK Graph
-       */
-      typedef struct {
-        /** simple structure for the edges of the DIK Graph
-         */
-        struct DIKEdge {
-          /** node from which the edge comes */
-          std::string from;
-          /** node to which the edge points */
-          std::string to;
-          /** label of the edge */
-          std::string label;
-          /** equality operator
-           *  @param rhs an edge to compare with
-           *  @return true if edges are equal
-           */
-          bool operator==(const DIKEdge& rhs) const
-          {
-              if(from != rhs.from)
-                return false;
-              else if(to != rhs.to)
-                return false;
-              else if(label != rhs.label)
-                return false;
-              else
-                return true;
-          }
-          /** equality operator
-           *  @param rhs string representation of an edge to compare with
-           *  @return true if edges are equal
-           */
-          bool operator==(const std::string& rhs) const
-          {
-              if(toString() != rhs)
-                return false;
-              else
-                return true;
-          }
-          /** get the string representation of the edge
-           *  @return string representation of this edge
-           */
-          std::string toString() const
-          {
-            return "\""+from+"\" --"+(label!=""?"\""+label+"\"":"")+"--> \""+to+"\"";
-          }
-        };
-
-        /** simple structure for the nodes of the DIK Graph
-         */
-        struct DIKNode {
-          /** name of the node */
-          std::string node;
-          /** list of pointers to parent nodes */
-          std::list<DIKNode*> parents;
-          /** list of pointers to child nodes */
-          std::list<DIKNode*> children;
-
-          /** equality operator
-           *  only checks for names since the graph does not allow two
-           *  nodes with equal names
-           *  @param rhs node name
-           *  @return true if names are equal
-           */
-          bool operator==(const std::string& rhs) const
-          {
-              if(node != rhs)
-                return false;
-              else
-                return true;
-          }
-
-          /** get the name of the node
-           *  @return name of the node
-           */
-          std::string toString() const
-          {
-            return node;
-          }
-        };
-
-        /** list of knowledge nodes */
-        std::list<DIKNode>  knowledge_nodes;
-        /** list of information nodes */
-        std::list<DIKNode>  information_nodes;
-        /** list of data nodes */
-        std::list<DIKNode>  data_nodes;
-        /** list of edges */
-        std::list<DIKEdge>  edges;
-      } DIKGraph;
-
       DIKGraph                           graph;
       std::list<std::string>             db_collections;
       std::list<std::string>             marked_nodes;
@@ -158,16 +69,8 @@ namespace SceneReconstruction {
 
     private:
       void OnResponseMsg(ConstResponsePtr&);
-      void create_graphviz_dot(std::string);
-      bool is_marked(std::string);
-      std::string style_edge(std::string, bool);
-      bool is_node(std::string);
-      DIKGraph::DIKNode* get_node(std::string);
-      std::string level_of_node(std::string);
-      void mark_children(DIKGraph::DIKNode*);
-      void mark_parents(DIKGraph::DIKNode*);
-      bool is_edge(DIKGraph::DIKEdge);
       void set_comboboxtext(Gtk::ComboBoxText*,gazebo::msgs::String_V);
+      void create_graphviz_dot(std::string);
       void on_type_changed();
       void on_add_clicked();
       void on_nodes_remove_clicked();
@@ -176,11 +79,5 @@ namespace SceneReconstruction {
       void on_edges_mark_clicked();
       bool on_image_button_release(GdkEventButton*);
       bool on_image_resize(GdkEventConfigure*);
-
-    public:
-      /** sets the sensitivity of the tab
-       *  @param enabled true to enable, false to disable the tab
-       */
-      void set_enabled(bool);
- };
+};
 }
