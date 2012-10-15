@@ -143,6 +143,86 @@ namespace SceneReconstruction {
         out.close();
       }
         
+      /** save the graph to string 
+       */
+      std::string save_to_string() {
+        std::stringstream out;
+        std::list<DIKNode>::iterator iter;
+        for(iter = knowledge_nodes.begin(); iter != knowledge_nodes.end(); iter++)
+          out << iter->node << ";";
+        out << "\n";
+        for(iter = information_nodes.begin(); iter != information_nodes.end(); iter++)
+          out << iter->node << ";";
+        out << "\n";
+        for(iter = data_nodes.begin(); iter != data_nodes.end(); iter++)
+          out << iter->node << ";";
+        out << "\n";
+
+        std::list<DIKEdge>::iterator eiter;
+        for(eiter = edges.begin(); eiter != edges.end(); eiter++) {
+          out << eiter->from << ";" << eiter->to << ";" << eiter->label << ";\n";
+        }
+
+        return out.str();
+      }
+        
+      /** load the graph from a string 
+       *  @param string representing the graph
+       */
+      void load(std::string graph) {
+        size_t pos = graph.find("\n");
+        std::string knowledge = graph.substr(0, pos-1);
+        graph = graph.substr(pos+1);
+        while((pos = knowledge.find(";")) != std::string::npos) {
+          DIKNode n;
+          n.node = knowledge.substr(0, pos-1);
+          knowledge_nodes.push_back(n);
+          knowledge = knowledge.substr(pos+1);
+        }
+
+        pos = graph.find("\n");
+        std::string information = graph.substr(0, pos-1);
+        graph = graph.substr(pos+1);
+        while((pos = information.find(";")) != std::string::npos) {
+          DIKNode n;
+          n.node = information.substr(0, pos-1);
+          information_nodes.push_back(n);
+          information = information.substr(pos+1);
+        }
+
+        pos = graph.find("\n");
+        std::string data = graph.substr(0, pos-1);
+        graph = graph.substr(pos+1);
+        while((pos = data.find(";")) != std::string::npos) {
+          DIKNode n;
+          n.node = data.substr(0, pos-1);
+          data_nodes.push_back(n);
+          data = data.substr(pos+1);
+        }
+
+        while((pos = graph.find("\n")) != std::string::npos) {
+          std::string edge = graph.substr(0, pos-1);
+          size_t epos;
+          DIKEdge e;
+          epos = edge.find(";");
+          e.from = edge.substr(0,epos-1);
+          edge = edge.substr(epos+1);
+          epos = edge.find(";");
+          e.to = edge.substr(0,epos-1);
+          edge = edge.substr(epos+1);
+          epos = edge.find(";");
+          e.label = edge.substr(0,epos-1);
+          if(is_node(e.from) && is_node(e.to)) {
+            edges.push_back(e);
+            DIKNode *from = get_node(e.from);
+            DIKNode *to   = get_node(e.to);
+            from->children.push_back(to);
+            to->parents.push_back(from);
+          }
+          graph = graph.substr(pos+1);
+        }
+      }
+        
       /** checks if a node exists
        *  @param node name of the node to search for
        *  @return true if node exists, false otherwise

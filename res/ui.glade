@@ -1,6 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
+  <object class="GtkTreeStore" id="analysis_buffer_joints_treestore">
+    <columns>
+      <!-- column-name desc -->
+      <column type="gchararray"/>
+      <!-- column-name data -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkTreeStore" id="analysis_buffer_objects_treestore">
+    <columns>
+      <!-- column-name desc -->
+      <column type="gchararray"/>
+      <!-- column-name data -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkTreeStore" id="analysis_buffer_position_treestore">
+    <columns>
+      <!-- column-name desc -->
+      <column type="gchararray"/>
+      <!-- column-name data -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkTreeStore" id="control_treestore">
     <columns>
       <!-- column-name description -->
@@ -8,6 +32,95 @@
       <!-- column-name value -->
       <column type="gchararray"/>
     </columns>
+  </object>
+  <object class="GtkListStore" id="dikw_document_liststore">
+    <columns>
+      <!-- column-name time -->
+      <column type="gchararray"/>
+      <!-- column-name image -->
+      <column type="GdkPixbuf"/>
+      <!-- column-name document -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkTextBuffer" id="dikw_document_textbuffer"/>
+  <object class="GtkWindow" id="dikw_document_window">
+    <property name="width_request">642</property>
+    <property name="height_request">482</property>
+    <property name="can_focus">False</property>
+    <property name="default_width">800</property>
+    <property name="default_height">600</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="icon_name">edit-find</property>
+    <child>
+      <object class="GtkScrolledWindow" id="dikw_document_scrolledwindow">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="hscrollbar_policy">never</property>
+        <property name="shadow_type">in</property>
+        <property name="min_content_width">640</property>
+        <child>
+          <object class="GtkViewport" id="dikw_document_viewport">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkBox" id="dikw_document_box">
+                <property name="width_request">640</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkComboBox" id="dikw_document_combobox">
+                    <property name="height_request">30</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="model">dikw_document_liststore</property>
+                    <child>
+                      <object class="GtkCellRendererText" id="dikw_document_cellrenderertext"/>
+                      <attributes>
+                        <attribute name="text">0</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkImage" id="dikw_document_image">
+                    <property name="width_request">640</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="stock">gtk-missing-image</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkTextView" id="dikw_document_textview">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="editable">False</property>
+                    <property name="wrap_mode">char</property>
+                    <property name="buffer">dikw_document_textbuffer</property>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
   </object>
   <object class="GtkEntryCompletion" id="dikw_entrycompletion_level_from">
     <property name="text_column">0</property>
@@ -23,51 +136,6 @@
     <property name="popup_set_width">False</property>
     <property name="popup_single_match">False</property>
   </object>
-  <object class="GtkWindow" id="dikw_graph_window">
-    <property name="width_request">800</property>
-    <property name="height_request">600</property>
-    <property name="can_focus">False</property>
-    <property name="default_width">800</property>
-    <property name="default_height">600</property>
-    <property name="destroy_with_parent">True</property>
-    <property name="icon_name">edit-find</property>
-    <child>
-      <object class="GtkScrolledWindow" id="dikw_graph_window_scrolledwindow">
-        <property name="width_request">320</property>
-        <property name="height_request">240</property>
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="shadow_type">in</property>
-        <child>
-          <object class="GtkViewport" id="dikw_graph_window_viewport">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <child>
-              <object class="GtkImage" id="dikw_graph_window_image">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="stock">gtk-missing-image</property>
-              </object>
-            </child>
-          </object>
-        </child>
-      </object>
-    </child>
-  </object>
-  <object class="GtkListStore" id="dikw_liststore_document">
-    <columns>
-      <!-- column-name documenttitel -->
-      <column type="gchararray"/>
-      <!-- column-name document -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0" translatable="yes">Position3DInterface.Tabletop</col>
-        <col id="1" translatable="yes">blablabla</col>
-      </row>
-    </data>
-  </object>
   <object class="GtkListStore" id="dikw_liststore_edges">
     <columns>
       <!-- column-name text -->
@@ -81,37 +149,12 @@
       <!-- column-name graphdata -->
       <column type="gchararray"/>
     </columns>
-    <data>
-      <row>
-        <col id="0" translatable="yes">ObjectRecognition</col>
-        <col id="1" translatable="yes"></col>
-      </row>
-    </data>
   </object>
   <object class="GtkListStore" id="dikw_liststore_nodes">
     <columns>
       <!-- column-name text -->
       <column type="gchararray"/>
     </columns>
-  </object>
-  <object class="GtkTextBuffer" id="dikw_textbuffer_document">
-    <property name="text">{ 
-	"_id" : ObjectId("5059c645bf1a209520cf5b96"), 
-	"timestamp" : NumberLong("1348060739727"), 
-	"frame" : "/base_link", 
-	"visibility_history" : 93, 
-	"rotation" : [ 	
-		0.9997294215242999, 	
-		0.010339231015083664, 	
-		0.01881935558889071, 	
-		-0.008945160475044232 
-	], 
-	"translation" : [
-		0.6629870025967908, 
-		0.007628026409155669, 
-		0.7685631871979411 
-	] 
-}</property>
   </object>
   <object class="GtkAdjustment" id="framework_adjustment_object">
     <property name="step_increment">1</property>
@@ -282,6 +325,7 @@
       <object class="GtkNotebook" id="notebook">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
+        <property name="tab_pos">right</property>
         <property name="scrollable">True</property>
         <child>
           <object class="GtkBox" id="control_tab">
@@ -1678,6 +1722,7 @@
             <property name="position_set">True</property>
             <child>
               <object class="GtkBox" id="dikw_box">
+                <property name="height_request">134</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
@@ -1688,11 +1733,25 @@
                     <property name="toolbar_style">both</property>
                     <property name="icon_size">4</property>
                     <child>
+                      <object class="GtkToolButton" id="dikw_toolbutton_new">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="label">New</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-new</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
                       <object class="GtkToolButton" id="dikw_toolbutton_load">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_action_appearance">False</property>
-                        <property name="label" translatable="yes">Load</property>
+                        <property name="label">Load</property>
                         <property name="use_underline">True</property>
                         <property name="stock_id">gtk-open</property>
                       </object>
@@ -1706,7 +1765,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_action_appearance">False</property>
-                        <property name="label" translatable="yes">Save</property>
+                        <property name="label">Save</property>
                         <property name="use_underline">True</property>
                         <property name="stock_id">gtk-save</property>
                       </object>
@@ -1720,7 +1779,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_action_appearance">False</property>
-                        <property name="label" translatable="yes">Close</property>
+                        <property name="label">Close</property>
                         <property name="use_underline">True</property>
                         <property name="stock_id">gtk-quit</property>
                       </object>
@@ -1735,12 +1794,12 @@
                         <property name="can_focus">False</property>
                         <property name="use_action_appearance">False</property>
                         <child>
-                          <object class="GtkFixed" id="fixed1">
+                          <object class="GtkFixed" id="dikw_toolbutton_fixed">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <child>
                               <object class="GtkComboBox" id="dikw_combobox_graphs">
-                                <property name="width_request">260</property>
+                                <property name="width_request">425</property>
                                 <property name="height_request">36</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
@@ -1947,7 +2006,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="use_action_appearance">False</property>
-                            <property name="label" translatable="yes">Add</property>
+                            <property name="label">Add</property>
                             <property name="use_underline">True</property>
                             <property name="stock_id">gtk-add</property>
                           </object>
@@ -1973,7 +2032,7 @@
               </object>
               <packing>
                 <property name="resize">False</property>
-                <property name="shrink">True</property>
+                <property name="shrink">False</property>
               </packing>
             </child>
             <child>
@@ -1982,50 +2041,167 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkScrolledWindow" id="dikw_scrolledwindow_graph">
+                  <object class="GtkToolbar" id="dikw_toolbar_graph">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="shadow_type">in</property>
+                    <property name="can_focus">False</property>
+                    <property name="orientation">vertical</property>
+                    <property name="toolbar_style">icons</property>
                     <child>
-                      <object class="GtkViewport" id="dikw_viewport_graph">
+                      <object class="GtkToolButton" id="dikw_toolbutton_zoom_in">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <child>
-                          <object class="GtkEventBox" id="dikw_eventbox_graph">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="hexpand">True</property>
-                            <property name="vexpand">True</property>
-                            <child>
-                              <object class="GtkImage" id="dikw_image_graph">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="stock">gtk-missing-image</property>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
+                        <property name="tooltip_markup">Zoom In</property>
+                        <property name="tooltip_text">Zoom In</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-zoom-in</property>
                       </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton" id="dikw_toolbutton_zoom_out">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="tooltip_markup">Zoom Out</property>
+                        <property name="tooltip_text">Zoom Out</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-zoom-out</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton" id="dikw_toolbutton_zoom_fit">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="tooltip_markup">Zoom Fit</property>
+                        <property name="tooltip_text">Zoom Fit</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-zoom-fit</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton" id="dikw_toolbutton_zoom_reset">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="tooltip_markup">Zoom Reset</property>
+                        <property name="tooltip_text">Zoom Reset</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-zoom-100</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorToolItem" id="dikw_toolbutton_spacer">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_action_appearance">False</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton" id="dikw_toolbutton_export">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="tooltip_markup">Export Graph</property>
+                        <property name="tooltip_text">Export Graph</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-convert</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
-                    <property name="expand">True</property>
+                    <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
+                  <object class="GtkScrolledWindow" id="dikw_scrolledwindow_graph">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="shadow_type">in</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
                   <object class="GtkBox" id="dikw_box_right">
-                    <property name="width_request">299</property>
+                    <property name="width_request">172</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="vexpand">True</property>
                     <property name="orientation">vertical</property>
+                    <property name="homogeneous">True</property>
                     <child>
-                      <object class="GtkBox" id="dikw_box_right_top">
+                      <object class="GtkBox" id="dikw_box_nodes">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkScrolledWindow" id="dikw_scrolledwindow_nodes">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="shadow_type">in</property>
+                            <child>
+                              <object class="GtkTreeView" id="dikw_treeview_nodes">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="model">dikw_liststore_nodes</property>
+                                <property name="headers_clickable">False</property>
+                                <property name="search_column">0</property>
+                                <child internal-child="selection">
+                                  <object class="GtkTreeSelection" id="treeview-selection"/>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn" id="dikw_treeviewcolumn_nodes">
+                                    <property name="title" translatable="yes">Nodes</property>
+                                    <child>
+                                      <object class="GtkCellRendererText" id="dikw_cellrenderertext_nodes"/>
+                                      <attributes>
+                                        <attribute name="text">0</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
                         <child>
                           <object class="GtkToolbar" id="dikw_toolbar_nodes">
                             <property name="height_request">42</property>
@@ -2033,52 +2209,12 @@
                             <property name="can_focus">False</property>
                             <property name="icon_size">4</property>
                             <child>
-                              <object class="GtkToolItem" id="dikw_toolbutton_nodes">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
-                                <child>
-                                  <object class="GtkScrolledWindow" id="dikw_scrolledwindow_nodes">
-                                    <property name="width_request">223</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="shadow_type">in</property>
-                                    <child>
-                                      <object class="GtkTreeView" id="dikw_treeview_nodes">
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="model">dikw_liststore_nodes</property>
-                                        <child internal-child="selection">
-                                          <object class="GtkTreeSelection" id="dikw_treeview_selection_nodes"/>
-                                        </child>
-                                        <child>
-                                          <object class="GtkTreeViewColumn" id="dikw_treeviewcolumn_nodes">
-                                            <property name="title" translatable="yes">Nodes</property>
-                                            <child>
-                                              <object class="GtkCellRendererText" id="dikw_cellrenderertext_nodes"/>
-                                              <attributes>
-                                                <attribute name="text">0</attribute>
-                                              </attributes>
-                                            </child>
-                                          </object>
-                                        </child>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="homogeneous">True</property>
-                              </packing>
-                            </child>
-                            <child>
                               <object class="GtkToolButton" id="dikw_toolbutton_nodes_mark">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="has_tooltip">True</property>
-                                <property name="tooltip_markup" translatable="yes">Mark</property>
-                                <property name="tooltip_text" translatable="yes">Mark</property>
+                                <property name="tooltip_markup">Mark</property>
+                                <property name="tooltip_text">Mark</property>
                                 <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">Mark</property>
                                 <property name="use_underline">True</property>
@@ -2094,95 +2230,8 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="has_tooltip">True</property>
-                                <property name="tooltip_markup" translatable="yes">Remove</property>
-                                <property name="tooltip_text" translatable="yes">Remove</property>
-                                <property name="use_action_appearance">False</property>
-                                <property name="label" translatable="yes">Delete</property>
-                                <property name="use_underline">True</property>
-                                <property name="stock_id">gtk-delete</property>
-                              </object>
-                              <packing>
-                                <property name="expand">True</property>
-                                <property name="homogeneous">True</property>
-                              </packing>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkToolbar" id="dikw_toolbar_edges">
-                            <property name="height_request">42</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="icon_size">4</property>
-                            <child>
-                              <object class="GtkToolItem" id="dikw_toolbutton_edges">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
-                                <child>
-                                  <object class="GtkScrolledWindow" id="dikw_scrolledwindow_node">
-                                    <property name="width_request">223</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="shadow_type">in</property>
-                                    <child>
-                                      <object class="GtkTreeView" id="dikw_treeview_edges">
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="model">dikw_liststore_edges</property>
-                                        <child internal-child="selection">
-                                          <object class="GtkTreeSelection" id="dikw_treeview_selection_edges"/>
-                                        </child>
-                                        <child>
-                                          <object class="GtkTreeViewColumn" id="dikw_treeviewcolumn_edges">
-                                            <property name="title" translatable="yes">Edges</property>
-                                            <child>
-                                              <object class="GtkCellRendererText" id="dikw_cellrenderertext_edges"/>
-                                              <attributes>
-                                                <attribute name="text">0</attribute>
-                                              </attributes>
-                                            </child>
-                                          </object>
-                                        </child>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="homogeneous">True</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkToolButton" id="dikw_toolbutton_edges_mark">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="has_tooltip">True</property>
-                                <property name="tooltip_markup" translatable="yes">Mark</property>
-                                <property name="tooltip_text" translatable="yes">Mark</property>
-                                <property name="use_action_appearance">False</property>
-                                <property name="label" translatable="yes">Mark</property>
-                                <property name="use_underline">True</property>
-                                <property name="stock_id">gtk-dialog-warning</property>
-                              </object>
-                              <packing>
-                                <property name="expand">True</property>
-                                <property name="homogeneous">True</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkToolButton" id="dikw_toolbutton_edges_delete">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="has_tooltip">True</property>
-                                <property name="tooltip_markup" translatable="yes">Remove</property>
-                                <property name="tooltip_text" translatable="yes">Remove</property>
+                                <property name="tooltip_markup">Remove</property>
+                                <property name="tooltip_text">Remove</property>
                                 <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">Delete</property>
                                 <property name="use_underline">True</property>
@@ -2200,43 +2249,99 @@
                             <property name="position">1</property>
                           </packing>
                         </child>
-                        <child>
-                          <object class="GtkComboBox" id="dikw_combobox_document">
-                            <property name="height_request">36</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="model">dikw_liststore_document</property>
-                            <child>
-                              <object class="GtkCellRendererText" id="dikw_cellrenderertext_document"/>
-                              <attributes>
-                                <attribute name="text">0</attribute>
-                              </attributes>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
+                        <property name="expand">True</property>
                         <property name="fill">True</property>
                         <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkScrolledWindow" id="dikw_scrolledwindow_document">
+                      <object class="GtkBox" id="dikw_box_edges">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="shadow_type">in</property>
+                        <property name="can_focus">False</property>
+                        <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkTextView" id="dikw_textview_document">
+                          <object class="GtkScrolledWindow" id="dikw_scrolledwindow_edges">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <property name="buffer">dikw_textbuffer_document</property>
+                            <property name="shadow_type">in</property>
+                            <child>
+                              <object class="GtkTreeView" id="dikw_treeview_edges">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="model">dikw_liststore_edges</property>
+                                <property name="headers_clickable">False</property>
+                                <property name="search_column">0</property>
+                                <child internal-child="selection">
+                                  <object class="GtkTreeSelection" id="treeview-selection11"/>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn" id="dikw_treeviewcolumn_edges">
+                                    <property name="title" translatable="yes">Edges</property>
+                                    <child>
+                                      <object class="GtkCellRendererText" id="dikw_cellrenderertext_edges"/>
+                                      <attributes>
+                                        <attribute name="text">0</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkToolbar" id="dikw_toolbar_edges">
+                            <property name="height_request">42</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="icon_size">4</property>
+                            <child>
+                              <object class="GtkToolButton" id="dikw_toolbutton_edges_mark">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="has_tooltip">True</property>
+                                <property name="tooltip_markup">Mark</property>
+                                <property name="tooltip_text">Mark</property>
+                                <property name="use_action_appearance">False</property>
+                                <property name="label" translatable="yes">Mark</property>
+                                <property name="use_underline">True</property>
+                                <property name="stock_id">gtk-dialog-warning</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="homogeneous">True</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton" id="dikw_toolbutton_edges_delete">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="has_tooltip">True</property>
+                                <property name="tooltip_markup">Remove</property>
+                                <property name="tooltip_text">Remove</property>
+                                <property name="use_action_appearance">False</property>
+                                <property name="label" translatable="yes">Delete</property>
+                                <property name="use_underline">True</property>
+                                <property name="stock_id">gtk-delete</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="homogeneous">True</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
                         </child>
                       </object>
                       <packing>
@@ -2249,7 +2354,7 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">1</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
               </object>
@@ -2271,6 +2376,363 @@
           </object>
           <packing>
             <property name="position">5</property>
+            <property name="tab_fill">False</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkNotebook" id="analysis_tab">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <child>
+              <object class="GtkBox" id="analysis_buffer_tab">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="orientation">vertical</property>
+                <property name="homogeneous">True</property>
+                <child>
+                  <object class="GtkBox" id="analysis_buffer_position_box">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkScrolledWindow" id="analysis_buffer_position_scrolledwindow">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="shadow_type">in</property>
+                        <child>
+                          <object class="GtkTreeView" id="analysis_buffer_position_treeview">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="model">analysis_buffer_position_treestore</property>
+                            <property name="headers_clickable">False</property>
+                            <property name="search_column">0</property>
+                            <property name="enable_tree_lines">True</property>
+                            <child internal-child="selection">
+                              <object class="GtkTreeSelection" id="treeview-selection12"/>
+                            </child>
+                            <child>
+                              <object class="GtkTreeViewColumn" id="analysis_buffer_position_treeviewcolumn_column1">
+                                <property name="title" translatable="yes">Robot Position Buffer</property>
+                                <child>
+                                  <object class="GtkCellRendererText" id="analysis_buffer_position_cellrenderertext_column1"/>
+                                  <attributes>
+                                    <attribute name="text">0</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkTreeViewColumn" id="analysis_buffer_position_treeviewcolumn_column2">
+                                <child>
+                                  <object class="GtkCellRendererText" id="analysis_buffer_position_cellrenderertext_column2"/>
+                                  <attributes>
+                                    <attribute name="text">1</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolbar" id="analysis_buffer_position_toolbar">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <property name="toolbar_style">both</property>
+                        <child>
+                          <object class="GtkToolButton" id="analysis_buffer_position_toolbutton_preview">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="use_action_appearance">False</property>
+                            <property name="label" translatable="yes">Preview</property>
+                            <property name="use_underline">True</property>
+                            <property name="stock_id">gtk-dialog-info</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="homogeneous">True</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="analysis_buffer_joints_box">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkScrolledWindow" id="analysis_buffer_joints_scrolledwindow">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="shadow_type">in</property>
+                        <child>
+                          <object class="GtkTreeView" id="analysis_buffer_joints_treeview">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="model">analysis_buffer_joints_treestore</property>
+                            <property name="headers_clickable">False</property>
+                            <property name="search_column">0</property>
+                            <property name="enable_tree_lines">True</property>
+                            <child internal-child="selection">
+                              <object class="GtkTreeSelection" id="treeview-selection13"/>
+                            </child>
+                            <child>
+                              <object class="GtkTreeViewColumn" id="analysis_buffer_joints_treeviewcolumn_column1">
+                                <property name="title" translatable="yes">Joint Angles Buffer</property>
+                                <child>
+                                  <object class="GtkCellRendererText" id="analysis_buffer_joints_cellrenderertext_column1"/>
+                                  <attributes>
+                                    <attribute name="text">0</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkTreeViewColumn" id="analysis_buffer_joints_treeviewcolumn_column2">
+                                <child>
+                                  <object class="GtkCellRendererText" id="analysis_buffer_joints_cellrenderertext_column2"/>
+                                  <attributes>
+                                    <attribute name="text">1</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolbar" id="analysis_buffer_joints_toolbar">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <property name="toolbar_style">both</property>
+                        <child>
+                          <object class="GtkToolButton" id="analysis_buffer_joints_toolbutton_preview">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="use_action_appearance">False</property>
+                            <property name="label" translatable="yes">Preview</property>
+                            <property name="use_underline">True</property>
+                            <property name="stock_id">gtk-dialog-info</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="homogeneous">True</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="analysis_buffer_objects_box">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkScrolledWindow" id="analysis_buffer_objects_scrolledwindow">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="shadow_type">in</property>
+                        <child>
+                          <object class="GtkTreeView" id="analysis_buffer_objects_treeview">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="model">analysis_buffer_objects_treestore</property>
+                            <property name="headers_clickable">False</property>
+                            <property name="search_column">0</property>
+                            <property name="enable_tree_lines">True</property>
+                            <child internal-child="selection">
+                              <object class="GtkTreeSelection" id="treeview-selection14"/>
+                            </child>
+                            <child>
+                              <object class="GtkTreeViewColumn" id="analysis_buffer_objects_treeviewcolumn_column1">
+                                <property name="title">Object Buffer</property>
+                                <child>
+                                  <object class="GtkCellRendererText" id="analysis_buffer_objects_cellrenderertext_column1"/>
+                                  <attributes>
+                                    <attribute name="text">0</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkTreeViewColumn" id="analysis_buffer_objects_treeviewcolumn_column2">
+                                <child>
+                                  <object class="GtkCellRendererText" id="analysis_buffer_objects_cellrenderertext_column3"/>
+                                  <attributes>
+                                    <attribute name="text">1</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolbar" id="analysis_buffer_objects_toolbar">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <property name="toolbar_style">both</property>
+                        <child>
+                          <object class="GtkToolButton" id="analysis_buffer_objects_toolbutton_preview">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="use_action_appearance">False</property>
+                            <property name="label" translatable="yes">Preview</property>
+                            <property name="use_underline">True</property>
+                            <property name="stock_id">gtk-dialog-info</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="homogeneous">True</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+              </object>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel" id="analysis_buffer_tablabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Buffer Preview</property>
+              </object>
+              <packing>
+                <property name="tab_fill">False</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox" id="analysis_toolbox_tab">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkFixed" id="analysis_toolbox_grid_fixed">
+                    <property name="height_request">250</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkLabel" id="analysis_toolbox_grid_label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Grid</property>
+                      </object>
+                      <packing>
+                        <property name="x">5</property>
+                        <property name="y">5</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkFixed" id="analysis_toolbox_robot_fixed">
+                    <property name="height_request">125</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkLabel" id="analysis_toolbox_robot_label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Robot Localisation</property>
+                      </object>
+                      <packing>
+                        <property name="x">5</property>
+                        <property name="y">5</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel" id="analysis_toolbox_tablabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Toolbox</property>
+              </object>
+              <packing>
+                <property name="position">1</property>
+                <property name="tab_fill">False</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="position">6</property>
+          </packing>
+        </child>
+        <child type="tab">
+          <object class="GtkLabel" id="analysis_tablabel">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">Analysis</property>
+          </object>
+          <packing>
+            <property name="position">6</property>
             <property name="tab_fill">False</property>
           </packing>
         </child>

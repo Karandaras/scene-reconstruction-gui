@@ -121,7 +121,7 @@ void ObjectInstantiatorTab::OnResponseMsg(ConstResponsePtr& _msg) {
 
     // message from framework and gazebo present
     gazebo::msgs::SceneObject src1;
-    gazebo::msgs::SceneObjectData src2;
+    gazebo::msgs::Message_V   src2;
 
     if((_msg->has_type() && _msg->type() == src1.GetTypeName()) && (objRes->has_type() && objRes->type() == src2.GetTypeName())) {
       src1.ParseFromString(_msg->serialized_data());
@@ -171,24 +171,33 @@ void ObjectInstantiatorTab::OnResponseMsg(ConstResponsePtr& _msg) {
     images.clear();
     img_store->clear();
 
-    if(src2.images_size() > 0) {
-      for(int i=0; i<src2.images_size(); i++) {
-        row = *(img_store->append());
-        row.set_value(0, src2.images(i).name());
-        // TODO: use data obtained from the framework to create an image
-        images[src2.images(i).name()] = Gdk::Pixbuf::create_from_file("res/noimg.png");
+    int n = src2.msgsdata_size();
+    gazebo::msgs::SceneDocument doc;
+    if(src2.msgtype() == doc.GetTypeName()) {
+      for(int m = 0; m<n; m++) {
+        doc.ParseFromString(src2.msgsdata(m));
+/*
+        if(src2.images_size() > 0) {
+          for(int i=0; i<src2.images_size(); i++) {
+            row = *(img_store->append());
+            row.set_value(0, src2.images(i).name());
+            // TODO: use data obtained from the framework to create an image
+            images[src2.images(i).name()] = Gdk::Pixbuf::create_from_file("res/noimg.png");
+          }
+        }
+        else {
+          row = *(img_store->append());
+          row.set_value(0, (Glib::ustring)"None");
+          images["None"] = Gdk::Pixbuf::create_from_file("res/noimg.png");
+        }
+
+        // TODO: process json documents of SceneObjectData message
+
+        image_iter = images.begin();
+        img_data->set(image_iter->second);
+*/
       }
     }
-    else {
-      row = *(img_store->append());
-      row.set_value(0, (Glib::ustring)"None");
-      images["None"] = Gdk::Pixbuf::create_from_file("res/noimg.png");
-    }
-
-    // TODO: process json documents of SceneObjectData message
-
-    image_iter = images.begin();
-    img_data->set(image_iter->second);
 
     objRes.reset();
     objReq.reset();
