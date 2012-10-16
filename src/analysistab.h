@@ -17,7 +17,11 @@
 
 namespace SceneReconstruction {
   /** @class AnalysisTab "AnalysisTab.h"
-   *  Tab for the GUI
+   *  Tab for the GUI that controls the analyis tools.
+   *  It displays the buffers for the Robot and the Objects
+   *  and controls the a grid for measurements inside the 
+   *  simulation as well as the visualization of the lasers
+   *  of the robot.
    *  @author Bastian Klingen
    */
   class AnalysisTab : public SceneTab
@@ -40,7 +44,6 @@ namespace SceneReconstruction {
       Gtk::ToolButton                   *btn_angles_preview;
       Gtk::ToolButton                   *btn_object_preview;
 
-      // data display
       Gtk::TreeView                     *trv_positions;
       Glib::RefPtr<Gtk::TreeStore>       pos_store;
       Gtk::TreeView                     *trv_angles;
@@ -53,11 +56,28 @@ namespace SceneReconstruction {
                                          anglesPub,
                                          objectPub;
 
+      Gtk::SpinButton                   *spn_grid_pos_x;
+      Gtk::SpinButton                   *spn_grid_pos_y;
+      Gtk::SpinButton                   *spn_grid_pos_z;
+      Gtk::SpinButton                   *spn_grid_rot_x;
+      Gtk::SpinButton                   *spn_grid_rot_y;
+      Gtk::SpinButton                   *spn_grid_rot_z;
+      Gtk::SpinButton                   *spn_grid_rot_w;
+      Gtk::SpinButton                   *spn_grid_width;
+      Gtk::SpinButton                   *spn_grid_height;
+      Gtk::SpinButton                   *spn_grid_size;
+      Gtk::Button                       *btn_grid_show;
+      Gtk::Button                       *btn_grid_move;
+
+      Gtk::TreeView                     *trv_lasers;
+      Glib::RefPtr<Gtk::TreeStore>       lsr_store;
+      Gtk::Button                       *btn_lasers_update;
 
     private:
       void OnBufferMsg(ConstMessage_VPtr&);
       void on_button_position_preview_clicked();
       void on_button_angles_preview_clicked();
       void on_button_object_preview_clicked();
+      void on_lasers_visible_toggled(const Glib::ustring&);
   };
 }

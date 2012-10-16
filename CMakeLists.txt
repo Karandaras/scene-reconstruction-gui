@@ -117,7 +117,7 @@ IF(PKG_CONFIG_FOUND)
     
     set(CMAKE_CXX_FLAGS " -g -Wextra -Wall -lstdc++" CACHE INTERNAL "General CXX Flags")
 
-    add_executable(GUI src/scenegui.cpp src/scenetab.cpp src/controltab.cpp src/loggertab.cpp src/robotcontrollertab.cpp src/objectinstantiatortab.cpp src/frameworktab.cpp src/dikwtab.cpp src/graph_drawing_area.cpp src/gvplugin_cairo.cpp)
+    add_executable(GUI src/scenegui.cpp src/scenetab.cpp src/controltab.cpp src/loggertab.cpp src/robotcontrollertab.cpp src/objectinstantiatortab.cpp src/frameworktab.cpp src/dikwtab.cpp src/graph_drawing_area.cpp src/gvplugin_cairo.cpp src/analysistab.cpp)
     add_executable(mapgen src/mapgen.cpp)
 
     target_link_libraries(GUI ${GRAPHVIZ_LIBRARIES})

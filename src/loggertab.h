@@ -92,6 +92,13 @@ namespace SceneReconstruction {
        */
       void msglog(std::string, std::string, ConstDoublePtr&);
 
+      /** logs msgs to the treeview with timestamp and topic
+       *  @param dir direction of the message
+       *  @param topic topic of the message
+       *  @param _msg the msg to log
+       */
+      void msglog(std::string, std::string, ConstMessage_VPtr&);
+
       /** switches the image for the given component to represent that the
        *  component has respondedto the availability request
        *  @param comp name of the component

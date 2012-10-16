@@ -190,6 +190,17 @@ void LoggerTab::msglog(std::string dir, std::string topic, ConstDoublePtr &_msg)
   logmsg(dir, "Double", topic, msg.str());
 }
 
+void LoggerTab::msglog(std::string dir, std::string topic, ConstMessage_VPtr &_msg)
+{
+  std::ostringstream msg;
+  msg << "MsgType: ";
+  msg << _msg->msgtype();
+  msg << ", Number of Messages: ";
+  msg << _msg->msgsdata_size();
+
+  logmsg(dir, "Message_V", topic, msg.str());
+}
+
 void LoggerTab::msglog(std::string dir, std::string topic, const gazebo::msgs::SceneRobotController &_msg)
 {
   std::ostringstream msg;

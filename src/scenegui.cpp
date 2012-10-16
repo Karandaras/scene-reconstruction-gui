@@ -10,6 +10,7 @@
 #include "objectinstantiatortab.h"
 #include "frameworktab.h"
 #include "dikwtab.h"
+#include "analysistab.h"
 
 using namespace SceneReconstruction;
 
@@ -61,12 +62,14 @@ SceneGUI::SceneGUI()
   ObjectInstantiatorTab* tab3 = new ObjectInstantiatorTab(node, logger, ui_builder);
   FrameworkTab*          tab4 = new FrameworkTab(node, logger, ui_builder);
   DIKWTab*               tab5 = new DIKWTab(node, logger, ui_builder);
+  AnalysisTab*           tab6 = new AnalysisTab(node, logger, ui_builder);
 
   vec_tabs.push_back(tab1);
   vec_tabs.push_back(tab2);
   vec_tabs.push_back(tab3);
   vec_tabs.push_back(tab4);
   vec_tabs.push_back(tab5);
+  vec_tabs.push_back(tab6);
 
   window->show_all_children();
 

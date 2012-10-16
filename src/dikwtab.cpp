@@ -94,7 +94,7 @@ DIKWTab::DIKWTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Glib::Re
   _builder->get_widget("dikw_document_combobox", win_combo);
   win_combo->signal_changed().connect(sigc::mem_fun(*this,&DIKWTab::on_document_changed));
   _builder->get_widget("dikw_document_image", win_image);
-  missing_image = win_image->get_pixbuf();
+  missing_image = Gdk::Pixbuf::create_from_file("res/noimg.png");
   _builder->get_widget("dikw_document_textview", win_textview);
   win_textbuffer = Glib::RefPtr<Gtk::TextBuffer>::cast_dynamic(_builder->get_object("dikw_document_textbuffer"));
   win_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("dikw_document_liststore"));
@@ -160,6 +160,8 @@ void DIKWTab::OnResponseMsg(ConstResponsePtr& _msg) {
       if(docs.msgtype() == doc.GetTypeName()) {
         int n = docs.msgsdata_size();
         win_store->clear();
+        win_images.clear();
+        
         for(int i=0; i<n; i++) {
           doc.ParseFromString(docs.msgsdata(i));
           Gtk::TreeModel::Row row;
@@ -172,7 +174,8 @@ void DIKWTab::OnResponseMsg(ConstResponsePtr& _msg) {
           else {
             img = missing_image;
           }
-          row.set_value(1, img);
+          row.set_value(1, i);
+          win_images[i] = img;
           row.set_value(2, doc.document());
         }
       }
@@ -441,9 +444,9 @@ bool DIKWTab::on_graph_release(GdkEventButton *b) {
 
 void DIKWTab::on_document_changed() {
   // TODO: set textbuffer and image according to selection
-  Glib::RefPtr<Gdk::Pixbuf> img;
-  win_combo->get_active()->get_value(1,img);
-  win_image->set(img);
+  int imgid;
+  win_combo->get_active()->get_value(1,imgid);
+//  win_image->set(win_images[imgid]);
   Glib::ustring doc;
   win_combo->get_active()->get_value(2,doc);
   win_textbuffer->set_text(doc);

@@ -7,6 +7,8 @@
       <column type="gchararray"/>
       <!-- column-name data -->
       <column type="gchararray"/>
+      <!-- column-name preview -->
+      <column type="gboolean"/>
     </columns>
   </object>
   <object class="GtkTreeStore" id="analysis_buffer_objects_treestore">
@@ -15,6 +17,8 @@
       <column type="gchararray"/>
       <!-- column-name data -->
       <column type="gchararray"/>
+      <!-- column-name preview -->
+      <column type="gboolean"/>
     </columns>
   </object>
   <object class="GtkTreeStore" id="analysis_buffer_position_treestore">
@@ -23,6 +27,80 @@
       <column type="gchararray"/>
       <!-- column-name data -->
       <column type="gchararray"/>
+      <!-- column-name preview -->
+      <column type="gboolean"/>
+    </columns>
+  </object>
+  <object class="GtkAdjustment" id="analysis_toolbox_grid_adjustment_height">
+    <property name="lower">1</property>
+    <property name="upper">100</property>
+    <property name="value">20</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="analysis_toolbox_grid_adjustment_position_x">
+    <property name="lower">-100</property>
+    <property name="upper">100</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="analysis_toolbox_grid_adjustment_position_y">
+    <property name="lower">-100</property>
+    <property name="upper">100</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="analysis_toolbox_grid_adjustment_position_z">
+    <property name="lower">-100</property>
+    <property name="upper">100</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="analysis_toolbox_grid_adjustment_rotation_w">
+    <property name="lower">-100</property>
+    <property name="upper">100</property>
+    <property name="value">1</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="analysis_toolbox_grid_adjustment_rotation_x">
+    <property name="lower">-100</property>
+    <property name="upper">100</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="analysis_toolbox_grid_adjustment_rotation_y">
+    <property name="lower">-100</property>
+    <property name="upper">100</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="analysis_toolbox_grid_adjustment_rotation_z">
+    <property name="lower">-100</property>
+    <property name="upper">100</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="analysis_toolbox_grid_adjustment_size">
+    <property name="lower">0.050000000000000003</property>
+    <property name="upper">1</property>
+    <property name="value">0.050000000000000003</property>
+    <property name="step_increment">0.01</property>
+    <property name="page_increment">0.10000000000000001</property>
+  </object>
+  <object class="GtkAdjustment" id="analysis_toolbox_grid_adjustment_width">
+    <property name="lower">1</property>
+    <property name="upper">100</property>
+    <property name="value">20</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkListStore" id="analysis_toolbox_robot_liststore_lasers">
+    <columns>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name visualize -->
+      <column type="gboolean"/>
     </columns>
   </object>
   <object class="GtkTreeStore" id="control_treestore">
@@ -37,8 +115,8 @@
     <columns>
       <!-- column-name time -->
       <column type="gchararray"/>
-      <!-- column-name image -->
-      <column type="GdkPixbuf"/>
+      <!-- column-name imageid -->
+      <column type="gint"/>
       <!-- column-name document -->
       <column type="gchararray"/>
     </columns>
@@ -2659,49 +2737,430 @@
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkFixed" id="analysis_toolbox_grid_fixed">
-                    <property name="height_request">250</property>
+                  <object class="GtkViewport" id="analysis_toolbox_grid_viewport">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkLabel" id="analysis_toolbox_grid_label">
+                      <object class="GtkFixed" id="analysis_toolbox_grid_fixed">
+                        <property name="height_request">200</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Grid</property>
+                        <child>
+                          <object class="GtkLabel" id="analysis_toolbox_grid_label">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Grid</property>
+                          </object>
+                          <packing>
+                            <property name="x">5</property>
+                            <property name="y">5</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="analysis_toolbox_grid_spinbutton_position_x">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="adjustment">analysis_toolbox_grid_adjustment_position_x</property>
+                          </object>
+                          <packing>
+                            <property name="x">40</property>
+                            <property name="y">45</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="analysis_toolbox_grid_spinbutton_position_y">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="adjustment">analysis_toolbox_grid_adjustment_position_y</property>
+                          </object>
+                          <packing>
+                            <property name="x">130</property>
+                            <property name="y">45</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="analysis_toolbox_grid_spinbutton_position_z">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="adjustment">analysis_toolbox_grid_adjustment_position_z</property>
+                          </object>
+                          <packing>
+                            <property name="x">220</property>
+                            <property name="y">45</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="analysis_toolbox_grid_spinbutton_rotation_x">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="adjustment">analysis_toolbox_grid_adjustment_rotation_x</property>
+                          </object>
+                          <packing>
+                            <property name="x">40</property>
+                            <property name="y">100</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="analysis_toolbox_grid_spinbutton_rotation_y">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="adjustment">analysis_toolbox_grid_adjustment_rotation_y</property>
+                          </object>
+                          <packing>
+                            <property name="x">130</property>
+                            <property name="y">100</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="analysis_toolbox_grid_spinbutton_rotation_z">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="adjustment">analysis_toolbox_grid_adjustment_rotation_z</property>
+                          </object>
+                          <packing>
+                            <property name="x">220</property>
+                            <property name="y">100</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="analysis_toolbox_grid_spinbutton_rotation_w">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="adjustment">analysis_toolbox_grid_adjustment_rotation_w</property>
+                          </object>
+                          <packing>
+                            <property name="x">310</property>
+                            <property name="y">100</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="analysis_toolbox_grid_label_position">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label">Position</property>
+                          </object>
+                          <packing>
+                            <property name="x">15</property>
+                            <property name="y">25</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="analysis_toolbox_grid_label_position_x">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label">X:</property>
+                          </object>
+                          <packing>
+                            <property name="x">25</property>
+                            <property name="y">50</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="analysis_toolbox_grid_label_position_y">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label">Y:</property>
+                          </object>
+                          <packing>
+                            <property name="x">115</property>
+                            <property name="y">50</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="analysis_toolbox_grid_label_position_z">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label">Z:</property>
+                          </object>
+                          <packing>
+                            <property name="x">205</property>
+                            <property name="y">50</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="analysis_toolbox_grid_label_rotation">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label">Rotation</property>
+                          </object>
+                          <packing>
+                            <property name="x">15</property>
+                            <property name="y">80</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="analysis_toolbox_grid_label_rotation_y">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label">Y:</property>
+                          </object>
+                          <packing>
+                            <property name="x">115</property>
+                            <property name="y">105</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="analysis_toolbox_grid_label_rotaton_z">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label">Z:</property>
+                          </object>
+                          <packing>
+                            <property name="x">205</property>
+                            <property name="y">105</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="analysis_toolbox_grid_label_rotation_w">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label">W:</property>
+                          </object>
+                          <packing>
+                            <property name="x">290</property>
+                            <property name="y">105</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="analysis_toolbox_grid_label_rotation_x">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label">X:</property>
+                          </object>
+                          <packing>
+                            <property name="x">25</property>
+                            <property name="y">105</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="analysis_toolbox_grid_button_show">
+                            <property name="label">Show</property>
+                            <property name="width_request">64</property>
+                            <property name="height_request">32</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="use_action_appearance">False</property>
+                          </object>
+                          <packing>
+                            <property name="x">520</property>
+                            <property name="y">45</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="analysis_toolbox_grid_button_move">
+                            <property name="label" translatable="yes">Move</property>
+                            <property name="width_request">64</property>
+                            <property name="height_request">32</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="use_action_appearance">False</property>
+                          </object>
+                          <packing>
+                            <property name="x">520</property>
+                            <property name="y">100</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="analysis_toolbox_grid_label_rotation1">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label">Size</property>
+                          </object>
+                          <packing>
+                            <property name="x">15</property>
+                            <property name="y">143</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="analysis_toolbox_grid_label_width">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label">Width in Cells:</property>
+                          </object>
+                          <packing>
+                            <property name="x">25</property>
+                            <property name="y">170</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="analysis_toolbox_grid_label_height">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label">Height in Cells:</property>
+                          </object>
+                          <packing>
+                            <property name="x">25</property>
+                            <property name="y">205</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="analysis_toolbox_grid_spinbutton_width">
+                            <property name="width_request">64</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="invisible_char_set">True</property>
+                            <property name="adjustment">analysis_toolbox_grid_adjustment_width</property>
+                          </object>
+                          <packing>
+                            <property name="x">130</property>
+                            <property name="y">165</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="analysis_toolbox_grid_spinbutton_height">
+                            <property name="width_request">64</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="invisible_char_set">True</property>
+                            <property name="adjustment">analysis_toolbox_grid_adjustment_height</property>
+                          </object>
+                          <packing>
+                            <property name="x">130</property>
+                            <property name="y">200</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="analysis_toolbox_grid_label_size">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label">Cellsize in m:</property>
+                          </object>
+                          <packing>
+                            <property name="x">25</property>
+                            <property name="y">240</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="analysis_toolbox_grid_spinbutton_size">
+                            <property name="width_request">64</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="invisible_char_set">True</property>
+                            <property name="adjustment">analysis_toolbox_grid_adjustment_size</property>
+                            <property name="digits">2</property>
+                          </object>
+                          <packing>
+                            <property name="x">130</property>
+                            <property name="y">235</property>
+                          </packing>
+                        </child>
                       </object>
-                      <packing>
-                        <property name="x">5</property>
-                        <property name="y">5</property>
-                      </packing>
                     </child>
                   </object>
                   <packing>
-                    <property name="expand">True</property>
+                    <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkFixed" id="analysis_toolbox_robot_fixed">
-                    <property name="height_request">125</property>
+                  <object class="GtkSeparator" id="analysis_toolbox_separator">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkViewport" id="analysis_toolbox_robot_viewport">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkLabel" id="analysis_toolbox_robot_label">
+                      <object class="GtkFixed" id="analysis_toolbox_robot_fixed">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Robot Localisation</property>
+                        <child>
+                          <object class="GtkLabel" id="analysis_toolbox_robot_label">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Robot Localisation</property>
+                          </object>
+                          <packing>
+                            <property name="x">5</property>
+                            <property name="y">5</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkScrolledWindow" id="analysis_toolbox_robot_scrolledwindow_laser">
+                            <property name="width_request">500</property>
+                            <property name="height_request">200</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="shadow_type">in</property>
+                            <child>
+                              <object class="GtkTreeView" id="analysis_toolbox_robot_treeview_lasers">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="model">analysis_toolbox_robot_liststore_lasers</property>
+                                <child>
+                                  <object class="GtkTreeViewColumn" id="analysis_toolbox_robot_treeviewcolumn_lasers_name">
+                                    <property name="title">Interface</property>
+                                    <property name="expand">True</property>
+                                    <child>
+                                      <object class="GtkCellRendererText" id="analysis_toolbox_robot_cellrenderertext_lasers_name"/>
+                                      <attributes>
+                                        <attribute name="text">0</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn" id="analysis_toolbox_robot_treeviewcolumn_lasers_visualize">
+                                    <property name="title">Visible</property>
+                                    <property name="alignment">0.5</property>
+                                    <child>
+                                      <object class="GtkCellRendererToggle" id="analysis_toolbox_robot_cellrenderertoggle_lasers_visible"/>
+                                      <attributes>
+                                        <attribute name="active">1</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="x">5</property>
+                            <property name="y">25</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="analysis_toolbox_robot_button_lasers_update">
+                            <property name="label">Update</property>
+                            <property name="width_request">64</property>
+                            <property name="height_request">32</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="use_action_appearance">False</property>
+                          </object>
+                          <packing>
+                            <property name="x">520</property>
+                            <property name="y">25</property>
+                          </packing>
+                        </child>
                       </object>
-                      <packing>
-                        <property name="x">5</property>
-                        <property name="y">5</property>
-                      </packing>
                     </child>
                   </object>
                   <packing>
                     <property name="expand">True</property>
                     <property name="fill">True</property>
-                    <property name="position">1</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
               </object>

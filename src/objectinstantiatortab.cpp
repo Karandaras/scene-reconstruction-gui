@@ -156,12 +156,6 @@ void ObjectInstantiatorTab::OnResponseMsg(ConstResponsePtr& _msg) {
       row.set_value(1, Converter::convert(src1.pose(), 1));
     }
 
-    if(src1.has_frame()) {
-      row = *(dat_store->append());
-      row.set_value(0, (Glib::ustring)"Frame");
-      row.set_value(1, src1.frame());
-    }
-
     if(src1.has_object()) {
       row = *(dat_store->append());
       row.set_value(0, (Glib::ustring)"Object");

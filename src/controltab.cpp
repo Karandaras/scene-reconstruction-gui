@@ -297,11 +297,16 @@ void ControlTab::on_button_pause_toggled() {
 }
 
 bool ControlTab::on_scale_button_event(GdkEventButton* b) {
-  if(rng_time->get_value() != old_value) {
-    btn_pause->set_active(false);
+  if(rng_time->get_value() != old_value && btn_pause->get_active()) {
+
+    logger->log("control", "Time changed from %.2f to %.2f using button %d of the mouse on rng_time", old_value, rng_time->get_value(), b->button);
+    time_offset = rng_time->get_value();
+    old_value = rng_time->get_value();
+    ent_info_time = time_offset;
 
     gazebo::msgs::WorldControl start;
     start.set_pause(true);
+    start.set_step(true);
     start.set_reset_time(true);
     start.set_reset_world(true);
     logger->msglog(">>", "~/world_control", start);
@@ -311,17 +316,8 @@ bool ControlTab::on_scale_button_event(GdkEventButton* b) {
     control.set_pause(true);
     control.set_change_offset(true);
     control.set_offset(time_offset);
+    control.set_step(true);
     controlPub->Publish(control);
-
-    logger->log("control", "Time changed from %.2f to %.2f using button %d of the mouse on rng_time", old_value, rng_time->get_value(), b->button);
-    time_offset = rng_time->get_value();
-    old_value = rng_time->get_value();
-    ent_info_time = time_offset;
-
-    gazebo::msgs::SceneFrameworkControl control2;
-    control2.set_change_offset(true);
-    control2.set_offset(time_offset);
-    controlPub->Publish(control2);
   }
 
   return false;
@@ -332,11 +328,17 @@ Glib::ustring ControlTab::on_scale_format_value(double value) {
 }
 
 bool ControlTab::on_scale_key_event(GdkEventKey* k) {
-  if((k->keyval == GDK_KEY_Left || k->keyval == GDK_KEY_Right || k->keyval == GDK_KEY_Up || k->keyval == GDK_KEY_Down || k->keyval == GDK_KEY_KP_Left || k->keyval == GDK_KEY_KP_Right || k->keyval == GDK_KEY_KP_Up || k->keyval == GDK_KEY_KP_Down || k->keyval == GDK_KEY_Home || k->keyval == GDK_KEY_End || k->keyval == GDK_KEY_Page_Up || k->keyval == GDK_KEY_Page_Down) && old_value != rng_time->get_value()) {
-    btn_pause->set_active(false);
+  if(((k->keyval == GDK_KEY_Left || k->keyval == GDK_KEY_Right || k->keyval == GDK_KEY_Up || k->keyval == GDK_KEY_Down || k->keyval == GDK_KEY_KP_Left || k->keyval == GDK_KEY_KP_Right || k->keyval == GDK_KEY_KP_Up || k->keyval == GDK_KEY_KP_Down || k->keyval == GDK_KEY_Home || k->keyval == GDK_KEY_End || k->keyval == GDK_KEY_Page_Up || k->keyval == GDK_KEY_Page_Down) && old_value != rng_time->get_value()) && btn_pause->get_active()) {
+
+    logger->log("control", "Time changed from %.2f to %.2f using key %s of the keyboard on rng_time", old_value, rng_time->get_value(), gdk_keyval_name(k->keyval));
+
+    time_offset = rng_time->get_value();
+    old_value = rng_time->get_value();
+    ent_info_time = time_offset;
 
     gazebo::msgs::WorldControl start;
     start.set_pause(true);
+    start.set_step(true);
     start.set_reset_time(true);
     start.set_reset_world(true);
     logger->msglog(">>", "~/world_control", start);
@@ -346,18 +348,8 @@ bool ControlTab::on_scale_key_event(GdkEventKey* k) {
     control.set_pause(true);
     control.set_change_offset(true);
     control.set_offset(time_offset);
+    control.set_step(true);
     controlPub->Publish(control);
-
-    logger->log("control", "Time changed from %.2f to %.2f using key %s of the keyboard on rng_time", old_value, rng_time->get_value(), gdk_keyval_name(k->keyval));
-
-    time_offset = rng_time->get_value();
-    old_value = rng_time->get_value();
-    ent_info_time = time_offset;
-
-    gazebo::msgs::SceneFrameworkControl control2;
-    control2.set_change_offset(true);
-    control2.set_offset(time_offset);
-    controlPub->Publish(control2);
   }
 
   return false;

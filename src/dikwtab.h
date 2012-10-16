@@ -77,6 +77,7 @@ namespace SceneReconstruction {
       Gtk::Window                       *win_show;
       Gtk::ComboBox                     *win_combo;
       Gtk::Image                        *win_image;
+      std::map<int, Glib::RefPtr<Gdk::Pixbuf> > win_images;
       Glib::RefPtr<Gdk::Pixbuf>          missing_image;
       Gtk::TextView                     *win_textview;
       Glib::RefPtr<Gtk::TextBuffer>      win_textbuffer;
