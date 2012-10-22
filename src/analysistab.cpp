@@ -49,15 +49,15 @@ AnalysisTab::AnalysisTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, 
   _builder->get_widget("analysis_toolbox_grid_spinbutton_size", spn_grid_size);
 
   _builder->get_widget("analysis_toolbox_grid_button_show", btn_grid_show);
-//  btn_grid_show->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_grid_show_clicked));
+  btn_grid_show->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_grid_show_clicked));
   _builder->get_widget("analysis_toolbox_grid_button_move", btn_grid_move);
-//  btn_grid_move->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_grid_move_clicked));
+  btn_grid_move->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_grid_move_clicked));
 
   _builder->get_widget("analysis_toolbox_robot_treeview_lasers", trv_lasers);
   lsr_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(_builder->get_object("analysis_toolbox_robot_liststore_lasers"));
-//  lsr_store->clear();
+  lsr_store->clear();
   _builder->get_widget("analysis_toolbox_robot_button_lasers_update", btn_lasers_update);
-//  btn_lasers_update->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_grid_show_clicked));
+  btn_lasers_update->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_lasers_update_clicked));
 
   std::vector<Gtk::CellRenderer*> las_col_visible = trv_lasers->get_column(1)->get_cells();
   for(unsigned int i=0; i<las_col_visible.size(); i++) {
@@ -65,9 +65,11 @@ AnalysisTab::AnalysisTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, 
     dynamic_cast<Gtk::CellRendererToggle*>(las_col_visible[i])->signal_toggled().connect(sigc::mem_fun(*this,&AnalysisTab::on_lasers_visible_toggled));
   }
 
-  positionPub = node->Advertise<gazebo::msgs::Pose>("~/SceneReconstruction/RobotController/Position");
-  anglesPub = node->Advertise<gazebo::msgs::Message_V>("~/SceneReconstruction/RobotController/Joints");
-  objectPub = node->Advertise<gazebo::msgs::SceneObject>("~/SceneReconstruction/ObjectInstantiator/Object");
+  positionPub = node->Advertise<gazebo::msgs::BufferPosition>("~/SceneReconstruction/RobotController/Position");
+  anglesPub = node->Advertise<gazebo::msgs::BufferJoints>("~/SceneReconstruction/RobotController/Joints");
+  objectPub = node->Advertise<gazebo::msgs::BufferObjects>("~/SceneReconstruction/ObjectInstantiator/Object");
+  drawingPub = node->Advertise<gazebo::msgs::Drawing>(std::string("~/draw"));
+  positionPub = node->Advertise<gazebo::msgs::Lasers>("~/SceneReconstruction/RobotController/Lasers");
 
   bufferSub = node->Subscribe("~/SceneReconstruction/GUI/Buffer", &AnalysisTab::OnBufferMsg, this);
 }
@@ -83,11 +85,16 @@ void AnalysisTab::OnBufferMsg(ConstMessage_VPtr& _msg) {
   
   if(_msg->msgtype() == jnt.GetTypeName()) {
     ang_store->clear();
+    ang_messages.clear();
+    ang_messages.resize(_msg->msgsdata_size());
     for(int i=0; i<_msg->msgsdata_size(); i++) {
       jnt.ParseFromString(_msg->msgsdata(i));
       Gtk::TreeModel::Row row = *(ang_store->append());
       row.set_value(0, Converter::to_ustring_time(jnt.timestamp()));
-      row.set_value(1,(Glib::ustring)"");
+      row.set_value(1, (Glib::ustring)"");
+      row.set_value(2, i);
+      row.set_value(3, false);
+      ang_messages[i] = jnt;
 
       int n = jnt.name_size();
       int a = jnt.angle_size();
@@ -102,11 +109,16 @@ void AnalysisTab::OnBufferMsg(ConstMessage_VPtr& _msg) {
   }
   else if(_msg->msgtype() == obj.GetTypeName()) {
     obj_store->clear();
+    obj_messages.clear();
+    obj_messages.resize(_msg->msgsdata_size());
     for(int i=0; i<_msg->msgsdata_size(); i++) {
       obj.ParseFromString(_msg->msgsdata(i));
       Gtk::TreeModel::Row row = *(obj_store->append());
       row.set_value(0, Converter::to_ustring_time(obj.timestamp()));
       row.set_value(1,(Glib::ustring)"");
+      row.set_value(2, i);
+      row.set_value(3, false);
+      obj_messages[i] = obj;
 
       int o = obj.object_size();
       for(int j=0; j<o; j++) {
@@ -138,42 +150,53 @@ void AnalysisTab::OnBufferMsg(ConstMessage_VPtr& _msg) {
     }
   }
   else if(_msg->msgtype() == pos.GetTypeName()) {
+    pos_store->clear();
+    pos_messages.clear();
+    pos_messages.resize(_msg->msgsdata_size());
     for(int i=0; i<_msg->msgsdata_size(); i++) {
       pos.ParseFromString(_msg->msgsdata(i));
       Gtk::TreeModel::Row childrow = *(pos_store->append());
       childrow.set_value(0,obj.object(i).object());
       childrow.set_value(1,Converter::convert(pos.position(), 2, 3));
+      childrow.set_value(2, i);
+      childrow.set_value(3, false);
+      pos_messages[i] = pos;
     }
   }
 }
 
 void AnalysisTab::on_button_position_preview_clicked() {
-  // TODO: send message to robotcontroller to move robot
-  gazebo::msgs::Pose position;
+  if(trv_positions->get_selection()->count_selected_rows() == 1) {
+    int msgid;
+    Gtk::TreeModel::iterator row = trv_positions->get_selection()->get_selected();
+    row->get_value(2, msgid);
 
-  // TODO: fill pose message from selected row
-
-  positionPub->Publish(position);
+    positionPub->Publish(pos_messages[msgid]);
+  }
 }
 
 void AnalysisTab::on_button_angles_preview_clicked() {
-  // TODO: send message to robotcontroller to move joints
-  gazebo::msgs::Message_V angles;
-  gazebo::msgs::SceneJoint jnt;
-  angles.set_msgtype(jnt.GetTypeName());
+  if(trv_angles->get_selection()->count_selected_rows() == 1) {
+    int msgid;
+    Gtk::TreeModel::iterator row = trv_angles->get_selection()->get_selected();
+    if(row->parent())
+      row = row->parent();
+    row->get_value(2, msgid);
 
-  // TODO: fill joint messages from selected row
-
-  anglesPub->Publish(angles);
+    anglesPub->Publish(ang_messages[msgid]);
+  }
 }
 
 void AnalysisTab::on_button_object_preview_clicked() {
-  // TODO: send message to objectinstantiator to clone object and set different position
-  gazebo::msgs::SceneObject object;
+  if(trv_objects->get_selection()->count_selected_rows() == 1) {
+    int msgid;
+    Gtk::TreeModel::iterator row = trv_objects->get_selection()->get_selected();
+    if(row->parent())
+      row = row->parent();
+    row->get_value(2, msgid);
 
-  // TODO: fill object message from selected row
-
-  objectPub->Publish(object);
+    objectPub->Publish(obj_messages[msgid]);
+  }
 }
 
 void AnalysisTab::on_lasers_visible_toggled(const Glib::ustring& path) {
@@ -181,5 +204,112 @@ void AnalysisTab::on_lasers_visible_toggled(const Glib::ustring& path) {
   Gtk::TreeModel::iterator it = trv_lasers->get_model()->get_iter(path);
   it->get_value(1,val);
   it->set_value(1,!val);
+}
+
+void AnalysisTab::on_button_grid_show_clicked() {
+  gazebo::msgs::Drawing drw;
+  drw.set_name("grid");
+  if(btn_grid_show->get_label() == "Show") {
+    btn_grid_show->set_label("Hide");
+    drw.set_visible(true);
+    drw.set_material("WhiteGlow");
+    drw.set_mode(gazebo::msgs::Drawing::LINE_LIST);
+    gazebo::msgs::Pose *pose = drw.mutable_pose();
+    gazebo::msgs::Vector3d *pos = pose->mutable_position();
+    gazebo::msgs::Quaternion *ori = pose->mutable_orientation();
+
+    pos->set_x(spn_grid_pos_x->get_value());
+    pos->set_y(spn_grid_pos_y->get_value());
+    pos->set_z(spn_grid_pos_z->get_value());
+    ori->set_w(spn_grid_rot_w->get_value());
+    ori->set_x(spn_grid_rot_x->get_value());
+    ori->set_y(spn_grid_rot_y->get_value());
+    ori->set_z(spn_grid_rot_z->get_value());
+
+    int width = spn_grid_width->get_value_as_int();
+    int height = spn_grid_height->get_value_as_int();
+    double cellsize = spn_grid_size->get_value();
+
+    for(int x = 0; x <= width; x++) {
+      gazebo::msgs::Vector3d *p0 = drw.add_point()->mutable_position();
+      gazebo::msgs::Vector3d *p1 = drw.add_point()->mutable_position();
+      gazebo::math::Vector3 mp0((-width/2+x)*cellsize, -height/2*cellsize, 0.01);
+      gazebo::math::Vector3 mp1((-width/2+x)*cellsize, +height/2*cellsize, 0.01);
+
+      *p0 = gazebo::msgs::Convert(mp0);
+      *p1 = gazebo::msgs::Convert(mp1);
+    }
+    for(int y = 0; y <= height; y++) {
+      gazebo::msgs::Vector3d *p0 = drw.add_point()->mutable_position();
+      gazebo::msgs::Vector3d *p1 = drw.add_point()->mutable_position();
+      gazebo::math::Vector3 mp0(-width/2*cellsize, (-height/2+y)*cellsize, 0.01);
+      gazebo::math::Vector3 mp1(+width/2*cellsize, (-height/2+y)*cellsize, 0.01);
+
+      *p0 = gazebo::msgs::Convert(mp0);
+      *p1 = gazebo::msgs::Convert(mp1);
+    }
+  }
+  else {
+    btn_grid_show->set_label("Show");
+    drw.set_visible(false);
+  }
+
+  drawingPub->Publish(drw);
+}
+
+void AnalysisTab::on_button_grid_move_clicked() {
+  gazebo::msgs::Drawing drw;
+  drw.set_name("grid");
+  if(btn_grid_show->get_label() == "Hide") {
+    drw.set_visible(true);
+    drw.set_material("WhiteGlow");
+    drw.set_mode(gazebo::msgs::Drawing::LINE_LIST);
+    gazebo::math::Vector3 pos(spn_grid_pos_x->get_value(), spn_grid_pos_y->get_value(), spn_grid_pos_z->get_value());
+    gazebo::math::Quaternion rot(spn_grid_rot_w->get_value(), spn_grid_rot_x->get_value(), spn_grid_rot_y->get_value(), spn_grid_rot_z->get_value());
+
+    int width = spn_grid_width->get_value_as_int();
+    int height = spn_grid_height->get_value_as_int();
+    double cellsize = spn_grid_size->get_value();
+
+    for(int x = 0; x <= width; x++) {
+      gazebo::msgs::Vector3d *p0 = drw.add_point()->mutable_position();
+      gazebo::msgs::Vector3d *p1 = drw.add_point()->mutable_position();
+      gazebo::math::Vector3 mp0((-width/2+x)*cellsize, -height/2*cellsize, 0.01);
+      gazebo::math::Vector3 mp1((-width/2+x)*cellsize, +height/2*cellsize, 0.01);
+
+      *p0 = gazebo::msgs::Convert(mp0);
+      *p1 = gazebo::msgs::Convert(mp1);
+    }
+    for(int y = 0; y <= height; y++) {
+      gazebo::msgs::Vector3d *p0 = drw.add_point()->mutable_position();
+      gazebo::msgs::Vector3d *p1 = drw.add_point()->mutable_position();
+      gazebo::math::Vector3 mp0(-width/2*cellsize, (-height/2+y)*cellsize, 0.01);
+      gazebo::math::Vector3 mp1(+width/2*cellsize, (-height/2+y)*cellsize, 0.01);
+
+      *p0 = gazebo::msgs::Convert(mp0);
+      *p1 = gazebo::msgs::Convert(mp1);
+    }
+  }
+  else {
+    drw.set_visible(false);
+  }
+
+  drawingPub->Publish(drw);
+}
+
+void AnalysisTab::on_button_lasers_update_clicked() {
+  gazebo::msgs::Lasers lasers;
+
+  Gtk::TreeModel::Children rows = lsr_store->children();
+  for(Gtk::TreeModel::iterator row = rows.begin(); row != rows.end(); row++) {
+    Glib::ustring interface;
+    bool visible;
+    row->get_value(0, interface);
+    row->get_value(1, visible);
+    lasers.add_interface(interface);
+    lasers.add_visible(visible);
+  }
+
+  lasersPub->Publish(lasers);
 }
 

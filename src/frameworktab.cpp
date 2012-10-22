@@ -47,7 +47,7 @@ void FrameworkTab::OnResponseMsg(ConstResponsePtr& _msg) {
       return;
 
     if(_msg->request() == "collection_names") {
-      gazebo::msgs::String_V src;
+      gazebo::msgs::GzString_V src;
       if(_msg->has_type() && _msg->type() == src.GetTypeName()) {
         src.ParseFromString(_msg->serialized_data());
         int n = src.data_size();
@@ -60,7 +60,7 @@ void FrameworkTab::OnResponseMsg(ConstResponsePtr& _msg) {
       }
     }
     else if(_msg->request() == "select_collection") {
-      gazebo::msgs::String_V src;
+      gazebo::msgs::GzString_V src;
       if(_msg->has_type() && _msg->type() == src.GetTypeName()) {
         src.ParseFromString(_msg->serialized_data());
         char* t;
@@ -76,7 +76,7 @@ void FrameworkTab::OnResponseMsg(ConstResponsePtr& _msg) {
       }
     }
     else if(_msg->request() == "select_object") {
-      gazebo::msgs::String src;
+      gazebo::msgs::GzString src;
       if(_msg->has_type() && _msg->type() == src.GetTypeName()) {
         src.ParseFromString(_msg->serialized_data());
         txt_object->get_buffer()->set_text(Converter::parse_json(src.data()));

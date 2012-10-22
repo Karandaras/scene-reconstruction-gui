@@ -24,7 +24,6 @@ SceneGUI::SceneGUI()
   plugin_availability["ObjectInstantiator"] = false;
   plugin_availability["RobotController"]    = false;
   plugin_availability["Framework"]          = false;
-  plugin_availability["AnalysisToolbox"]    = true;
   missing_plugins                           = 0;
   std::map<std::string, bool>::iterator plugin;
   for(plugin =  plugin_availability.begin(); plugin != plugin_availability.end(); plugin++) {
@@ -124,7 +123,7 @@ void SceneGUI::OnResponseMsg(ConstResponsePtr &_msg) {
     // reset time and pause the world
     gazebo::msgs::WorldControl start;
     start.set_pause(true);
-    start.set_reset_time(true);
+    start.mutable_reset()->set_all(true);
     logger->msglog(">>", "~/world_control", start);
     worldPub->Publish(start);
   }

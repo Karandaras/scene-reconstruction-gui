@@ -42,11 +42,8 @@ namespace SceneReconstruction {
       std::map< std::string, Glib::RefPtr<Gdk::Pixbuf> >::iterator image_iter;
       Gtk::ComboBox                                               *com_data;
       Glib::RefPtr<Gtk::ListStore>                                 img_store;
-      Gtk::TreeView                                               *trv_repo;
-      Glib::RefPtr<Gtk::ListStore>                                 rep_store;
 
       Gtk::ToolButton                                             *btn_refresh_objects;
-      Gtk::ToolButton                                             *btn_refresh_repository;
       Gtk::ToolButton                                             *btn_show;
   
       Gtk::Window                                                 *win_show;
@@ -64,7 +61,6 @@ namespace SceneReconstruction {
  
     private:
       void OnResponseMsg(ConstResponsePtr&);
-      void on_button_refresh_repository_clicked();
       void on_button_refresh_objects_clicked();
       void on_button_show_clicked();
       void on_combo_changed();

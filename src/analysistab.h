@@ -46,15 +46,20 @@ namespace SceneReconstruction {
 
       Gtk::TreeView                     *trv_positions;
       Glib::RefPtr<Gtk::TreeStore>       pos_store;
+      std::vector<gazebo::msgs::BufferPosition> pos_messages;
       Gtk::TreeView                     *trv_angles;
       Glib::RefPtr<Gtk::TreeStore>       ang_store;
+      std::vector<gazebo::msgs::BufferJoints> ang_messages;
       Gtk::TreeView                     *trv_objects;
       Glib::RefPtr<Gtk::TreeStore>       obj_store;
+      std::vector<gazebo::msgs::BufferObjects> obj_messages;
 
       gazebo::transport::SubscriberPtr   bufferSub;
       gazebo::transport::PublisherPtr    positionPub,
                                          anglesPub,
-                                         objectPub;
+                                         objectPub,
+                                         drawingPub,
+                                         lasersPub;
 
       Gtk::SpinButton                   *spn_grid_pos_x;
       Gtk::SpinButton                   *spn_grid_pos_y;
@@ -79,5 +84,8 @@ namespace SceneReconstruction {
       void on_button_angles_preview_clicked();
       void on_button_object_preview_clicked();
       void on_lasers_visible_toggled(const Glib::ustring&);
+      void on_button_grid_show_clicked();
+      void on_button_grid_move_clicked();
+      void on_button_lasers_update_clicked();
   };
 }

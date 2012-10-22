@@ -30,16 +30,12 @@ ObjectInstantiatorTab::ObjectInstantiatorTab(gazebo::transport::NodePtr& _node, 
   row = *(img_store->append());
   row.set_value(0, (Glib::ustring)"None");
   images["None"] = Gdk::Pixbuf::create_from_file("res/noimg.png");
-  img_data->set(images["None"]->scale_simple(270,210,Gdk::INTERP_BILINEAR));
+  img_data->set(images["None"]->scale_simple(455,240,Gdk::INTERP_BILINEAR));
   com_data->set_active(0);
   com_data->signal_changed().connect( sigc::mem_fun(*this, &ObjectInstantiatorTab::on_combo_changed) );
 
   _builder->get_widget("objectinstantiator_treeview_objectdata", trv_data);
   dat_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(_builder->get_object("objectinstantiator_treestore_objectdata"));
-
-  // repository list
-  _builder->get_widget("objectinstantiator_treeview_objectrepository", trv_repo);
-  rep_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("objectinstantiator_liststore_objectrepository"));
 
   _builder->get_widget("objectinstantiator_objectdata_window", win_show);
   win_show->set_visible(false);
@@ -58,10 +54,6 @@ ObjectInstantiatorTab::ObjectInstantiatorTab(gazebo::transport::NodePtr& _node, 
   _builder->get_widget("objectinstantiator_toolbutton_refresh_spawnedobjects", btn_refresh_objects);
   btn_refresh_objects->signal_clicked().connect(sigc::mem_fun(*this,&ObjectInstantiatorTab::on_button_refresh_objects_clicked));
 
-  // btn_refresh_repository
-  _builder->get_widget("objectinstantiator_toolbutton_refresh_objectrepository", btn_refresh_repository);
-  btn_refresh_repository->signal_clicked().connect(sigc::mem_fun(*this,&ObjectInstantiatorTab::on_button_refresh_repository_clicked));
-
   sceneReqPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/ObjectInstantiator/Request");
   sceneResSub = node->Subscribe("~/SceneReconstruction/ObjectInstantiator/Response", &ObjectInstantiatorTab::OnResponseMsg, this);
 }
@@ -76,7 +68,7 @@ void ObjectInstantiatorTab::OnResponseMsg(ConstResponsePtr& _msg) {
   logger->msglog("<<", "~/SceneReconstruction/ObjectInstantiator/Response", _msg);
 
   if(_msg->request() == "object_list") {
-    gazebo::msgs::String_V src;
+    gazebo::msgs::GzString_V src;
     if(_msg->has_type() && _msg->type() == src.GetTypeName()) {
       src.ParseFromString(_msg->serialized_data());
       logger->log("object instantiator", "receiving object list from ObjectInstantiatorPlugin");
@@ -87,24 +79,6 @@ void ObjectInstantiatorTab::OnResponseMsg(ConstResponsePtr& _msg) {
 
       for(int i = 0; i<n; i++) {
         row = *(obj_store->append());
-        row.set_value(0, src.data(i));
-      }
-    }
-
-    objReq.reset();
-  }
-  else if(_msg->request() == "object_repository") {
-    gazebo::msgs::String_V src;
-    if(_msg->has_type() && _msg->type() == src.GetTypeName()) {
-      src.ParseFromString(_msg->serialized_data());
-      logger->log("object instantiator", "receiving object repository from ObjectInstantiatorPlugin");
-
-      int n = src.data_size();
-      rep_store->clear();
-      Gtk::TreeModel::Row row;
-
-      for(int i = 0; i<n; i++) {
-        row = *(rep_store->append());
         row.set_value(0, src.data(i));
       }
     }
@@ -164,34 +138,44 @@ void ObjectInstantiatorTab::OnResponseMsg(ConstResponsePtr& _msg) {
 
     images.clear();
     img_store->clear();
+    row = *(img_store->append());
+    row.set_value(0, (Glib::ustring)"None");
+    images["None"] = Gdk::Pixbuf::create_from_file("res/noimg.png");
 
     int n = src2.msgsdata_size();
     gazebo::msgs::SceneDocument doc;
     if(src2.msgtype() == doc.GetTypeName()) {
       for(int m = 0; m<n; m++) {
         doc.ParseFromString(src2.msgsdata(m));
-/*
-        if(src2.images_size() > 0) {
-          for(int i=0; i<src2.images_size(); i++) {
-            row = *(img_store->append());
-            row.set_value(0, src2.images(i).name());
-            // TODO: use data obtained from the framework to create an image
-            images[src2.images(i).name()] = Gdk::Pixbuf::create_from_file("res/noimg.png");
-          }
-        }
-        else {
+
+        if(doc.has_image()) {
           row = *(img_store->append());
-          row.set_value(0, (Glib::ustring)"None");
-          images["None"] = Gdk::Pixbuf::create_from_file("res/noimg.png");
+          row.set_value(0, doc.interface());
+          // TODO: use data obtained from the framework to create an image
+          gazebo::common::Image *img = 0;
+          gazebo::msgs::Set(*img, doc.image());
+          images[doc.interface()] = Gdk::Pixbuf::create_from_file("res/noimg.png");
         }
-
+        
         // TODO: process json documents of SceneObjectData message
+        row = *(dat_store->append());
+        row.set_value(0, (Glib::ustring)"Documents");
+        row.set_value(1, (Glib::ustring)"");
 
-        image_iter = images.begin();
-        img_data->set(image_iter->second);
-*/
+        Gtk::TreeModel::Row childrow;
+        childrow = *(dat_store->append(row.children()));
+        childrow.set_value(0, doc.interface());
+        childrow.set_value(1, (Glib::ustring)"");
+
+        Gtk::TreeModel::Row cchildrow;
+        cchildrow = *(dat_store->append(childrow.children()));
+        cchildrow.set_value(0, (Glib::ustring)"");
+        cchildrow.set_value(1, Converter::parse_json(doc.document()));
       }
     }
+    
+    image_iter = images.begin();
+    img_data->set(image_iter->second);
 
     objRes.reset();
     objReq.reset();
@@ -210,7 +194,7 @@ void ObjectInstantiatorTab::on_combo_changed() {
         Glib::ustring name;
         row.get_value(0, name);
         image_iter = images.find(name);
-        img_data->set(image_iter->second->scale_simple(270,210,Gdk::INTERP_BILINEAR));
+        img_data->set(image_iter->second->scale_simple(455,240,Gdk::INTERP_BILINEAR));
         logger->log("object instantiator", "displaying image "+image_iter->first);
         if(win_show->get_visible()) {
           win_image->set(image_iter->second);
@@ -233,7 +217,7 @@ void ObjectInstantiatorTab::on_win_combo_changed() {
         Glib::ustring name;
         row.get_value(0, name);
         image_iter = images.find(name);
-        img_data->set(image_iter->second->scale_simple(270,210,Gdk::INTERP_BILINEAR));
+        img_data->set(image_iter->second->scale_simple(455,240,Gdk::INTERP_BILINEAR));
         logger->log("object instantiator", "displaying image "+image_iter->first);
         if(win_show->get_visible()) {
           win_image->set(image_iter->second);
@@ -264,14 +248,6 @@ void ObjectInstantiatorTab::on_button_refresh_objects_clicked() {
   objReq.reset(gazebo::msgs::CreateRequest("object_list"));
   sceneReqPub->Publish(*(objReq.get()));
   logger->log("object instantiator", "requesting list of spawned objects from ObjectInstantiatorPlugin");
-  logger->msglog(">>", "~/SceneReconstruction/ObjectInstantiator/Request", objReq);
-}
-
-void ObjectInstantiatorTab::on_button_refresh_repository_clicked() {
-  logger->log("object instantiator", "REFRESH");
-  objReq.reset(gazebo::msgs::CreateRequest("object_repository"));
-  sceneReqPub->Publish(*(objReq.get()));
-  logger->log("object instantiator", "requesting repository list from ObjectInstantiatorPlugin");
   logger->msglog(">>", "~/SceneReconstruction/ObjectInstantiator/Request", objReq);
 }
 

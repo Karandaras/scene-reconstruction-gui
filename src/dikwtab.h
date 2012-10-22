@@ -96,7 +96,6 @@ namespace SceneReconstruction {
 
     private:
       void OnResponseMsg(ConstResponsePtr&);
-      void set_comboboxtext(Gtk::ComboBoxText*,gazebo::msgs::String_V);
       void create_graphviz_dot(std::string);
       void on_new_clicked();
       void on_load_clicked();

@@ -133,7 +133,7 @@ void DIKWTab::OnResponseMsg(ConstResponsePtr& _msg) {
   if(_msg->request() == "collection_names") {
     logger->log("dikw", "received collections for nodelist");
 
-    gazebo::msgs::String_V src;
+    gazebo::msgs::GzString_V src;
     if(_msg->has_type() && _msg->type() == src.GetTypeName()) {
       src.ParseFromString(_msg->serialized_data());
       int n = src.data_size();

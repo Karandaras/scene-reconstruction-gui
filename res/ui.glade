@@ -7,8 +7,8 @@
       <column type="gchararray"/>
       <!-- column-name data -->
       <column type="gchararray"/>
-      <!-- column-name preview -->
-      <column type="gboolean"/>
+      <!-- column-name id -->
+      <column type="gint"/>
     </columns>
   </object>
   <object class="GtkTreeStore" id="analysis_buffer_objects_treestore">
@@ -17,8 +17,8 @@
       <column type="gchararray"/>
       <!-- column-name data -->
       <column type="gchararray"/>
-      <!-- column-name preview -->
-      <column type="gboolean"/>
+      <!-- column-name id -->
+      <column type="gint"/>
     </columns>
   </object>
   <object class="GtkTreeStore" id="analysis_buffer_position_treestore">
@@ -27,8 +27,8 @@
       <column type="gchararray"/>
       <!-- column-name data -->
       <column type="gchararray"/>
-      <!-- column-name preview -->
-      <column type="gboolean"/>
+      <!-- column-name id -->
+      <column type="gint"/>
     </columns>
   </object>
   <object class="GtkAdjustment" id="analysis_toolbox_grid_adjustment_height">
@@ -1008,7 +1008,7 @@
                         </child>
                         <child>
                           <object class="GtkTreeViewColumn" id="objectinstantiator_treeview_column_spawnedobjects">
-                            <property name="title" translatable="yes">Spawned Objects</property>
+                            <property name="title" translatable="yes">Objects</property>
                             <child>
                               <object class="GtkCellRendererText" id="objectinstantiator_cellrenderertext_spawnedobjects"/>
                               <attributes>
@@ -1109,8 +1109,8 @@
                     <property name="can_focus">False</property>
                     <child>
                       <object class="GtkImage" id="objectinstantiator_image_objectdata">
-                        <property name="width_request">270</property>
-                        <property name="height_request">210</property>
+                        <property name="width_request">455</property>
+                        <property name="height_request">240</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="stock">gtk-missing-image</property>
@@ -1197,84 +1197,6 @@
                 <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkBox" id="objectinstantiator_objectrepository">
-                <property name="width_request">180</property>
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="halign">end</property>
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkScrolledWindow" id="objectinstantiator_scrolledwindow_objectrepository">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="shadow_type">in</property>
-                    <child>
-                      <object class="GtkTreeView" id="objectinstantiator_treeview_objectrepository">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="model">objectinstantiator_liststore_objectrepository</property>
-                        <property name="headers_clickable">False</property>
-                        <property name="search_column">0</property>
-                        <child internal-child="selection">
-                          <object class="GtkTreeSelection" id="objectinstantiator_treeview_objectrepository_selection"/>
-                        </child>
-                        <child>
-                          <object class="GtkTreeViewColumn" id="objectinstantiator_treeview_column_objectrepository">
-                            <property name="title" translatable="yes">Object Repository</property>
-                            <child>
-                              <object class="GtkCellRendererText" id="objectinstantiator_cellrenderertext_objectrepository"/>
-                              <attributes>
-                                <attribute name="text">0</attribute>
-                              </attributes>
-                            </child>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkToolbar" id="objectinstantiator_toolbar_objectrepository">
-                    <property name="height_request">67</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="toolbar_style">both</property>
-                    <property name="show_arrow">False</property>
-                    <property name="icon_size">4</property>
-                    <child>
-                      <object class="GtkToolButton" id="objectinstantiator_toolbutton_refresh_objectrepository">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
-                        <property name="label" translatable="yes">Refresh</property>
-                        <property name="use_underline">True</property>
-                        <property name="stock_id">gtk-refresh</property>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="homogeneous">True</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">2</property>
               </packing>
             </child>
           </object>
@@ -1509,7 +1431,7 @@
                   </object>
                   <packing>
                     <property name="x">15</property>
-                    <property name="y">90</property>
+                    <property name="y">60</property>
                   </packing>
                 </child>
                 <child>
@@ -1520,7 +1442,7 @@
                   </object>
                   <packing>
                     <property name="x">15</property>
-                    <property name="y">60</property>
+                    <property name="y">30</property>
                   </packing>
                 </child>
                 <child>
@@ -1543,7 +1465,7 @@
                   </object>
                   <packing>
                     <property name="x">15</property>
-                    <property name="y">120</property>
+                    <property name="y">90</property>
                   </packing>
                 </child>
                 <child>
@@ -1554,7 +1476,7 @@
                   </object>
                   <packing>
                     <property name="x">45</property>
-                    <property name="y">60</property>
+                    <property name="y">30</property>
                   </packing>
                 </child>
                 <child>
@@ -1565,7 +1487,7 @@
                   </object>
                   <packing>
                     <property name="x">45</property>
-                    <property name="y">90</property>
+                    <property name="y">60</property>
                   </packing>
                 </child>
                 <child>
@@ -1576,29 +1498,7 @@
                   </object>
                   <packing>
                     <property name="x">45</property>
-                    <property name="y">120</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkImage" id="logger_availability_status_image_analysistoolbox">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="stock">gtk-no</property>
-                  </object>
-                  <packing>
-                    <property name="x">15</property>
-                    <property name="y">30</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="logger_availability_status_label_analysistoolbox">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Gazebo Plugin: Analysis Toolbox</property>
-                  </object>
-                  <packing>
-                    <property name="x">45</property>
-                    <property name="y">30</property>
+                    <property name="y">90</property>
                   </packing>
                 </child>
               </object>
@@ -3107,6 +3007,9 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="model">analysis_toolbox_robot_liststore_lasers</property>
+                                <child internal-child="selection">
+                                  <object class="GtkTreeSelection" id="treeview-selection15"/>
+                                </child>
                                 <child>
                                   <object class="GtkTreeViewColumn" id="analysis_toolbox_robot_treeviewcolumn_lasers_name">
                                     <property name="title">Interface</property>

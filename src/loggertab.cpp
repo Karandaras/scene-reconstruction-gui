@@ -141,17 +141,17 @@ void LoggerTab::msglog(std::string dir, std::string topic, gazebo::msgs::WorldCo
     msg << "Step: ";
     msg << (_msg.step()?"true":"false");
   }
-  if(_msg.has_reset_time()) {
+  if(_msg.has_reset()) {
     if(msg.str().length()>0)
       msg << ", ";
     msg << "Reset Time: ";
-    msg << (_msg.reset_time()?"true":"false");
+    msg << (_msg.reset().all()||_msg.reset().time_only()?"true":"false");
   }
-  if(_msg.has_reset_world()) {
+  if(_msg.has_reset()) {
     if(msg.str().length()>0)
       msg << ", ";
     msg << "Reset World: ";
-    msg << (_msg.reset_world()?"true":"false");
+    msg << (_msg.reset().all()||_msg.reset().model_only()?"true":"false");
   }
 
   logmsg(dir, "WorldControl", topic, msg.str());
@@ -170,7 +170,7 @@ void LoggerTab::msglog(std::string dir, std::string topic, ConstResponsePtr &_ms
     msg << ", Type: ";
     msg << _msg->type();
 
-    gazebo::msgs::String error;
+    gazebo::msgs::GzString error;
     if(_msg->response() != "success" && _msg->type() == error.GetTypeName() && _msg->has_serialized_data()) {
       error.ParseFromString(_msg->serialized_data());
       msg << ", Error: ";

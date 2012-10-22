@@ -76,8 +76,7 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Gl
 
   gazebo::msgs::WorldControl start;
   start.set_pause(true);
-  start.set_reset_time(true);
-  start.set_reset_world(true);
+  start.mutable_reset()->set_all(true);
   logger->msglog(">>", "~/world_control", start);
   worldPub->Publish(start);
 
@@ -159,7 +158,7 @@ void ControlTab::OnResponseMsg(ConstResponsePtr& _msg) {
   }
   
   if (objectRequest) {
-    gazebo::msgs::String obj;
+    gazebo::msgs::GzString obj;
     if (_msg->request() == objectRequest->request() && _msg->id() == objectRequest->id() && _msg->has_type() && _msg->type() == obj.GetTypeName() && _msg->response() == "success") {
       if(!frameRequest) {
         obj.ParseFromString(_msg->serialized_data());
@@ -255,8 +254,7 @@ void ControlTab::on_button_stop_clicked() {
 
   gazebo::msgs::WorldControl start;
   start.set_pause(true);
-  start.set_reset_time(true);
-  start.set_reset_world(true);
+  start.mutable_reset()->set_all(true);
   logger->msglog(">>", "~/world_control", start);
   worldPub->Publish(start);
 
@@ -307,8 +305,7 @@ bool ControlTab::on_scale_button_event(GdkEventButton* b) {
     gazebo::msgs::WorldControl start;
     start.set_pause(true);
     start.set_step(true);
-    start.set_reset_time(true);
-    start.set_reset_world(true);
+    start.mutable_reset()->set_all(true);
     logger->msglog(">>", "~/world_control", start);
     worldPub->Publish(start);
 
@@ -339,8 +336,7 @@ bool ControlTab::on_scale_key_event(GdkEventKey* k) {
     gazebo::msgs::WorldControl start;
     start.set_pause(true);
     start.set_step(true);
-    start.set_reset_time(true);
-    start.set_reset_world(true);
+    start.mutable_reset()->set_all(true);
     logger->msglog(">>", "~/world_control", start);
     worldPub->Publish(start);
 
