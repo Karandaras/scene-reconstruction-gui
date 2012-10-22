@@ -69,9 +69,10 @@ AnalysisTab::AnalysisTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, 
   anglesPub = node->Advertise<gazebo::msgs::BufferJoints>("~/SceneReconstruction/RobotController/Joints");
   objectPub = node->Advertise<gazebo::msgs::BufferObjects>("~/SceneReconstruction/ObjectInstantiator/Object");
   drawingPub = node->Advertise<gazebo::msgs::Drawing>(std::string("~/draw"));
-  positionPub = node->Advertise<gazebo::msgs::Lasers>("~/SceneReconstruction/RobotController/Lasers");
+  positionPub = node->Advertise<gazebo::msgs::Lasers>("~/SceneReconstruction/Framework/Lasers");
 
   bufferSub = node->Subscribe("~/SceneReconstruction/GUI/Buffer", &AnalysisTab::OnBufferMsg, this);
+  lasersSub = node->Subscribe("~/SceneReconstruction/GUI/Lasers", &AnalysisTab::OnLaserMsg, this);
 }
 
 AnalysisTab::~AnalysisTab() {
@@ -313,3 +314,18 @@ void AnalysisTab::on_button_lasers_update_clicked() {
   lasersPub->Publish(lasers);
 }
 
+void AnalysisTab::OnLasersMsg(ConstLasersPtr &_msg) {
+  Gtk::TreeModel::Row row;
+  int i, v;
+  i = _msg->interface_size();
+  v = _msg->visible_size();
+  if(i != v)
+    return;
+
+  lsr_store->clear();
+  for(int l=0; l<i; l++) {
+    row = *(lsr_store->append());
+    row.set_value(0, _msg->interface(l));
+    row.set_value(1, _msg->visible(l));
+  }
+}

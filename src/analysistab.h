@@ -54,7 +54,8 @@ namespace SceneReconstruction {
       Glib::RefPtr<Gtk::TreeStore>       obj_store;
       std::vector<gazebo::msgs::BufferObjects> obj_messages;
 
-      gazebo::transport::SubscriberPtr   bufferSub;
+      gazebo::transport::SubscriberPtr   bufferSub,
+                                         lasersSub;
       gazebo::transport::PublisherPtr    positionPub,
                                          anglesPub,
                                          objectPub,
@@ -80,6 +81,7 @@ namespace SceneReconstruction {
 
     private:
       void OnBufferMsg(ConstMessage_VPtr&);
+      void OnLasersMsg(ConstLasersPtr&);
       void on_button_position_preview_clicked();
       void on_button_angles_preview_clicked();
       void on_button_object_preview_clicked();
