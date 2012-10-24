@@ -7,7 +7,9 @@ using namespace SceneReconstruction;
  *  @author Bastian Klingen
  */
 
-LoggerTab::LoggerTab(Glib::RefPtr<Gtk::Builder>& builder) : SceneTab::SceneTab(builder) {
+LoggerTab::LoggerTab(Glib::RefPtr<Gtk::Builder>& builder)
+: SceneTab::SceneTab(builder)
+{
   offset = time(NULL);
 
   _builder->get_widget("logger_event_treeview", trv_logger);

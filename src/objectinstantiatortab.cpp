@@ -114,7 +114,6 @@ void ObjectInstantiatorTab::OnResponseMsg(ConstResponsePtr& _msg) {
     Gtk::TreeModel::Row row;
 
     logger->log("object instantiator", "receiving object data from ObjectInstantiatorPlugin");
-
     if(src1.has_model()) {
       row = *(dat_store->append());
       row.set_value(0, (Glib::ustring)"Model");
@@ -172,8 +171,7 @@ void ObjectInstantiatorTab::OnResponseMsg(ConstResponsePtr& _msg) {
         cchildrow.set_value(0, (Glib::ustring)"");
         cchildrow.set_value(1, Converter::parse_json(doc.document()));
       }
-    }
-    
+    }    
     image_iter = images.begin();
     img_data->set(image_iter->second);
 

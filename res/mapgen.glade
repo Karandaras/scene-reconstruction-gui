@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
+  <object class="GtkAdjustment" id="adjustment_settings_height">
+    <property name="lower">0.10000000000000001</property>
+    <property name="upper">5</property>
+    <property name="value">2</property>
+    <property name="step_increment">0.10000000000000001</property>
+    <property name="page_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment_settings_resolution">
+    <property name="lower">0.050000000000000003</property>
+    <property name="upper">1</property>
+    <property name="value">0.050000000000000003</property>
+    <property name="step_increment">0.01</property>
+    <property name="page_increment">0.050000000000000003</property>
+  </object>
   <object class="GtkDialog" id="dialog_add_object">
     <property name="width_request">400</property>
     <property name="height_request">400</property>
@@ -170,14 +184,327 @@
       <action-widget response="-10">dialog_button_add</action-widget>
     </action-widgets>
   </object>
-  <object class="GtkTextBuffer" id="dialog_textbuffer_model_file"/>
-  <object class="GtkFileFilter" id="filefilter_image">
-    <patterns>
-      <pattern>*.png</pattern>
-      <pattern>*.jpg</pattern>
-      <pattern>*.jpeg</pattern>
-    </patterns>
+  <object class="GtkDialog" id="dialog_save">
+    <property name="can_focus">False</property>
+    <property name="border_width">5</property>
+    <property name="type_hint">dialog</property>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="dialog_save_vbox">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox" id="dialog_save_action_area">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="dialog_save_button_cancel">
+                <property name="label" translatable="yes">Cancel</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="dialog_save_button_save">
+                <property name="label" translatable="yes">Save</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkVBox" id="dialog_save_box">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkToolbar" id="dialog_save_toolbar">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="GtkToolItem" id="dialog_save_toolbutton_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="use_action_appearance">False</property>
+                    <child>
+                      <object class="GtkLabel" id="dialog_save_label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Line Width:</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolItem" id="dialog_save_toolbutton_width">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="use_action_appearance">False</property>
+                    <child>
+                      <object class="GtkSpinButton" id="dialog_save_spinbutton">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="invisible_char">●</property>
+                        <property name="width_chars">3</property>
+                        <property name="adjustment">dialog_save_adjustment</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSeparatorToolItem" id="dialog_save_toolbutton_seperator">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="use_action_appearance">False</property>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton" id="dialog_save_toolbutton_erase">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Delete Line</property>
+                    <property name="use_action_appearance">False</property>
+                    <property name="label" translatable="yes">Delete</property>
+                    <property name="use_underline">True</property>
+                    <property name="stock_id">gtk-delete</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHBox" id="dialog_save_hbox">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="GtkEventBox" id="dialog_save_eventbox">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkImage" id="dialog_save_image">
+                        <property name="width_request">300</property>
+                        <property name="height_request">200</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="stock">gtk-missing-image</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow" id="dialog_save_scrolledwindow">
+                    <property name="width_request">282</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="shadow_type">in</property>
+                    <child>
+                      <object class="GtkTreeView" id="dialog_save_treeview">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="model">dialog_save_liststore</property>
+                        <child internal-child="selection">
+                          <object class="GtkTreeSelection" id="dialog_save_treeview_selection"/>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="dialog_save_treeviewcolumn_x1">
+                            <property name="sizing">autosize</property>
+                            <property name="fixed_width">50</property>
+                            <property name="title" translatable="yes">X1</property>
+                            <property name="alignment">1</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="dialog_save_cellrenderertext_x1">
+                                <property name="xpad">1</property>
+                                <property name="alignment">right</property>
+                                <property name="editable">True</property>
+                              </object>
+                              <attributes>
+                                <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="dialog_save_treeviewcolumn_y1">
+                            <property name="sizing">autosize</property>
+                            <property name="fixed_width">50</property>
+                            <property name="title" translatable="yes">Y1</property>
+                            <property name="alignment">1</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="dialog_save_cellrenderertext_y1">
+                                <property name="xpad">1</property>
+                                <property name="alignment">right</property>
+                                <property name="editable">True</property>
+                              </object>
+                              <attributes>
+                                <attribute name="text">1</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="dialog_save_treeviewcolumn_seperator1">
+                            <property name="sizing">fixed</property>
+                            <property name="fixed_width">15</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="dialog_save_treeviewcolumn_x2">
+                            <property name="sizing">autosize</property>
+                            <property name="fixed_width">50</property>
+                            <property name="title" translatable="yes">X2</property>
+                            <property name="alignment">1</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="dialog_save_cellrenderertext_x2">
+                                <property name="xpad">1</property>
+                                <property name="alignment">right</property>
+                                <property name="editable">True</property>
+                              </object>
+                              <attributes>
+                                <attribute name="text">2</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="dialog_save_treeviewcolumn_y2">
+                            <property name="sizing">autosize</property>
+                            <property name="fixed_width">50</property>
+                            <property name="title" translatable="yes">Y2</property>
+                            <property name="alignment">1</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="dialog_save_cellrenderertext_y2">
+                                <property name="xpad">1</property>
+                                <property name="alignment">right</property>
+                                <property name="editable">True</property>
+                              </object>
+                              <attributes>
+                                <attribute name="text">3</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="dialog_save_treeviewcolumn_seperator2">
+                            <property name="sizing">fixed</property>
+                            <property name="fixed_width">15</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="dialog_save_treeviewcolumn_width">
+                            <property name="sizing">autosize</property>
+                            <property name="fixed_width">50</property>
+                            <property name="title" translatable="yes">Width</property>
+                            <property name="alignment">1</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="dialog_save_cellrenderertext_width">
+                                <property name="xpad">1</property>
+                                <property name="alignment">right</property>
+                                <property name="editable">True</property>
+                              </object>
+                              <attributes>
+                                <attribute name="text">4</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="-6">dialog_save_button_cancel</action-widget>
+      <action-widget response="-10">dialog_save_button_save</action-widget>
+    </action-widgets>
   </object>
+  <object class="GtkAdjustment" id="dialog_save_adjustment">
+    <property name="lower">1</property>
+    <property name="upper">100</property>
+    <property name="value">1</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkListStore" id="dialog_save_liststore">
+    <columns>
+      <!-- column-name x1 -->
+      <column type="gdouble"/>
+      <!-- column-name y1 -->
+      <column type="gdouble"/>
+      <!-- column-name x2 -->
+      <column type="gdouble"/>
+      <!-- column-name y2 -->
+      <column type="gdouble"/>
+      <!-- column-name width -->
+      <column type="gdouble"/>
+    </columns>
+  </object>
+  <object class="GtkTextBuffer" id="dialog_textbuffer_model_file"/>
   <object class="GtkFileFilter" id="filefilter_model">
     <patterns>
       <pattern>*.model</pattern>
@@ -220,7 +547,6 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="orientation">vertical</property>
-            <property name="filter">filefilter_image</property>
             <property name="title">Select Image File</property>
           </object>
           <packing>
@@ -466,6 +792,119 @@
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">6</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label_settings">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="xalign">0</property>
+            <property name="label" translatable="yes">Settings</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">7</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="box_settings">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkLabel" id="label_settings_resolution">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="tooltip_text" translatable="yes">Meter/Pixel</property>
+                <property name="label" translatable="yes">Resolution:</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinButton" id="spinbutton_settings_resolution">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="tooltip_text" translatable="yes">Meter/Pixel</property>
+                <property name="invisible_char">●</property>
+                <property name="width_chars">3</property>
+                <property name="adjustment">adjustment_settings_resolution</property>
+                <property name="digits">2</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label_settings_height">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="tooltip_markup" translatable="yes">Wall Height in Meter</property>
+                <property name="xalign">1</property>
+                <property name="label" translatable="yes">Wall Height:</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinButton" id="spinbutton_settings_height">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="tooltip_markup" translatable="yes">Wall Height in Meter</property>
+                <property name="invisible_char">●</property>
+                <property name="adjustment">adjustment_settings_height</property>
+                <property name="digits">2</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label_settings_color">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="tooltip_markup" translatable="yes">Wall Color</property>
+                <property name="xalign">1</property>
+                <property name="label" translatable="yes">Wall Color:</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkColorButton" id="colorbutton_settings_color">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="tooltip_text" translatable="yes">Wall Color</property>
+                <property name="use_action_appearance">False</property>
+                <property name="title" translatable="yes">Choose Wall Color</property>
+                <property name="color">#ffffffffbfbf</property>
+                <property name="rgba">rgb(255,255,191)</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">5</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">8</property>
           </packing>
         </child>
         <child>

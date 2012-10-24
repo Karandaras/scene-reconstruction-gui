@@ -27,15 +27,12 @@ AnalysisTab::AnalysisTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, 
 
   _builder->get_widget("analysis_buffer_position_treeview", trv_positions);
   pos_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(_builder->get_object("analysis_buffer_position_treestore"));
-  pos_store->clear();
 
   _builder->get_widget("analysis_buffer_joints_treeview", trv_angles);
   ang_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(_builder->get_object("analysis_buffer_joints_treestore"));
-  ang_store->clear();
 
   _builder->get_widget("analysis_buffer_objects_treeview", trv_objects);
   obj_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(_builder->get_object("analysis_buffer_objects_treestore"));
-  obj_store->clear();
 
   _builder->get_widget("analysis_toolbox_grid_spinbutton_position_x", spn_grid_pos_x);
   _builder->get_widget("analysis_toolbox_grid_spinbutton_position_y", spn_grid_pos_y);
@@ -54,8 +51,7 @@ AnalysisTab::AnalysisTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, 
   btn_grid_move->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_grid_move_clicked));
 
   _builder->get_widget("analysis_toolbox_robot_treeview_lasers", trv_lasers);
-  lsr_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(_builder->get_object("analysis_toolbox_robot_liststore_lasers"));
-  lsr_store->clear();
+  lsr_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("analysis_toolbox_robot_liststore_lasers"));
   _builder->get_widget("analysis_toolbox_robot_button_lasers_update", btn_lasers_update);
   btn_lasers_update->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_lasers_update_clicked));
 
@@ -69,10 +65,10 @@ AnalysisTab::AnalysisTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, 
   anglesPub = node->Advertise<gazebo::msgs::BufferJoints>("~/SceneReconstruction/RobotController/Joints");
   objectPub = node->Advertise<gazebo::msgs::BufferObjects>("~/SceneReconstruction/ObjectInstantiator/Object");
   drawingPub = node->Advertise<gazebo::msgs::Drawing>(std::string("~/draw"));
-  positionPub = node->Advertise<gazebo::msgs::Lasers>("~/SceneReconstruction/Framework/Lasers");
+  lasersPub = node->Advertise<gazebo::msgs::Lasers>("~/SceneReconstruction/Framework/Lasers");
 
   bufferSub = node->Subscribe("~/SceneReconstruction/GUI/Buffer", &AnalysisTab::OnBufferMsg, this);
-  lasersSub = node->Subscribe("~/SceneReconstruction/GUI/Lasers", &AnalysisTab::OnLaserMsg, this);
+  lasersSub = node->Subscribe("~/SceneReconstruction/GUI/Lasers", &AnalysisTab::OnLasersMsg, this);
 }
 
 AnalysisTab::~AnalysisTab() {
@@ -301,8 +297,8 @@ void AnalysisTab::on_button_grid_move_clicked() {
 void AnalysisTab::on_button_lasers_update_clicked() {
   gazebo::msgs::Lasers lasers;
 
-  Gtk::TreeModel::Children rows = lsr_store->children();
-  for(Gtk::TreeModel::iterator row = rows.begin(); row != rows.end(); row++) {
+  Gtk::TreeModel::Children rows = trv_lasers->get_model()->children();
+  for(Gtk::TreeModel::Children::iterator row = rows.begin(); row != rows.end(); row++) {
     Glib::ustring interface;
     bool visible;
     row->get_value(0, interface);

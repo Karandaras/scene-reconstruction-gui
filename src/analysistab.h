@@ -76,7 +76,7 @@ namespace SceneReconstruction {
       Gtk::Button                       *btn_grid_move;
 
       Gtk::TreeView                     *trv_lasers;
-      Glib::RefPtr<Gtk::TreeStore>       lsr_store;
+      Glib::RefPtr<Gtk::ListStore>       lsr_store;
       Gtk::Button                       *btn_lasers_update;
 
     private:
