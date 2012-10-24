@@ -16,8 +16,9 @@ FrameworkTab::FrameworkTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger
   node = _node;
   logger = _logger;
 
-  _builder->get_widget("framework_spinbutton_object", spn_object);
-  spn_object->signal_value_changed().connect(sigc::mem_fun(*this,&FrameworkTab::on_button_object_value_changed), false);
+  _builder->get_widget("framework_combobox_object", com_object);
+  com_object->signal_changed().connect(sigc::mem_fun(*this,&FrameworkTab::on_combobox_object_changed), false);
+  obj_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("framework_liststore_object"));
 
   _builder->get_widget("framework_toolbutton_collections_refresh", btn_collections_refresh);
   btn_collections_refresh->signal_clicked().connect(sigc::mem_fun(*this,&FrameworkTab::on_button_collections_refresh_clicked));
@@ -27,7 +28,6 @@ FrameworkTab::FrameworkTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger
 
   _builder->get_widget("framework_treeview_collections", trv_collections);
   col_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("framework_liststore_collections"));
-  col_store->clear();
 
   _builder->get_widget("framework_textview_object", txt_object);
   txt_object->override_font(Pango::FontDescription("monospace"));
@@ -63,12 +63,13 @@ void FrameworkTab::OnResponseMsg(ConstResponsePtr& _msg) {
       gazebo::msgs::GzString_V src;
       if(_msg->has_type() && _msg->type() == src.GetTypeName()) {
         src.ParseFromString(_msg->serialized_data());
-        char* t;
-        double max = strtod(src.data(0).c_str(), &t);
-        if(*t != 0) {
-          max = 0.0;
+        obj_store->clear();
+        for(int i = 0; i<src.data_size()-1; i+=2) {
+          Gtk::TreeModel::Row row;
+          row = *(obj_store->append());
+          row.set_value(0, Converter::to_ustring_time(Converter::ustring_to_double(src.data(i))));
+          row.set_value(1, src.data(i+1));
         }
-        spn_object->set_range(0.0,max);
 
         if(src.data_size()>1) {
           txt_object->get_buffer()->set_text(Converter::parse_json(src.data(1)));
@@ -108,10 +109,12 @@ void FrameworkTab::on_button_collections_select_clicked() {
   }
 }
 
-void FrameworkTab::on_button_object_value_changed() {
-  logger->log("framework", "select object %d", (int)spn_object->get_value());
+void FrameworkTab::on_combobox_object_changed() {
+  std::string object;
+  com_object->get_active()->get_value(1, object);
+  logger->log("framework", "select document "+object);
   objReq.reset(gazebo::msgs::CreateRequest("select_object"));
-  objReq->set_dbl_data(spn_object->get_value());
+  objReq->set_data(object);
   logger->msglog(">>", "~/SceneReconstruction/Framework/Request", objReq);
   reqPub->Publish(*(objReq.get()));
 }

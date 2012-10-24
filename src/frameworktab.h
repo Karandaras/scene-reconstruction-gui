@@ -38,7 +38,8 @@ namespace SceneReconstruction {
 
       Gtk::ToolButton              *btn_collections_refresh;
       Gtk::ToolButton              *btn_collections_select;
-      Gtk::SpinButton              *spn_object;
+      Gtk::ComboBox                *com_object;
+      Glib::RefPtr<Gtk::ListStore>  obj_store;
 
       Gtk::TreeView                *trv_collections;
       Glib::RefPtr<Gtk::ListStore>  col_store;
@@ -53,6 +54,6 @@ namespace SceneReconstruction {
       void OnResponseMsg(ConstResponsePtr&);
       void on_button_collections_refresh_clicked();
       void on_button_collections_select_clicked();
-      void on_button_object_value_changed();
+      void on_combobox_object_changed();
  };
 }
