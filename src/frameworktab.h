@@ -50,8 +50,13 @@ namespace SceneReconstruction {
       gazebo::transport::PublisherPtr                 reqPub;
       gazebo::transport::SubscriberPtr                resSub;
 
+      Glib::Dispatcher                                on_response_msg;
+      boost::mutex                                   *responseMutex;
+      std::list<gazebo::msgs::Response>               responseMsgs;
+
     private:
       void OnResponseMsg(ConstResponsePtr&);
+      void ProcessResponseMsg();
       void on_button_collections_refresh_clicked();
       void on_button_collections_select_clicked();
       void on_combobox_object_changed();

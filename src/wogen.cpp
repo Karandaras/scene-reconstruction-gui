@@ -1,4 +1,4 @@
-#include "mapgen.h"
+#include "wogen.h"
 #include <iostream>
 #include <fstream>
 #include <math.h>
@@ -6,14 +6,16 @@
 using namespace SceneReconstruction;
 
 /** @class SceneGui "mapgen.h"
- *  Main Class that creates the MapGenerator
+ *  Class that creates the WorldfileGenerator GUI for Worldfile generation.
+ *  It loads an image and allows the user to create walls according to that image. Additionally
+ *  it helps in setting up the objectinstantiator and allows one to include the robot file.
  *  @author Bastian Klingen
  */
 
-MapGenerator::MapGenerator()
+WorldfileGenerator::WorldfileGenerator()
 {
   // Setup the GUI
-  ui_builder = Gtk::Builder::create_from_file("res/mapgen.glade");
+  ui_builder = Gtk::Builder::create_from_file("res/wogen.glade");
   ui_builder->get_widget("window", window);
 
   ui_builder->get_widget("filechooserbutton_image", fcb_image);
@@ -26,18 +28,18 @@ MapGenerator::MapGenerator()
   ui_builder->get_widget("entry_objectinstantiator_offset_y", ent_offsety);
   ui_builder->get_widget("entry_objectinstantiator_offset_z", ent_offsetz);
   ui_builder->get_widget("button_objectinstantiator_add_object", btn_addobject);
-  btn_addobject->signal_clicked().connect(sigc::mem_fun(*this,&MapGenerator::on_add_object_clicked));
+  btn_addobject->signal_clicked().connect(sigc::mem_fun(*this,&WorldfileGenerator::on_add_object_clicked));
   ui_builder->get_widget("button_objectinstantiator_remove_object", btn_removeobject);
-  btn_removeobject->signal_clicked().connect(sigc::mem_fun(*this,&MapGenerator::on_remove_object_clicked));
+  btn_removeobject->signal_clicked().connect(sigc::mem_fun(*this,&WorldfileGenerator::on_remove_object_clicked));
   ui_builder->get_widget("treeview_objectinstantiator", trv_objects);
   lst_objects = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(ui_builder->get_object("liststore_objectinstantiator_objects"));
 
   ui_builder->get_widget("dialog_add_object", dia_addobject);
   ui_builder->get_widget("dialog_entry_modelname", ent_modelname);
-  ent_modelname->signal_key_release_event().connect(sigc::mem_fun(*this,&MapGenerator::on_dialog_name_changed));
+  ent_modelname->signal_key_release_event().connect(sigc::mem_fun(*this,&WorldfileGenerator::on_dialog_name_changed));
   ui_builder->get_widget("dialog_entry_interfacename", ent_interfacename);
   ui_builder->get_widget("dialog_filechooserbutton_model_file", fcb_model);
-  fcb_model->signal_file_set().connect(sigc::mem_fun(*this,&MapGenerator::on_dialog_file_set));
+  fcb_model->signal_file_set().connect(sigc::mem_fun(*this,&WorldfileGenerator::on_dialog_file_set));
   buf_preview = Glib::RefPtr<Gtk::TextBuffer>::cast_dynamic(ui_builder->get_object("dialog_textbuffer_model_file"));
 
   ui_builder->get_widget("filechooserbutton_robot", fcb_robot);
@@ -57,83 +59,93 @@ MapGenerator::MapGenerator()
   ui_builder->get_widget("colorbutton_settings_color", clb_color);
 
   ui_builder->get_widget("button_make_world", btn_makeworld);
-  btn_makeworld->signal_clicked().connect(sigc::mem_fun(*this,&MapGenerator::on_make_world_clicked));
+  btn_makeworld->signal_clicked().connect(sigc::mem_fun(*this,&WorldfileGenerator::on_make_world_clicked));
 
   ui_builder->get_widget("dialog_save", dia_map);
   ui_builder->get_widget("dialog_save_image", img_map);
   ui_builder->get_widget("dialog_save_eventbox", evt_map);
   evt_map->set_events(Gdk::BUTTON_MOTION_MASK | Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK);
-  evt_map->signal_button_press_event().connect(sigc::mem_fun(*this,&MapGenerator::on_map_button_press));
-  evt_map->signal_button_release_event().connect(sigc::mem_fun(*this,&MapGenerator::on_map_button_release));
-  evt_map->signal_motion_notify_event().connect(sigc::mem_fun(*this,&MapGenerator::on_map_motion_notify));
-  img_map->signal_draw().connect(sigc::mem_fun(*this,&MapGenerator::on_map_draw));
+  evt_map->signal_button_press_event().connect(sigc::mem_fun(*this,&WorldfileGenerator::on_map_button_press));
+  evt_map->signal_button_release_event().connect(sigc::mem_fun(*this,&WorldfileGenerator::on_map_button_release));
+  evt_map->signal_motion_notify_event().connect(sigc::mem_fun(*this,&WorldfileGenerator::on_map_motion_notify));
+  img_map->signal_draw().connect(sigc::mem_fun(*this,&WorldfileGenerator::on_map_draw));
   ui_builder->get_widget("dialog_save_spinbutton", spn_map);
   ui_builder->get_widget("dialog_save_toolbutton_erase", btn_erase);
-  btn_erase->signal_clicked().connect(sigc::mem_fun(*this,&MapGenerator::on_map_erase_clicked));
+  btn_erase->signal_clicked().connect(sigc::mem_fun(*this,&WorldfileGenerator::on_map_erase_clicked));
   ui_builder->get_widget("dialog_save_treeview", trv_map);
   lst_map = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(ui_builder->get_object("dialog_save_liststore"));
 
 
   Glib::RefPtr<Gtk::CellRendererText> crt_x1 = Glib::RefPtr<Gtk::CellRendererText>::cast_dynamic(ui_builder->get_object("dialog_save_cellrenderertext_x1"));
   crt_x1->property_editable() = true;
-  crt_x1->signal_edited().connect(sigc::mem_fun(*this,&MapGenerator::on_map_x1_edited));
+  crt_x1->signal_edited().connect(sigc::mem_fun(*this,&WorldfileGenerator::on_map_x1_edited));
   Glib::RefPtr<Gtk::TreeViewColumn> tvc_x1 = Glib::RefPtr<Gtk::TreeViewColumn>::cast_dynamic(ui_builder->get_object("dialog_save_treeviewcolumn_x1"));
   std::vector<Gtk::CellRenderer*> col_x1 = trv_map->get_column(0)->get_cells();
   for(unsigned int i=0; i<col_x1.size(); i++) {
-    tvc_x1->set_cell_data_func(*dynamic_cast<Gtk::CellRendererText*>(col_x1[i]), sigc::mem_fun(*this, &MapGenerator::treeviewcolumn_x1_cell_data) );
+    tvc_x1->set_cell_data_func(*dynamic_cast<Gtk::CellRendererText*>(col_x1[i]), sigc::mem_fun(*this, &WorldfileGenerator::treeviewcolumn_x1_cell_data) );
   }
 
   Glib::RefPtr<Gtk::CellRendererText> crt_y1 = Glib::RefPtr<Gtk::CellRendererText>::cast_dynamic(ui_builder->get_object("dialog_save_cellrenderertext_y1"));
   crt_y1->property_editable() = true;
-  crt_y1->signal_edited().connect(sigc::mem_fun(*this,&MapGenerator::on_map_y1_edited));
+  crt_y1->signal_edited().connect(sigc::mem_fun(*this,&WorldfileGenerator::on_map_y1_edited));
   Glib::RefPtr<Gtk::TreeViewColumn> tvc_y1 = Glib::RefPtr<Gtk::TreeViewColumn>::cast_dynamic(ui_builder->get_object("dialog_save_treeviewcolumn_y1"));
   std::vector<Gtk::CellRenderer*> col_y1 = trv_map->get_column(1)->get_cells();
   for(unsigned int i=0; i<col_y1.size(); i++) {
-    tvc_y1->set_cell_data_func(*dynamic_cast<Gtk::CellRendererText*>(col_y1[i]), sigc::mem_fun(*this, &MapGenerator::treeviewcolumn_y1_cell_data) );
+    tvc_y1->set_cell_data_func(*dynamic_cast<Gtk::CellRendererText*>(col_y1[i]), sigc::mem_fun(*this, &WorldfileGenerator::treeviewcolumn_y1_cell_data) );
   }
 
   Glib::RefPtr<Gtk::CellRendererText> crt_x2 = Glib::RefPtr<Gtk::CellRendererText>::cast_dynamic(ui_builder->get_object("dialog_save_cellrenderertext_x2"));
   crt_x2->property_editable() = true;
-  crt_x2->signal_edited().connect(sigc::mem_fun(*this,&MapGenerator::on_map_x2_edited));
+  crt_x2->signal_edited().connect(sigc::mem_fun(*this,&WorldfileGenerator::on_map_x2_edited));
   Glib::RefPtr<Gtk::TreeViewColumn> tvc_x2 = Glib::RefPtr<Gtk::TreeViewColumn>::cast_dynamic(ui_builder->get_object("dialog_save_treeviewcolumn_x2"));
   std::vector<Gtk::CellRenderer*> col_x2 = trv_map->get_column(3)->get_cells();
   for(unsigned int i=0; i<col_x2.size(); i++) {
-    tvc_x2->set_cell_data_func(*dynamic_cast<Gtk::CellRendererText*>(col_x2[i]), sigc::mem_fun(*this, &MapGenerator::treeviewcolumn_x2_cell_data) );
+    tvc_x2->set_cell_data_func(*dynamic_cast<Gtk::CellRendererText*>(col_x2[i]), sigc::mem_fun(*this, &WorldfileGenerator::treeviewcolumn_x2_cell_data) );
   }
 
   Glib::RefPtr<Gtk::CellRendererText> crt_y2 = Glib::RefPtr<Gtk::CellRendererText>::cast_dynamic(ui_builder->get_object("dialog_save_cellrenderertext_y2"));
   crt_y2->property_editable() = true;
-  crt_y2->signal_edited().connect(sigc::mem_fun(*this,&MapGenerator::on_map_y2_edited));
+  crt_y2->signal_edited().connect(sigc::mem_fun(*this,&WorldfileGenerator::on_map_y2_edited));
   Glib::RefPtr<Gtk::TreeViewColumn> tvc_y2 = Glib::RefPtr<Gtk::TreeViewColumn>::cast_dynamic(ui_builder->get_object("dialog_save_treeviewcolumn_y2"));
   std::vector<Gtk::CellRenderer*> col_y2 = trv_map->get_column(4)->get_cells();
   for(unsigned int i=0; i<col_y2.size(); i++) {
-    tvc_y2->set_cell_data_func(*dynamic_cast<Gtk::CellRendererText*>(col_y2[i]), sigc::mem_fun(*this, &MapGenerator::treeviewcolumn_y2_cell_data) );
+    tvc_y2->set_cell_data_func(*dynamic_cast<Gtk::CellRendererText*>(col_y2[i]), sigc::mem_fun(*this, &WorldfileGenerator::treeviewcolumn_y2_cell_data) );
   }
 
   Glib::RefPtr<Gtk::CellRendererText> crt_width = Glib::RefPtr<Gtk::CellRendererText>::cast_dynamic(ui_builder->get_object("dialog_save_cellrenderertext_width"));
   crt_width->property_editable() = true;
-  crt_width->signal_edited().connect(sigc::mem_fun(*this,&MapGenerator::on_map_width_edited));
+  crt_width->signal_edited().connect(sigc::mem_fun(*this,&WorldfileGenerator::on_map_width_edited));
   Glib::RefPtr<Gtk::TreeViewColumn> tvc_width = Glib::RefPtr<Gtk::TreeViewColumn>::cast_dynamic(ui_builder->get_object("dialog_save_treeviewcolumn_width"));
   std::vector<Gtk::CellRenderer*> col_width = trv_map->get_column(6)->get_cells();
   for(unsigned int i=0; i<col_width.size(); i++) {
-    tvc_width->set_cell_data_func(*dynamic_cast<Gtk::CellRendererText*>(col_width[i]), sigc::mem_fun(*this, &MapGenerator::treeviewcolumn_width_cell_data) );
+    tvc_width->set_cell_data_func(*dynamic_cast<Gtk::CellRendererText*>(col_width[i]), sigc::mem_fun(*this, &WorldfileGenerator::treeviewcolumn_width_cell_data) );
   }
 
 }
 
-MapGenerator::~MapGenerator() {
+WorldfileGenerator::~WorldfileGenerator() {
 }
 
-void MapGenerator::on_add_object_clicked() {
+void WorldfileGenerator::on_add_object_clicked() {
   dia_addobject->set_transient_for(*window);
   int result = dia_addobject->run();
   if(result == Gtk::RESPONSE_APPLY) {
-    // TODO: add object to liststore
+    // add object to liststore
     Gtk::TreeModel::Row row;
     row = *(lst_objects->append());
     row.set_value(0, ent_modelname->get_text());    
     row.set_value(1, ent_interfacename->get_text());    
     row.set_value(2, buf_preview->get_text());    
+
+    std::string clonesdf = buf_preview->get_text();
+    size_t model_pos = clonesdf.find("<model");
+    if(model_pos != std::string::npos) {
+      size_t name_start_pos = clonesdf.find("name=\"", model_pos)+6;
+      size_t name_end_pos = clonesdf.find("\"", name_start_pos);
+      clonesdf.insert(name_end_pos, "_clone");
+    }
+
+    row.set_value(3, clonesdf);    
   }
 
   ent_modelname->set_text("");
@@ -144,21 +156,21 @@ void MapGenerator::on_add_object_clicked() {
   dia_addobject->hide();
 }
 
-void MapGenerator::on_map_erase_clicked() {
+void WorldfileGenerator::on_map_erase_clicked() {
   if(trv_map->get_selection()->count_selected_rows() == 1) {
     lst_map->erase(trv_map->get_selection()->get_selected());
   }
   img_map->queue_draw();
 }
 
-void MapGenerator::on_remove_object_clicked() {
+void WorldfileGenerator::on_remove_object_clicked() {
   Glib::RefPtr<Gtk::TreeView::Selection> sel = trv_objects->get_selection();
   if(sel->count_selected_rows() == 1)
     lst_objects->erase(sel->get_selected());
 }
 
-bool MapGenerator::on_dialog_name_changed(GdkEventKey* /*event*/) {
-  // TODO: replace name in textbuffer by new modelname if file already loaded
+bool WorldfileGenerator::on_dialog_name_changed(GdkEventKey* /*event*/) {
+  // replace name in textbuffer by new modelname if file already loaded
   std::string modelsdf = buf_preview->get_text();
   size_t model_pos = modelsdf.find("<model");
   if(model_pos != std::string::npos) {
@@ -170,8 +182,8 @@ bool MapGenerator::on_dialog_name_changed(GdkEventKey* /*event*/) {
   return false;
 }
 
-void MapGenerator::on_dialog_file_set() {  
-  // TODO: load file to textbuffer and replace name by modelname
+void WorldfileGenerator::on_dialog_file_set() {  
+  // load file to textbuffer and replace name by modelname
   std::string filename = fcb_model->get_filename();
   std::string modelsdf = "";
   if (filename != "") {      
@@ -192,9 +204,9 @@ void MapGenerator::on_dialog_file_set() {
   }
 }
 
-void MapGenerator::on_make_world_clicked() {
+void WorldfileGenerator::on_make_world_clicked() {
   dia_map->set_transient_for(*window);
-  // TODO: check and load image file
+  // check and load image file
   if(fcb_image->get_filename() != "") {
     Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create_from_file(fcb_image->get_filename());
     img_map->set(image);
@@ -263,7 +275,7 @@ void MapGenerator::on_make_world_clicked() {
             worldfile << "                </collision>\n";
             worldfile << "            </link>\n";
             worldfile << "            <link name=\"walls\">\n";
-            // TODO: generate world sdf from image
+            // generate world sdf from image
 
             Gtk::TreeModel::Children rows = trv_map->get_model()->children();
             int i = 0;
@@ -314,16 +326,21 @@ void MapGenerator::on_make_world_clicked() {
             worldfile << "\n";
             worldfile << "        <!-- models for the object repository -->\n";
 
-            // TODO: generate object sdf from lst_objects
-            // TODO: add and configure objectinstantiatorplugin
+            // generate object sdf from lst_objects
             rows = trv_objects->get_model()->children();
             for(Gtk::TreeModel::Children::iterator l = rows.begin(); l != rows.end(); l++) {
               std::string sdf;
+              // add model
               l->get_value(2, sdf);
+              worldfile << "\n";
+              worldfile << sdf;
+              // add clone
+              l->get_value(3, sdf);
               worldfile << "\n";
               worldfile << sdf;
             }
 
+            // add and configure objectinstantiatorplugin
             worldfile << "\n";
             worldfile << "        <!-- the objectinstantiator plugin -->\n";
             worldfile << "        <plugin name=\"ObjectInstantiatorPlugin\" filename=\"libObjectInstantiatorPlugin.so\">\n";
@@ -347,7 +364,7 @@ void MapGenerator::on_make_world_clicked() {
             }
             worldfile << "        </plugin>\n";
 
-            // TODO: check and include robot file
+            // check and include robot file
             if(fcb_robot->get_filename() != "") {
               worldfile << "\n";
               worldfile << "        <!-- the robot -->\n";
@@ -388,8 +405,8 @@ void MapGenerator::on_make_world_clicked() {
   }
 }
 
-bool MapGenerator::on_map_button_press(GdkEventButton* b) {
-  // TODO: start line
+bool WorldfileGenerator::on_map_button_press(GdkEventButton* b) {
+  // start line
   if(b->button == 1) {
     new_line = new Line();
     new_line->p1.x  = b->x;
@@ -400,8 +417,8 @@ bool MapGenerator::on_map_button_press(GdkEventButton* b) {
   return false;
 }
 
-bool MapGenerator::on_map_button_release(GdkEventButton* b) {
-  // TODO: end line
+bool WorldfileGenerator::on_map_button_release(GdkEventButton* b) {
+  // end line
   if(b->button == 1) {
     new_line->p2.x  = b->x;
     new_line->p2.y  = b->y;
@@ -421,8 +438,8 @@ bool MapGenerator::on_map_button_release(GdkEventButton* b) {
   return false;
 }
 
-bool MapGenerator::on_map_motion_notify(GdkEventMotion* m) {
-  // TODO: move line end
+bool WorldfileGenerator::on_map_motion_notify(GdkEventMotion* m) {
+  // move line end
   if(new_line) {
     new_line->p2.x  = m->x;
     new_line->p2.y  = m->y;
@@ -432,8 +449,8 @@ bool MapGenerator::on_map_motion_notify(GdkEventMotion* m) {
   return false;
 }
 
-bool MapGenerator::on_map_draw(Cairo::RefPtr<Cairo::Context> cr) {
-  // TODO: draw all lines
+bool WorldfileGenerator::on_map_draw(Cairo::RefPtr<Cairo::Context> cr) {
+  // draw all lines
   cr->save();
 
   Gtk::TreeModel::Children rows = trv_map->get_model()->children();
@@ -465,42 +482,42 @@ bool MapGenerator::on_map_draw(Cairo::RefPtr<Cairo::Context> cr) {
   return true;
 }
 
-void MapGenerator::on_map_x1_edited(const Glib::ustring &path, const Glib::ustring &new_text) {
+void WorldfileGenerator::on_map_x1_edited(const Glib::ustring &path, const Glib::ustring &new_text) {
   Gtk::TreeIter it = trv_map->get_model()->get_iter(path);
   double value = ustring_to_double(new_text);
   it->set_value(0, value); 
   img_map->queue_draw();
 }
 
-void MapGenerator::on_map_y1_edited(const Glib::ustring &path, const Glib::ustring &new_text) {
+void WorldfileGenerator::on_map_y1_edited(const Glib::ustring &path, const Glib::ustring &new_text) {
   Gtk::TreeIter it = trv_map->get_model()->get_iter(path);
   double value = ustring_to_double(new_text);
   it->set_value(1, value); 
   img_map->queue_draw();
 }
 
-void MapGenerator::on_map_x2_edited(const Glib::ustring &path, const Glib::ustring &new_text) {
+void WorldfileGenerator::on_map_x2_edited(const Glib::ustring &path, const Glib::ustring &new_text) {
   Gtk::TreeIter it = trv_map->get_model()->get_iter(path);
   double value = ustring_to_double(new_text);
   it->set_value(2, value); 
   img_map->queue_draw();
 }
 
-void MapGenerator::on_map_y2_edited(const Glib::ustring &path, const Glib::ustring &new_text) {
+void WorldfileGenerator::on_map_y2_edited(const Glib::ustring &path, const Glib::ustring &new_text) {
   Gtk::TreeIter it = trv_map->get_model()->get_iter(path);
   double value = ustring_to_double(new_text);
   it->set_value(3, value); 
   img_map->queue_draw();
 }
 
-void MapGenerator::on_map_width_edited(const Glib::ustring &path, const Glib::ustring &new_text) {
+void WorldfileGenerator::on_map_width_edited(const Glib::ustring &path, const Glib::ustring &new_text) {
   Gtk::TreeIter it = trv_map->get_model()->get_iter(path);
   double value = ustring_to_double(new_text);
   it->set_value(4, value); 
   img_map->queue_draw();
 }
 
-double MapGenerator::ustring_to_double(Glib::ustring val) {
+double WorldfileGenerator::ustring_to_double(Glib::ustring val) {
   char *ret;
   double def = strtod(val.c_str(), &ret);
   while(*ret != 0) {
@@ -517,7 +534,7 @@ double MapGenerator::ustring_to_double(Glib::ustring val) {
   return def;
 }
 
-void MapGenerator::treeviewcolumn_x1_cell_data(Gtk::CellRenderer* renderer, const Gtk::TreeModel::iterator& iter) {
+void WorldfileGenerator::treeviewcolumn_x1_cell_data(Gtk::CellRenderer* renderer, const Gtk::TreeModel::iterator& iter) {
   if(iter)
   {
     double value;
@@ -531,7 +548,7 @@ void MapGenerator::treeviewcolumn_x1_cell_data(Gtk::CellRenderer* renderer, cons
   }
 }
 
-void MapGenerator::treeviewcolumn_y1_cell_data(Gtk::CellRenderer* renderer, const Gtk::TreeModel::iterator& iter) {
+void WorldfileGenerator::treeviewcolumn_y1_cell_data(Gtk::CellRenderer* renderer, const Gtk::TreeModel::iterator& iter) {
   if(iter)
   {
     double value;
@@ -545,7 +562,7 @@ void MapGenerator::treeviewcolumn_y1_cell_data(Gtk::CellRenderer* renderer, cons
   }
 }
 
-void MapGenerator::treeviewcolumn_x2_cell_data(Gtk::CellRenderer* renderer, const Gtk::TreeModel::iterator& iter) {
+void WorldfileGenerator::treeviewcolumn_x2_cell_data(Gtk::CellRenderer* renderer, const Gtk::TreeModel::iterator& iter) {
   if(iter)
   {
     double value;
@@ -559,7 +576,7 @@ void MapGenerator::treeviewcolumn_x2_cell_data(Gtk::CellRenderer* renderer, cons
   }
 }
 
-void MapGenerator::treeviewcolumn_y2_cell_data(Gtk::CellRenderer* renderer, const Gtk::TreeModel::iterator& iter) {
+void WorldfileGenerator::treeviewcolumn_y2_cell_data(Gtk::CellRenderer* renderer, const Gtk::TreeModel::iterator& iter) {
   if(iter)
   {
     double value;
@@ -573,7 +590,7 @@ void MapGenerator::treeviewcolumn_y2_cell_data(Gtk::CellRenderer* renderer, cons
   }
 }
 
-void MapGenerator::treeviewcolumn_width_cell_data(Gtk::CellRenderer* renderer, const Gtk::TreeModel::iterator& iter) {
+void WorldfileGenerator::treeviewcolumn_width_cell_data(Gtk::CellRenderer* renderer, const Gtk::TreeModel::iterator& iter) {
   if(iter)
   {
     double value;
@@ -590,7 +607,7 @@ void MapGenerator::treeviewcolumn_width_cell_data(Gtk::CellRenderer* renderer, c
 int main(int argc, char **argv)
 {
     Gtk::Main main(argc,argv);
-    MapGenerator mapgen;
+    WorldfileGenerator mapgen;
 
     main.run(*(mapgen.window));
     return 0;

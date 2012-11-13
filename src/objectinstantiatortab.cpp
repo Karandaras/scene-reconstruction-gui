@@ -1,5 +1,6 @@
 #include "objectinstantiatortab.h"
 #include "converter.h"
+#include <gazebo/common/Image.hh>
 
 using namespace SceneReconstruction;
 
@@ -13,6 +14,7 @@ ObjectInstantiatorTab::ObjectInstantiatorTab(gazebo::transport::NodePtr& _node, 
 {
   node = _node;
   logger = _logger;
+  this->responseMutex = new boost::mutex();
 
   // object list
   _builder->get_widget("objectinstantiator_treeview_spawnedobjects", trv_object);
@@ -56,128 +58,142 @@ ObjectInstantiatorTab::ObjectInstantiatorTab(gazebo::transport::NodePtr& _node, 
 
   sceneReqPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/ObjectInstantiator/Request");
   sceneResSub = node->Subscribe("~/SceneReconstruction/ObjectInstantiator/Response", &ObjectInstantiatorTab::OnResponseMsg, this);
+  on_response_msg.connect( sigc::mem_fun( *this , &ObjectInstantiatorTab::ProcessResponseMsg ));
 }
 
 ObjectInstantiatorTab::~ObjectInstantiatorTab() {
 }
 
 void ObjectInstantiatorTab::OnResponseMsg(ConstResponsePtr& _msg) {
-  if(!objReq || objReq->id() != _msg->id()) 
-    return;
-
-  logger->msglog("<<", "~/SceneReconstruction/ObjectInstantiator/Response", _msg);
-
-  if(_msg->request() == "object_list") {
-    gazebo::msgs::GzString_V src;
-    if(_msg->has_type() && _msg->type() == src.GetTypeName()) {
-      src.ParseFromString(_msg->serialized_data());
-      logger->log("object instantiator", "receiving object list from ObjectInstantiatorPlugin");
-
-      int n = src.data_size();
-      obj_store->clear();
-      Gtk::TreeModel::Row row;
-
-      for(int i = 0; i<n; i++) {
-        row = *(obj_store->append());
-        row.set_value(0, src.data(i));
-      }
-    }
-
-    objReq.reset();
+  {
+    boost::mutex::scoped_lock lock(*this->responseMutex);
+    this->responseMsgs.push_back(*_msg);
   }
-  else if(_msg->request() == "object_data") {
-    if(!objRes) {
-      objRes = _msg;
-      return;
-    }
-    else if(objRes->type() == _msg->type()) // same message again
-      return;
+  on_response_msg();
+}
 
-    // message from framework and gazebo present
-    gazebo::msgs::SceneObject src1;
-    gazebo::msgs::Message_V   src2;
+void ObjectInstantiatorTab::ProcessResponseMsg() {
+  boost::mutex::scoped_lock lock(*this->responseMutex);
+  std::list<gazebo::msgs::Response>::iterator _msg;
+  for(_msg = responseMsgs.begin(); _msg != responseMsgs.end(); _msg++) {
+    if(objReq && objReq->id() == _msg->id()) {
+      logger->msglog("<<", "~/SceneReconstruction/ObjectInstantiator/Response", *_msg);
 
-    if((_msg->has_type() && _msg->type() == src1.GetTypeName()) && (objRes->has_type() && objRes->type() == src2.GetTypeName())) {
-      src1.ParseFromString(_msg->serialized_data());
-      src2.ParseFromString(objRes->serialized_data());
-    }
-    else if((_msg->has_type() && _msg->type() == src2.GetTypeName()) && (objRes->has_type() && objRes->type() == src1.GetTypeName())) {
-      src2.ParseFromString(_msg->serialized_data());
-      src1.ParseFromString(objRes->serialized_data());
-    }
-    else {
-      logger->log("object instantiator", "received messages not matching required types");
-      return;
-    }
-    
-    dat_store->clear();
-    Gtk::TreeModel::Row row;
+      if(_msg->request() == "object_list") {
+        gazebo::msgs::GzString_V src;
+        if(_msg->has_type() && _msg->type() == src.GetTypeName()) {
+          src.ParseFromString(_msg->serialized_data());
+          logger->log("object instantiator", "receiving object list from ObjectInstantiatorPlugin");
 
-    logger->log("object instantiator", "receiving object data from ObjectInstantiatorPlugin");
-    if(src1.has_model()) {
-      row = *(dat_store->append());
-      row.set_value(0, (Glib::ustring)"Model");
-      row.set_value(1, src1.model());
-    }
+          int n = src.data_size();
+          obj_store->clear();
+          Gtk::TreeModel::Row row;
 
-    if(src1.has_pose()) {
-      row = *(dat_store->append());
-      row.set_value(0, (Glib::ustring)"Position");
-      row.set_value(1, Converter::convert(src1.pose(), 0));
-      row = *(dat_store->append());
-      row.set_value(0, (Glib::ustring)"Orientation");
-      row.set_value(1, Converter::convert(src1.pose(), 1));
-    }
+          for(int i = 0; i<n; i++) {
+            row = *(obj_store->append());
+            row.set_value(0, src.data(i));
+          }
+        }
 
-    if(src1.has_object()) {
-      row = *(dat_store->append());
-      row.set_value(0, (Glib::ustring)"Object");
-      row.set_value(1, src1.object());
-    }
+        objReq.reset();
+      }
+      else if(_msg->request() == "object_data") {
+        if(!objRes) {
+          gazebo::msgs::Response res;
+          res.CopyFrom(*_msg);
+          objRes.reset(&res);
+          return;
+        }
+        else if(objRes->type() == _msg->type()) // same message again
+          return;
 
-    images.clear();
-    img_store->clear();
-    row = *(img_store->append());
-    row.set_value(0, (Glib::ustring)"None");
-    images["None"] = Gdk::Pixbuf::create_from_file("res/noimg.png");
+        // message from framework and gazebo present
+        gazebo::msgs::SceneObject src1;
+        gazebo::msgs::Message_V   src2;
 
-    int n = src2.msgsdata_size();
-    gazebo::msgs::SceneDocument doc;
-    if(src2.msgtype() == doc.GetTypeName()) {
-      for(int m = 0; m<n; m++) {
-        doc.ParseFromString(src2.msgsdata(m));
-
-        if(doc.has_image()) {
-          row = *(img_store->append());
-          row.set_value(0, doc.interface());
-          // TODO: use data obtained from the framework to create an image
-          gazebo::common::Image *img = 0;
-          gazebo::msgs::Set(*img, doc.image());
-          images[doc.interface()] = Gdk::Pixbuf::create_from_file("res/noimg.png");
+        if((_msg->has_type() && _msg->type() == src1.GetTypeName()) && (objRes->has_type() && objRes->type() == src2.GetTypeName())) {
+          src1.ParseFromString(_msg->serialized_data());
+          src2.ParseFromString(objRes->serialized_data());
+        }
+        else if((_msg->has_type() && _msg->type() == src2.GetTypeName()) && (objRes->has_type() && objRes->type() == src1.GetTypeName())) {
+          src2.ParseFromString(_msg->serialized_data());
+          src1.ParseFromString(objRes->serialized_data());
+        }
+        else {
+          logger->log("object instantiator", "received messages not matching required types");
+          return;
         }
         
-        // TODO: process json documents of SceneObjectData message
-        row = *(dat_store->append());
-        row.set_value(0, (Glib::ustring)"Documents");
-        row.set_value(1, (Glib::ustring)"");
+        dat_store->clear();
+        Gtk::TreeModel::Row row;
 
-        Gtk::TreeModel::Row childrow;
-        childrow = *(dat_store->append(row.children()));
-        childrow.set_value(0, doc.interface());
-        childrow.set_value(1, (Glib::ustring)"");
+        logger->log("object instantiator", "receiving object data from ObjectInstantiatorPlugin");
+        if(src1.has_model()) {
+          row = *(dat_store->append());
+          row.set_value(0, (Glib::ustring)"Model");
+          row.set_value(1, src1.model());
+        }
 
-        Gtk::TreeModel::Row cchildrow;
-        cchildrow = *(dat_store->append(childrow.children()));
-        cchildrow.set_value(0, (Glib::ustring)"");
-        cchildrow.set_value(1, Converter::parse_json(doc.document()));
+        if(src1.has_pose()) {
+          row = *(dat_store->append());
+          row.set_value(0, (Glib::ustring)"Position");
+          row.set_value(1, Converter::convert(src1.pose(), 0));
+          row = *(dat_store->append());
+          row.set_value(0, (Glib::ustring)"Orientation");
+          row.set_value(1, Converter::convert(src1.pose(), 1));
+        }
+
+        if(src1.has_object()) {
+          row = *(dat_store->append());
+          row.set_value(0, (Glib::ustring)"Object");
+          row.set_value(1, src1.object());
+        }
+
+        images.clear();
+        img_store->clear();
+        row = *(img_store->append());
+        row.set_value(0, (Glib::ustring)"None");
+        images["None"] = Gdk::Pixbuf::create_from_file("res/noimg.png");
+
+        int n = src2.msgsdata_size();
+        gazebo::msgs::SceneDocument doc;
+        if(src2.msgtype() == doc.GetTypeName()) {
+          for(int m = 0; m<n; m++) {
+            doc.ParseFromString(src2.msgsdata(m));
+
+            if(doc.has_image()) {
+              row = *(img_store->append());
+              row.set_value(0, doc.interface());
+              gazebo::common::Image *img = 0;
+              gazebo::msgs::Set(*img, doc.image());
+              img->SavePNG("tmp_img.png");
+              images[doc.interface()] = Gdk::Pixbuf::create_from_file("tmp_img.png");
+            }
+            
+            row = *(dat_store->append());
+            row.set_value(0, (Glib::ustring)"Documents");
+            row.set_value(1, (Glib::ustring)"");
+
+            Gtk::TreeModel::Row childrow;
+            childrow = *(dat_store->append(row.children()));
+            childrow.set_value(0, doc.interface());
+            childrow.set_value(1, (Glib::ustring)"");
+
+            Gtk::TreeModel::Row cchildrow;
+            cchildrow = *(dat_store->append(childrow.children()));
+            cchildrow.set_value(0, (Glib::ustring)"");
+            cchildrow.set_value(1, Converter::parse_json(doc.document()));
+          }
+        }    
+        image_iter = images.begin();
+        img_data->set(image_iter->second);
+
+        objRes.reset();
+        objReq.reset();
       }
-    }    
-    image_iter = images.begin();
-    img_data->set(image_iter->second);
-
-    objRes.reset();
-    objReq.reset();
+    }
   }
+  responseMsgs.clear();
 }
 
 void ObjectInstantiatorTab::on_combo_changed() {
@@ -235,7 +251,7 @@ void ObjectInstantiatorTab::on_button_show_clicked() {
     objReq->set_data(tmp);
     sceneReqPub->Publish(*(objReq.get()));
     logger->log("object instantiator", "requesting data of selected spawned object from ObjectInstantiatorPlugin");
-    logger->msglog(">>", "~/SceneReconstruction/ObjectInstantiator/Request", objReq);
+    logger->msglog(">>", "~/SceneReconstruction/ObjectInstantiator/Request", *objReq);
   }
   else
     logger->log("object instantiator", "no object to request data for selected");
@@ -246,7 +262,7 @@ void ObjectInstantiatorTab::on_button_refresh_objects_clicked() {
   objReq.reset(gazebo::msgs::CreateRequest("object_list"));
   sceneReqPub->Publish(*(objReq.get()));
   logger->log("object instantiator", "requesting list of spawned objects from ObjectInstantiatorPlugin");
-  logger->msglog(">>", "~/SceneReconstruction/ObjectInstantiator/Request", objReq);
+  logger->msglog(">>", "~/SceneReconstruction/ObjectInstantiator/Request", *objReq);
 }
 
 bool ObjectInstantiatorTab::on_image_button_release(GdkEventButton *b) {

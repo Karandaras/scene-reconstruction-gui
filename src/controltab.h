@@ -77,11 +77,28 @@ namespace SceneReconstruction {
                                                      *objectRequest;
       gazebo::msgs::TransformRequest                 *frameRequest;
 
+      Glib::Dispatcher                                on_time_msg,
+                                                      on_worldstats_msg,
+                                                      on_res_msg,
+                                                      on_response_msg;
+      boost::mutex                                   *timeMutex,
+                                                     *worldstatsMutex,
+                                                     *resMutex,
+                                                     *responseMutex;
+      std::list<gazebo::msgs::Double>                 timeMsgs;
+      std::list<gazebo::msgs::WorldStatistics>        worldstatsMsgs;
+      std::list<gazebo::msgs::Response>               resMsgs;
+      std::list<gazebo::msgs::Response>               responseMsgs;
+
     private:
       void OnTimeMsg(ConstDoublePtr&);
+      void ProcessTimeMsg();
       void OnWorldStatsMsg(ConstWorldStatisticsPtr&);
+      void ProcessWorldStatsMsg();
       void OnResMsg(ConstResponsePtr&);
+      void ProcessResMsg();
       void OnResponseMsg(ConstResponsePtr&);
+      void ProcessResponseMsg();
       void update_coords(gazebo::msgs::Model);
       void update_coords();
       void on_button_stop_clicked();

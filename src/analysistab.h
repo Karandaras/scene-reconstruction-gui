@@ -41,8 +41,12 @@ namespace SceneReconstruction {
       LoggerTab                         *logger;
 
       Gtk::ToolButton                   *btn_position_preview;
+      Gtk::ToolButton                   *btn_position_clear;
       Gtk::ToolButton                   *btn_angles_preview;
+      Gtk::ToolButton                   *btn_angles_clear;
       Gtk::ToolButton                   *btn_object_preview;
+      Gtk::ToolButton                   *btn_object_move;
+      Gtk::ToolButton                   *btn_object_clear;
 
       Gtk::TreeView                     *trv_positions;
       Glib::RefPtr<Gtk::TreeStore>       pos_store;
@@ -75,16 +79,38 @@ namespace SceneReconstruction {
       Gtk::Button                       *btn_grid_show;
       Gtk::Button                       *btn_grid_move;
 
+      Gtk::SpinButton                   *spn_object_pos_x;
+      Gtk::SpinButton                   *spn_object_pos_y;
+      Gtk::SpinButton                   *spn_object_pos_z;
+      Gtk::SpinButton                   *spn_object_rot_x;
+      Gtk::SpinButton                   *spn_object_rot_y;
+      Gtk::SpinButton                   *spn_object_rot_z;
+      Gtk::SpinButton                   *spn_object_rot_w;
+ 
       Gtk::TreeView                     *trv_lasers;
       Glib::RefPtr<Gtk::ListStore>       lsr_store;
       Gtk::Button                       *btn_lasers_update;
 
+      Glib::Dispatcher                   on_lasers_msg,
+                                         on_buffer_msg;
+      boost::mutex                      *lasersMutex,
+                                        *bufferMutex;
+      std::list<gazebo::msgs::Lasers>    lasersMsgs;
+      std::list<gazebo::msgs::Message_V> bufferMsgs;
+
     private:
       void OnBufferMsg(ConstMessage_VPtr&);
+      void ProcessBufferMsg();
       void OnLasersMsg(ConstLasersPtr&);
+      void ProcessLasersMsg();
+      bool on_treeview_objects_selection(GdkEventSelection*);
       void on_button_position_preview_clicked();
+      void on_button_position_clear_clicked();
       void on_button_angles_preview_clicked();
+      void on_button_angles_clear_clicked();
       void on_button_object_preview_clicked();
+      void on_button_object_move_clicked();
+      void on_button_object_clear_clicked();
       void on_lasers_visible_toggled(const Glib::ustring&);
       void on_button_grid_show_clicked();
       void on_button_grid_move_clicked();

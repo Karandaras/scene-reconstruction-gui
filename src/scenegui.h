@@ -27,26 +27,31 @@ namespace SceneReconstruction {
 
     private:
      // gazebo node
-      gazebo::transport::NodePtr       node;
+      gazebo::transport::NodePtr         node;
 
       // vector for all tabs
-      std::vector<SceneTab*>           vec_tabs;
-      LoggerTab                       *logger;
-      Glib::RefPtr<Gtk::Builder>       ui_builder;
-      gazebo::transport::PublisherPtr  worldPub;
-      gazebo::transport::SubscriberPtr availSub;
+      std::vector<SceneTab*>             vec_tabs;
+      LoggerTab                         *logger;
+      Glib::RefPtr<Gtk::Builder>         ui_builder;
+      gazebo::transport::PublisherPtr    worldPub;
+      gazebo::transport::SubscriberPtr   availSub;
 
       std::map<std::string, bool>                                       plugin_availability;
       unsigned int                                                      missing_plugins;
       std::map< std::string, gazebo::transport::PublisherPtr >          availPubs;
       std::map< std::string, boost::shared_ptr<gazebo::msgs::Request> > avail_requests;
 
+      Glib::Dispatcher                   on_response_msg;
+      boost::mutex                      *responseMutex;
+      std::list<gazebo::msgs::Response>  responseMsgs;
+
     public:
       /** Gtk::Window for the GUI */
       Gtk::Window                     *window;
 
     private:
-      void check_components();
       void OnResponseMsg(ConstResponsePtr&);
+      void ProcessResponseMsg();
+      void check_components();
   };
 }

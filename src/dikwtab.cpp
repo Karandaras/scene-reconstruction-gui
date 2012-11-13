@@ -1,5 +1,6 @@
 #include "dikwtab.h"
 #include <fstream>
+#include <gazebo/common/Image.hh>
 
 using namespace SceneReconstruction;
 
@@ -13,6 +14,7 @@ DIKWTab::DIKWTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Glib::Re
 {
   node = _node;
   logger = _logger;  
+  this->responseMutex = new boost::mutex();
 
   _builder->get_widget("dikw_toolbutton_new", btn_new);
   btn_new->signal_clicked().connect(sigc::mem_fun(*this,&DIKWTab::on_new_clicked));
@@ -121,66 +123,94 @@ DIKWTab::DIKWTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Glib::Re
 
   resSub = node->Subscribe("~/SceneReconstruction/GUI/MongoDB", &DIKWTab::OnResponseMsg, this);
   framePub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/Framework/Request");
+  pclPub = node->Advertise<gazebo::msgs::Drawing>("~/draw");
+  on_response_msg.connect( sigc::mem_fun( *this , &DIKWTab::ProcessResponseMsg ));
 }
 
 DIKWTab::~DIKWTab() {
 }
 
 void DIKWTab::OnResponseMsg(ConstResponsePtr& _msg) {
-  if(_msg->response() != "success")
-    return;
-
-  if(_msg->request() == "collection_names") {
-    logger->log("dikw", "received collections for nodelist");
-
-    gazebo::msgs::GzString_V src;
-    if(_msg->has_type() && _msg->type() == src.GetTypeName()) {
-      src.ParseFromString(_msg->serialized_data());
-      int n = src.data_size();
-      db_collections.clear();
-      for(int i=0; i<n; i++) {
-        db_collections.push_back(src.data(i));
-      }
-      if(com_type->get_active_text() == "Node") {
-        logger->log("dikw", "updating nodelist");
-        com_right->remove_all();
-        std::list<std::string>::iterator iter;
-        for(iter = db_collections.begin(); iter != db_collections.end(); iter++)
-          com_right->append(*iter);
-      }
-    }
+  {
+    boost::mutex::scoped_lock lock(*this->responseMutex);
+    this->responseMsgs.push_back(*_msg);
   }
-  else if(_msg->request() == "documents" && docreq->id() == _msg->id()) {
-    logger->log("dikw", "received documents for selected node: "+docreq->data());
+  on_response_msg();
+}
 
-    gazebo::msgs::Message_V docs;
-    if(_msg->has_type() && _msg->type() == docs.GetTypeName()) {
-      docs.ParseFromString(_msg->serialized_data());
-      gazebo::msgs::SceneDocument doc;
-      if(docs.msgtype() == doc.GetTypeName()) {
-        int n = docs.msgsdata_size();
-        win_store->clear();
-        win_images.clear();
-        
-        for(int i=0; i<n; i++) {
-          doc.ParseFromString(docs.msgsdata(i));
-          Gtk::TreeModel::Row row;
-          row = *(win_store->append());
-          row.set_value(0, doc.timestamp());
-          Glib::RefPtr<Gdk::Pixbuf> img;
-          if(doc.has_image()) {
-            // TODO: set Gdk::Pixbuf from Image message
+void DIKWTab::ProcessResponseMsg() {
+  boost::mutex::scoped_lock lock(*this->responseMutex);
+  std::list<gazebo::msgs::Response>::iterator _msg;
+  for(_msg = responseMsgs.begin(); _msg != responseMsgs.end(); _msg++) {
+    if(_msg->response() == "success") {
+      if(_msg->request() == "collection_names") {
+        logger->log("dikw", "received collections for nodelist");
+
+        gazebo::msgs::GzString_V src;
+        if(_msg->has_type() && _msg->type() == src.GetTypeName()) {
+          src.ParseFromString(_msg->serialized_data());
+          int n = src.data_size();
+          db_collections.clear();
+          for(int i=0; i<n; i++) {
+            db_collections.push_back(src.data(i));
           }
-          else {
-            img = missing_image;
+          if(com_type->get_active_text() == "Node") {
+            logger->log("dikw", "updating nodelist");
+            com_right->remove_all();
+            std::list<std::string>::iterator iter;
+            for(iter = db_collections.begin(); iter != db_collections.end(); iter++)
+              com_right->append(*iter);
           }
-          row.set_value(1, i);
-          win_images[i] = img;
-          row.set_value(2, doc.document());
+        }
+      }
+      else if(_msg->request() == "documents" && docreq->id() == _msg->id()) {
+        logger->log("dikw", "received documents for selected node: "+docreq->data());
+
+        gazebo::msgs::Message_V docs;
+        if(_msg->has_type() && _msg->type() == docs.GetTypeName()) {
+          docs.ParseFromString(_msg->serialized_data());
+          gazebo::msgs::SceneDocument doc;
+          if(docs.msgtype() == doc.GetTypeName()) {
+            int n = docs.msgsdata_size();
+            win_store->clear();
+            win_images.clear();
+            
+            for(int i=0; i<n; i++) {
+              doc.ParseFromString(docs.msgsdata(i));
+              Gtk::TreeModel::Row row;
+              row = *(win_store->append());
+              row.set_value(0, doc.timestamp());
+              Glib::RefPtr<Gdk::Pixbuf> img;
+              if(doc.has_image()) {
+                gazebo::common::Image *tmpimg = 0;
+                gazebo::msgs::Set(*tmpimg, doc.image());
+                tmpimg->SavePNG("tmp_img.png");
+                img = Gdk::Pixbuf::create_from_file("tmp_img.png");
+              }
+              else {
+                img = missing_image;
+              }
+
+              gazebo::msgs::Drawing pcl;
+              if(doc.has_pointcloud()) {
+                pcl.CopyFrom(doc.pointcloud());
+              }
+              else {
+                pcl.set_name("pointcloud");
+                pcl.set_visible(false);
+              }
+              
+              row.set_value(1, i);
+              win_images[i] = img;
+              win_pointclouds[i] = pcl;
+              row.set_value(2, doc.document());
+            }
+          }
         }
       }
     }
   }
+  responseMsgs.clear();
 }
 
 void DIKWTab::create_graphviz_dot(std::string markupnode) {
@@ -444,9 +474,11 @@ bool DIKWTab::on_graph_release(GdkEventButton *b) {
 
 void DIKWTab::on_document_changed() {
   // TODO: set textbuffer and image according to selection
-  int imgid;
-  win_combo->get_active()->get_value(1,imgid);
-//  win_image->set(win_images[imgid]);
+  // TODO: send pointcloud to gazebo or remove currently shown one
+  int id;
+  win_combo->get_active()->get_value(1,id);
+  win_image->set(win_images[id]);
+  // pclPub->Publish(win_pointclouds[id]);
   Glib::ustring doc;
   win_combo->get_active()->get_value(2,doc);
   win_textbuffer->set_text(doc);
@@ -564,34 +596,28 @@ void DIKWTab::on_close_clicked() {
 }
 
 void DIKWTab::on_graphs_changed() {
-  // TODO: display selected graph
   Glib::ustring g;
   com_graphs->get_active()->get_value(1,g);
   graph.load(g);
 }
 
 void DIKWTab::on_zoom_in_clicked() {
-  // TODO: zoom in
   gda_graph->zoom_in();
 }
 
 void DIKWTab::on_zoom_out_clicked() {
-  // TODO: zoom out
   gda_graph->zoom_out();
 }
 
 void DIKWTab::on_zoom_fit_clicked() {
-  // TODO: zoom to fit given space
   gda_graph->zoom_fit();
 }
 
 void DIKWTab::on_zoom_reset_clicked() {
-  // TODO: zoom to fit given space
   gda_graph->zoom_reset();
 }
 
 void DIKWTab::on_export_clicked() {
-  // TODO: export graph to other formats
   gda_graph->save();  
 }
 

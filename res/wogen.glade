@@ -518,11 +518,14 @@
       <column type="gchararray"/>
       <!-- column-name sdfdata -->
       <column type="gchararray"/>
+      <!-- column-name sdfdataclone -->
+      <column type="gchararray"/>
     </columns>
   </object>
   <object class="GtkWindow" id="window">
     <property name="can_focus">False</property>
-    <property name="title">Map Generator</property>
+    <property name="title">Worldfile Generator</property>
+    <property name="icon_name">weather-fog</property>
     <child>
       <object class="GtkBox" id="box_window">
         <property name="visible">True</property>

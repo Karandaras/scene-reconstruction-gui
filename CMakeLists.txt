@@ -1,9 +1,9 @@
 cmake_minimum_required (VERSION 2.6)
-project(GUI)
+project(SceneReconstructionTools)
 
 SET(RESOURCE_FILES  noimg.png
                     ui.glade
-                    mapgen.glade)
+                    wogen.glade)
 message("")
 message(STATUS "Looking for required and optional components:")
 message("   Looking for PkgConfig")
@@ -117,21 +117,21 @@ IF(PKG_CONFIG_FOUND)
     
     set(CMAKE_CXX_FLAGS " -g -Wextra -Wall -lstdc++" CACHE INTERNAL "General CXX Flags")
 
-    add_executable(GUI src/scenegui.cpp src/scenetab.cpp src/controltab.cpp src/loggertab.cpp src/robotcontrollertab.cpp src/objectinstantiatortab.cpp src/frameworktab.cpp src/dikwtab.cpp src/graph_drawing_area.cpp src/gvplugin_cairo.cpp src/analysistab.cpp)
-    add_executable(mapgen src/mapgen.cpp)
+    add_executable(CAT src/scenegui.cpp src/scenetab.cpp src/controltab.cpp src/loggertab.cpp src/robotcontrollertab.cpp src/objectinstantiatortab.cpp src/frameworktab.cpp src/dikwtab.cpp src/graph_drawing_area.cpp src/gvplugin_cairo.cpp src/analysistab.cpp)
+    add_executable(wogen src/wogen.cpp)
 
-    target_link_libraries(GUI ${GRAPHVIZ_LIBRARIES})
-    target_link_libraries(GUI ${GTKMM_LIBRARIES})
-    target_link_libraries(GUI ${GAZEBO_LIBRARIES})
-    target_link_libraries(GUI ${PROTOBUF_LIBRARIES})
-    target_link_libraries(GUI ${Boost_LIBRARIES})
-    target_link_libraries(mapgen ${GTKMM_LIBRARIES})
+    target_link_libraries(CAT ${GRAPHVIZ_LIBRARIES})
+    target_link_libraries(CAT ${GTKMM_LIBRARIES})
+    target_link_libraries(CAT ${GAZEBO_LIBRARIES})
+    target_link_libraries(CAT ${PROTOBUF_LIBRARIES})
+    target_link_libraries(CAT ${Boost_LIBRARIES})
+    target_link_libraries(wogen ${GTKMM_LIBRARIES})
     
     message("\n\n")
     message(STATUS "Usage:")
     message("\tmake        - generate the executables")
-    message("\tmake GUI    - generate the GUI to control the scene reconstruction")
-    message("\tmake mapgen - generate the map generator")
+    message("\tmake CAT    - generate the scene reconstruction control and analysis tool")
+    message("\tmake wogen  - generate the worldfile generator")
     IF(DOXYGEN_FOUND)
       message("\tmake doc    - generate the documentation\n\n\n")
     ENDIF(DOXYGEN_FOUND)

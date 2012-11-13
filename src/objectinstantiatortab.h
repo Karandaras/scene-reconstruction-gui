@@ -57,10 +57,15 @@ namespace SceneReconstruction {
       gazebo::transport::SubscriberPtr                             sceneResSub;
       gazebo::transport::PublisherPtr                              sceneReqPub;
       boost::shared_ptr<gazebo::msgs::Request>                     objReq;
-      boost::shared_ptr<gazebo::msgs::Response const>              objRes;
- 
+      boost::shared_ptr<gazebo::msgs::Response>                    objRes;
+
+      Glib::Dispatcher                                             on_response_msg;
+      boost::mutex                                                *responseMutex;
+      std::list<gazebo::msgs::Response>                            responseMsgs;
+
     private:
       void OnResponseMsg(ConstResponsePtr&);
+      void ProcessResponseMsg();
       void on_button_refresh_objects_clicked();
       void on_button_show_clicked();
       void on_combo_changed();

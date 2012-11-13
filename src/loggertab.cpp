@@ -92,26 +92,7 @@ void LoggerTab::logmsg(std::string dir, std::string type, std::string topic, std
   free(time_buffer);
 }
 
-void LoggerTab::msglog(std::string dir, std::string topic, ConstRequestPtr &_msg)
-{
-  std::ostringstream msg;
-  msg << "Request: ";
-  msg << _msg->request();
-  msg << ", ID: ";
-  msg << _msg->id();
-  if(_msg->has_data() && _msg->data() != "") {
-    msg << ", Data: ";
-    msg << _msg->data();
-  }
-  if(_msg->has_dbl_data()) {
-    msg << ", Double Data: ";
-    msg << _msg->dbl_data();
-  }
-
-  logmsg(dir, "Request", topic, msg.str());
-}
-
-void LoggerTab::msglog(std::string dir, std::string topic, gazebo::msgs::Request &_msg)
+void LoggerTab::msglog(std::string dir, std::string topic, const gazebo::msgs::Request &_msg)
 {
   std::ostringstream msg;
   msg << "Request: ";
@@ -130,7 +111,7 @@ void LoggerTab::msglog(std::string dir, std::string topic, gazebo::msgs::Request
   logmsg(dir, "Request", topic, msg.str());
 }
 
-void LoggerTab::msglog(std::string dir, std::string topic, gazebo::msgs::WorldControl &_msg)
+void LoggerTab::msglog(std::string dir, std::string topic, const gazebo::msgs::WorldControl &_msg)
 {
   std::ostringstream msg;
   if(_msg.has_pause()) {
@@ -159,22 +140,22 @@ void LoggerTab::msglog(std::string dir, std::string topic, gazebo::msgs::WorldCo
   logmsg(dir, "WorldControl", topic, msg.str());
 }
 
-void LoggerTab::msglog(std::string dir, std::string topic, ConstResponsePtr &_msg)
+void LoggerTab::msglog(std::string dir, std::string topic, const gazebo::msgs::Response &_msg)
 {
   std::ostringstream msg;
   msg << "Request: ";
-  msg << _msg->request();
+  msg << _msg.request();
   msg << ", ID: ";
-  msg << _msg->id();
+  msg << _msg.id();
   msg << ", Response: ";
-  msg << _msg->response();
-  if(_msg->has_type()) {
+  msg << _msg.response();
+  if(_msg.has_type()) {
     msg << ", Type: ";
-    msg << _msg->type();
+    msg << _msg.type();
 
     gazebo::msgs::GzString error;
-    if(_msg->response() != "success" && _msg->type() == error.GetTypeName() && _msg->has_serialized_data()) {
-      error.ParseFromString(_msg->serialized_data());
+    if(_msg.response() != "success" && _msg.type() == error.GetTypeName() && _msg.has_serialized_data()) {
+      error.ParseFromString(_msg.serialized_data());
       msg << ", Error: ";
       msg << error.data();
     }
@@ -183,22 +164,22 @@ void LoggerTab::msglog(std::string dir, std::string topic, ConstResponsePtr &_ms
   logmsg(dir, "Response", topic, msg.str());
 }
 
-void LoggerTab::msglog(std::string dir, std::string topic, ConstDoublePtr &_msg)
+void LoggerTab::msglog(std::string dir, std::string topic, const gazebo::msgs::Double &_msg)
 {
   std::ostringstream msg;
   msg << "Data: ";
-  msg << _msg->data();
+  msg << _msg.data();
 
   logmsg(dir, "Double", topic, msg.str());
 }
 
-void LoggerTab::msglog(std::string dir, std::string topic, ConstMessage_VPtr &_msg)
+void LoggerTab::msglog(std::string dir, std::string topic, const gazebo::msgs::Message_V &_msg)
 {
   std::ostringstream msg;
   msg << "MsgType: ";
-  msg << _msg->msgtype();
+  msg << _msg.msgtype();
   msg << ", Number of Messages: ";
-  msg << _msg->msgsdata_size();
+  msg << _msg.msgsdata_size();
 
   logmsg(dir, "Message_V", topic, msg.str());
 }

@@ -4,16 +4,18 @@
 
 namespace SceneReconstruction {
   /** @class SceneGUI "scenegui.h"
-   *  Main Class that creates the GUI
+   *  Class that creates the WorldfileGenerator GUI for Worldfile generation.
+   *  It loads an image and allows the user to create walls according to that image. Additionally
+   *  it helps in setting up the objectinstantiator and allows one to include the robot file.
    *  @author Bastian Klingen
    */
-  class MapGenerator
+  class WorldfileGenerator
   {
     public:
       /** Constructor */
-      MapGenerator();
+      WorldfileGenerator();
       /** Destructor */
-      ~MapGenerator();
+      ~WorldfileGenerator();
 
     private:
       Glib::RefPtr<Gtk::Builder>       ui_builder;
@@ -85,7 +87,7 @@ namespace SceneReconstruction {
       void treeviewcolumn_width_cell_data(Gtk::CellRenderer*, const Gtk::TreeModel::iterator&);
 
     public:
-      /** Gtk::Window for the MapGenerator */
+      /** Gtk::Window for the WorldfileGenerator */
       Gtk::Window                     *window;
   };
 }

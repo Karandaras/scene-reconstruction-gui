@@ -11,6 +11,48 @@
       <column type="gint"/>
     </columns>
   </object>
+  <object class="GtkAdjustment" id="analysis_buffer_objects_adjustment_orientation_w">
+    <property name="lower">-100</property>
+    <property name="upper">100</property>
+    <property name="step_increment">0.01</property>
+    <property name="page_increment">0.10000000000000001</property>
+  </object>
+  <object class="GtkAdjustment" id="analysis_buffer_objects_adjustment_orientation_x">
+    <property name="lower">-99.989999999999995</property>
+    <property name="upper">99.989999999999995</property>
+    <property name="step_increment">0.01</property>
+    <property name="page_increment">0.10000000000000001</property>
+  </object>
+  <object class="GtkAdjustment" id="analysis_buffer_objects_adjustment_orientation_y">
+    <property name="lower">-99.989999999999995</property>
+    <property name="upper">99.989999999999995</property>
+    <property name="step_increment">0.01</property>
+    <property name="page_increment">0.10000000000000001</property>
+  </object>
+  <object class="GtkAdjustment" id="analysis_buffer_objects_adjustment_orientation_z">
+    <property name="lower">-99.989999999999995</property>
+    <property name="upper">99.989999999999995</property>
+    <property name="step_increment">0.01</property>
+    <property name="page_increment">0.10000000000000001</property>
+  </object>
+  <object class="GtkAdjustment" id="analysis_buffer_objects_adjustment_position_x">
+    <property name="lower">-99.989999999999995</property>
+    <property name="upper">99.989999999999995</property>
+    <property name="step_increment">0.01</property>
+    <property name="page_increment">0.10000000000000001</property>
+  </object>
+  <object class="GtkAdjustment" id="analysis_buffer_objects_adjustment_position_y">
+    <property name="lower">-99.989999999999995</property>
+    <property name="upper">99.989999999999995</property>
+    <property name="step_increment">0.01</property>
+    <property name="page_increment">0.10000000000000001</property>
+  </object>
+  <object class="GtkAdjustment" id="analysis_buffer_objects_adjustment_position_z">
+    <property name="lower">-99.989999999999995</property>
+    <property name="upper">99.989999999999995</property>
+    <property name="step_increment">0.01</property>
+    <property name="page_increment">0.10000000000000001</property>
+  </object>
   <object class="GtkTreeStore" id="analysis_buffer_objects_treestore">
     <columns>
       <!-- column-name desc -->
@@ -404,6 +446,7 @@
     <property name="width_request">640</property>
     <property name="height_request">480</property>
     <property name="can_focus">False</property>
+    <property name="title" translatable="yes">SceneReconstruction Control and Analysis Tool</property>
     <property name="default_width">640</property>
     <property name="default_height">480</property>
     <property name="icon_name">applications-utilities</property>
@@ -2377,257 +2420,570 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
-                <property name="homogeneous">True</property>
                 <child>
-                  <object class="GtkBox" id="analysis_buffer_position_box">
+                  <object class="GtkNotebook" id="analysis_buffer_notebook">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can_focus">True</property>
+                    <property name="tab_pos">bottom</property>
                     <child>
-                      <object class="GtkScrolledWindow" id="analysis_buffer_position_scrolledwindow">
+                      <object class="GtkBox" id="analysis_buffer_position_tab">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="shadow_type">in</property>
+                        <property name="can_focus">False</property>
                         <child>
-                          <object class="GtkTreeView" id="analysis_buffer_position_treeview">
+                          <object class="GtkScrolledWindow" id="analysis_buffer_position_scrolledwindow">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <property name="model">analysis_buffer_position_treestore</property>
-                            <property name="headers_clickable">False</property>
-                            <property name="search_column">0</property>
-                            <property name="enable_tree_lines">True</property>
-                            <child internal-child="selection">
-                              <object class="GtkTreeSelection" id="treeview-selection12"/>
-                            </child>
+                            <property name="shadow_type">in</property>
                             <child>
-                              <object class="GtkTreeViewColumn" id="analysis_buffer_position_treeviewcolumn_column1">
-                                <property name="title" translatable="yes">Robot Position Buffer</property>
-                                <child>
-                                  <object class="GtkCellRendererText" id="analysis_buffer_position_cellrenderertext_column1"/>
-                                  <attributes>
-                                    <attribute name="text">0</attribute>
-                                  </attributes>
+                              <object class="GtkTreeView" id="analysis_buffer_position_treeview">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="model">analysis_buffer_position_treestore</property>
+                                <property name="headers_clickable">False</property>
+                                <property name="search_column">0</property>
+                                <property name="enable_tree_lines">True</property>
+                                <child internal-child="selection">
+                                  <object class="GtkTreeSelection" id="treeview-selection12"/>
                                 </child>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkTreeViewColumn" id="analysis_buffer_position_treeviewcolumn_column2">
                                 <child>
-                                  <object class="GtkCellRendererText" id="analysis_buffer_position_cellrenderertext_column2"/>
-                                  <attributes>
-                                    <attribute name="text">1</attribute>
-                                  </attributes>
+                                  <object class="GtkTreeViewColumn" id="analysis_buffer_position_treeviewcolumn_column1">
+                                    <property name="title" translatable="yes">Robot Position Buffer</property>
+                                    <child>
+                                      <object class="GtkCellRendererText" id="analysis_buffer_position_cellrenderertext_column1"/>
+                                      <attributes>
+                                        <attribute name="text">0</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn" id="analysis_buffer_position_treeviewcolumn_column2">
+                                    <child>
+                                      <object class="GtkCellRendererText" id="analysis_buffer_position_cellrenderertext_column2"/>
+                                      <attributes>
+                                        <attribute name="text">1</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
                                 </child>
                               </object>
                             </child>
                           </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
                         </child>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkToolbar" id="analysis_buffer_position_toolbar">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="orientation">vertical</property>
-                        <property name="toolbar_style">both</property>
                         <child>
-                          <object class="GtkToolButton" id="analysis_buffer_position_toolbutton_preview">
+                          <object class="GtkToolbar" id="analysis_buffer_position_toolbar">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="use_action_appearance">False</property>
-                            <property name="label" translatable="yes">Preview</property>
-                            <property name="use_underline">True</property>
-                            <property name="stock_id">gtk-dialog-info</property>
+                            <property name="orientation">vertical</property>
+                            <property name="toolbar_style">both</property>
+                            <child>
+                              <object class="GtkToolButton" id="analysis_buffer_position_toolbutton_preview">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="use_action_appearance">False</property>
+                                <property name="label" translatable="yes">Preview</property>
+                                <property name="use_underline">True</property>
+                                <property name="stock_id">gtk-dialog-info</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="homogeneous">True</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton" id="analysis_buffer_position_toolbutton_clear">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="has_tooltip">True</property>
+                                <property name="tooltip_text" translatable="yes">Clear Position Preview</property>
+                                <property name="use_action_appearance">False</property>
+                                <property name="label" translatable="yes">Clear</property>
+                                <property name="use_underline">True</property>
+                                <property name="stock_id">gtk-clear</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="homogeneous">True</property>
+                              </packing>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">False</property>
-                            <property name="homogeneous">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="tab">
+                      <object class="GtkLabel" id="analysis_buffer_positions_label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Positions</property>
+                      </object>
+                      <packing>
+                        <property name="tab_fill">False</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="analysis_buffer_joints_tab">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkScrolledWindow" id="analysis_buffer_joints_scrolledwindow">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="shadow_type">in</property>
+                            <child>
+                              <object class="GtkTreeView" id="analysis_buffer_joints_treeview">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="model">analysis_buffer_joints_treestore</property>
+                                <property name="headers_clickable">False</property>
+                                <property name="search_column">0</property>
+                                <property name="enable_tree_lines">True</property>
+                                <child internal-child="selection">
+                                  <object class="GtkTreeSelection" id="treeview-selection13"/>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn" id="analysis_buffer_joints_treeviewcolumn_column1">
+                                    <property name="title" translatable="yes">Joint Angles Buffer</property>
+                                    <child>
+                                      <object class="GtkCellRendererText" id="analysis_buffer_joints_cellrenderertext_column1"/>
+                                      <attributes>
+                                        <attribute name="text">0</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn" id="analysis_buffer_joints_treeviewcolumn_column2">
+                                    <child>
+                                      <object class="GtkCellRendererText" id="analysis_buffer_joints_cellrenderertext_column2"/>
+                                      <attributes>
+                                        <attribute name="text">1</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkToolbar" id="analysis_buffer_joints_toolbar">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="orientation">vertical</property>
+                            <property name="toolbar_style">both</property>
+                            <child>
+                              <object class="GtkToolButton" id="analysis_buffer_joints_toolbutton_preview">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="use_action_appearance">False</property>
+                                <property name="label" translatable="yes">Preview</property>
+                                <property name="use_underline">True</property>
+                                <property name="stock_id">gtk-dialog-info</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="homogeneous">True</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton" id="analysis_buffer_joints_toolbutton_clear">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="has_tooltip">True</property>
+                                <property name="tooltip_text" translatable="yes">Clear Joint Preview</property>
+                                <property name="use_action_appearance">False</property>
+                                <property name="label" translatable="yes">Clear</property>
+                                <property name="use_underline">True</property>
+                                <property name="stock_id">gtk-clear</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="homogeneous">True</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
                           </packing>
                         </child>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
                         <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child type="tab">
+                      <object class="GtkLabel" id="analysis_buffer_joints_label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Joints</property>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                        <property name="tab_fill">False</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="analysis_buffer_objects_tab">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkScrolledWindow" id="analysis_buffer_objects_scrolledwindow">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="shadow_type">in</property>
+                            <child>
+                              <object class="GtkTreeView" id="analysis_buffer_objects_treeview">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="model">analysis_buffer_objects_treestore</property>
+                                <property name="headers_clickable">False</property>
+                                <property name="search_column">0</property>
+                                <property name="enable_tree_lines">True</property>
+                                <child internal-child="selection">
+                                  <object class="GtkTreeSelection" id="treeview-selection14"/>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn" id="analysis_buffer_objects_treeviewcolumn_column1">
+                                    <property name="title">Object Buffer</property>
+                                    <child>
+                                      <object class="GtkCellRendererText" id="analysis_buffer_objects_cellrenderertext_column1"/>
+                                      <attributes>
+                                        <attribute name="text">0</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn" id="analysis_buffer_objects_treeviewcolumn_column2">
+                                    <child>
+                                      <object class="GtkCellRendererText" id="analysis_buffer_objects_cellrenderertext_column3"/>
+                                      <attributes>
+                                        <attribute name="text">1</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkToolbar" id="analysis_buffer_objects_toolbar">
+                            <property name="height_request">139</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="orientation">vertical</property>
+                            <property name="toolbar_style">both</property>
+                            <child>
+                              <object class="GtkToolButton" id="analysis_buffer_objects_toolbutton_preview">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="use_action_appearance">False</property>
+                                <property name="label" translatable="yes">Preview</property>
+                                <property name="use_underline">True</property>
+                                <property name="stock_id">gtk-dialog-info</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="homogeneous">True</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton" id="analysis_buffer_objects_toolbutton_move">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="use_action_appearance">False</property>
+                                <property name="label" translatable="yes">Move</property>
+                                <property name="use_underline">True</property>
+                                <property name="stock_id">gtk-fullscreen</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="homogeneous">True</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton" id="analysis_buffer_objects_toolbutton_clear">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="tooltip_text" translatable="yes">Clear Object Preview</property>
+                                <property name="use_action_appearance">False</property>
+                                <property name="label" translatable="yes">Clear</property>
+                                <property name="use_underline">True</property>
+                                <property name="stock_id">gtk-clear</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="homogeneous">True</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child type="tab">
+                      <object class="GtkLabel" id="analysis_buffer_objects_label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Objects</property>
+                      </object>
+                      <packing>
+                        <property name="position">2</property>
+                        <property name="tab_fill">False</property>
                       </packing>
                     </child>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
+                    <property name="expand">True</property>
                     <property name="fill">True</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox" id="analysis_buffer_joints_box">
+                  <object class="GtkFixed" id="analysis_buffer_objects_fixed">
+                    <property name="height_request">123</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkScrolledWindow" id="analysis_buffer_joints_scrolledwindow">
+                      <object class="GtkLabel" id="analysis_buffer_objects_label_position">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="shadow_type">in</property>
-                        <child>
-                          <object class="GtkTreeView" id="analysis_buffer_joints_treeview">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="model">analysis_buffer_joints_treestore</property>
-                            <property name="headers_clickable">False</property>
-                            <property name="search_column">0</property>
-                            <property name="enable_tree_lines">True</property>
-                            <child internal-child="selection">
-                              <object class="GtkTreeSelection" id="treeview-selection13"/>
-                            </child>
-                            <child>
-                              <object class="GtkTreeViewColumn" id="analysis_buffer_joints_treeviewcolumn_column1">
-                                <property name="title" translatable="yes">Joint Angles Buffer</property>
-                                <child>
-                                  <object class="GtkCellRendererText" id="analysis_buffer_joints_cellrenderertext_column1"/>
-                                  <attributes>
-                                    <attribute name="text">0</attribute>
-                                  </attributes>
-                                </child>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkTreeViewColumn" id="analysis_buffer_joints_treeviewcolumn_column2">
-                                <child>
-                                  <object class="GtkCellRendererText" id="analysis_buffer_joints_cellrenderertext_column2"/>
-                                  <attributes>
-                                    <attribute name="text">1</attribute>
-                                  </attributes>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
+                        <property name="can_focus">False</property>
+                        <property name="label">Position</property>
                       </object>
                       <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
+                        <property name="y">25</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkToolbar" id="analysis_buffer_joints_toolbar">
+                      <object class="GtkLabel" id="analysis_buffer_objects_label_position_x">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="orientation">vertical</property>
-                        <property name="toolbar_style">both</property>
-                        <child>
-                          <object class="GtkToolButton" id="analysis_buffer_joints_toolbutton_preview">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="use_action_appearance">False</property>
-                            <property name="label" translatable="yes">Preview</property>
-                            <property name="use_underline">True</property>
-                            <property name="stock_id">gtk-dialog-info</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="homogeneous">True</property>
-                          </packing>
-                        </child>
+                        <property name="label">X:</property>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
+                        <property name="x">10</property>
+                        <property name="y">50</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="analysis_buffer_objects_label_position_y">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label">Y:</property>
+                      </object>
+                      <packing>
+                        <property name="x">110</property>
+                        <property name="y">50</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="analysis_buffer_objects_label_position_z">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label">Z:</property>
+                      </object>
+                      <packing>
+                        <property name="x">210</property>
+                        <property name="y">50</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSpinButton" id="analysis_buffer_objects_spinbutton_position_x">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="invisible_char">●</property>
+                        <property name="invisible_char_set">True</property>
+                        <property name="adjustment">analysis_buffer_objects_adjustment_position_x</property>
+                        <property name="digits">2</property>
+                      </object>
+                      <packing>
+                        <property name="x">25</property>
+                        <property name="y">45</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSpinButton" id="analysis_buffer_objects_spinbutton_position_y">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="invisible_char">●</property>
+                        <property name="invisible_char_set">True</property>
+                        <property name="adjustment">analysis_buffer_objects_adjustment_position_y</property>
+                        <property name="digits">2</property>
+                      </object>
+                      <packing>
+                        <property name="x">125</property>
+                        <property name="y">45</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSpinButton" id="analysis_buffer_objects_spinbutton_position_z">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="invisible_char">●</property>
+                        <property name="invisible_char_set">True</property>
+                        <property name="adjustment">analysis_buffer_objects_adjustment_position_z</property>
+                        <property name="digits">2</property>
+                      </object>
+                      <packing>
+                        <property name="x">225</property>
+                        <property name="y">45</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="analysis_buffer_objects_label_orientation">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label">Orientation</property>
+                      </object>
+                      <packing>
+                        <property name="y">75</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSpinButton" id="analysis_buffer_objects_spinbutton_orientation_y">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="invisible_char">●</property>
+                        <property name="invisible_char_set">True</property>
+                        <property name="adjustment">analysis_buffer_objects_adjustment_orientation_y</property>
+                        <property name="digits">2</property>
+                      </object>
+                      <packing>
+                        <property name="x">125</property>
+                        <property name="y">95</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSpinButton" id="analysis_buffer_objects_spinbutton_orientation_w">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="invisible_char">●</property>
+                        <property name="invisible_char_set">True</property>
+                        <property name="adjustment">analysis_buffer_objects_adjustment_orientation_w</property>
+                        <property name="digits">2</property>
+                      </object>
+                      <packing>
+                        <property name="x">330</property>
+                        <property name="y">95</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSpinButton" id="analysis_buffer_objects_spinbutton_orientation_z">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="invisible_char">●</property>
+                        <property name="invisible_char_set">True</property>
+                        <property name="adjustment">analysis_buffer_objects_adjustment_orientation_z</property>
+                        <property name="digits">2</property>
+                      </object>
+                      <packing>
+                        <property name="x">225</property>
+                        <property name="y">95</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSpinButton" id="analysis_buffer_objects_spinbutton_orientation_x">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="invisible_char">●</property>
+                        <property name="invisible_char_set">True</property>
+                        <property name="adjustment">analysis_buffer_objects_adjustment_orientation_x</property>
+                        <property name="digits">2</property>
+                      </object>
+                      <packing>
+                        <property name="x">25</property>
+                        <property name="y">95</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="analysis_buffer_objects_label_orientation_x">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label">X:</property>
+                      </object>
+                      <packing>
+                        <property name="x">10</property>
+                        <property name="y">100</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="analysis_buffer_objects_label_orientation_y">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label">Y:</property>
+                      </object>
+                      <packing>
+                        <property name="x">110</property>
+                        <property name="y">100</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="analysis_buffer_objects_label_orientation_w">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label">W:</property>
+                      </object>
+                      <packing>
+                        <property name="x">310</property>
+                        <property name="y">100</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="analysis_buffer_objects_label_orientation_z">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label">Z:</property>
+                      </object>
+                      <packing>
+                        <property name="x">210</property>
+                        <property name="y">100</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="analysis_buffer_objects_label_object">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label">Object World Position</property>
+                      </object>
+                      <packing>
+                        <property name="y">5</property>
                       </packing>
                     </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkBox" id="analysis_buffer_objects_box">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <child>
-                      <object class="GtkScrolledWindow" id="analysis_buffer_objects_scrolledwindow">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="shadow_type">in</property>
-                        <child>
-                          <object class="GtkTreeView" id="analysis_buffer_objects_treeview">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="model">analysis_buffer_objects_treestore</property>
-                            <property name="headers_clickable">False</property>
-                            <property name="search_column">0</property>
-                            <property name="enable_tree_lines">True</property>
-                            <child internal-child="selection">
-                              <object class="GtkTreeSelection" id="treeview-selection14"/>
-                            </child>
-                            <child>
-                              <object class="GtkTreeViewColumn" id="analysis_buffer_objects_treeviewcolumn_column1">
-                                <property name="title">Object Buffer</property>
-                                <child>
-                                  <object class="GtkCellRendererText" id="analysis_buffer_objects_cellrenderertext_column1"/>
-                                  <attributes>
-                                    <attribute name="text">0</attribute>
-                                  </attributes>
-                                </child>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkTreeViewColumn" id="analysis_buffer_objects_treeviewcolumn_column2">
-                                <child>
-                                  <object class="GtkCellRendererText" id="analysis_buffer_objects_cellrenderertext_column3"/>
-                                  <attributes>
-                                    <attribute name="text">1</attribute>
-                                  </attributes>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkToolbar" id="analysis_buffer_objects_toolbar">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="orientation">vertical</property>
-                        <property name="toolbar_style">both</property>
-                        <child>
-                          <object class="GtkToolButton" id="analysis_buffer_objects_toolbutton_preview">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="use_action_appearance">False</property>
-                            <property name="label" translatable="yes">Preview</property>
-                            <property name="use_underline">True</property>
-                            <property name="stock_id">gtk-dialog-info</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="homogeneous">True</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">2</property>
+                    <property name="position">3</property>
                   </packing>
                 </child>
               </object>
@@ -2673,6 +3029,7 @@
                             <property name="can_focus">True</property>
                             <property name="invisible_char">●</property>
                             <property name="adjustment">analysis_toolbox_grid_adjustment_position_x</property>
+                            <property name="digits">2</property>
                           </object>
                           <packing>
                             <property name="x">40</property>
@@ -2685,6 +3042,7 @@
                             <property name="can_focus">True</property>
                             <property name="invisible_char">●</property>
                             <property name="adjustment">analysis_toolbox_grid_adjustment_position_y</property>
+                            <property name="digits">2</property>
                           </object>
                           <packing>
                             <property name="x">130</property>
@@ -2697,6 +3055,7 @@
                             <property name="can_focus">True</property>
                             <property name="invisible_char">●</property>
                             <property name="adjustment">analysis_toolbox_grid_adjustment_position_z</property>
+                            <property name="digits">2</property>
                           </object>
                           <packing>
                             <property name="x">220</property>
@@ -2709,6 +3068,7 @@
                             <property name="can_focus">True</property>
                             <property name="invisible_char">●</property>
                             <property name="adjustment">analysis_toolbox_grid_adjustment_rotation_x</property>
+                            <property name="digits">2</property>
                           </object>
                           <packing>
                             <property name="x">40</property>
@@ -2721,6 +3081,7 @@
                             <property name="can_focus">True</property>
                             <property name="invisible_char">●</property>
                             <property name="adjustment">analysis_toolbox_grid_adjustment_rotation_y</property>
+                            <property name="digits">2</property>
                           </object>
                           <packing>
                             <property name="x">130</property>
@@ -2733,6 +3094,7 @@
                             <property name="can_focus">True</property>
                             <property name="invisible_char">●</property>
                             <property name="adjustment">analysis_toolbox_grid_adjustment_rotation_z</property>
+                            <property name="digits">2</property>
                           </object>
                           <packing>
                             <property name="x">220</property>
@@ -2745,6 +3107,7 @@
                             <property name="can_focus">True</property>
                             <property name="invisible_char">●</property>
                             <property name="adjustment">analysis_toolbox_grid_adjustment_rotation_w</property>
+                            <property name="digits">2</property>
                           </object>
                           <packing>
                             <property name="x">310</property>
@@ -2999,7 +3362,7 @@
                           <object class="GtkLabel" id="analysis_toolbox_robot_label">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Robot Localisation</property>
+                            <property name="label" translatable="yes">Robot Laser Sensors</property>
                           </object>
                           <packing>
                             <property name="x">5</property>

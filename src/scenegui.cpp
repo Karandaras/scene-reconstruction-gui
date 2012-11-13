@@ -32,6 +32,7 @@ SceneGUI::SceneGUI()
     }
   }
   
+  this->responseMutex = new boost::mutex();
 
   // Setup the GUI
   ui_builder = Gtk::Builder::create_from_file("res/ui.glade");
@@ -75,6 +76,7 @@ SceneGUI::SceneGUI()
   check_components();
 
   availSub = node->Subscribe("~/SceneReconstruction/GUI/Availability/Response", &SceneGUI::OnResponseMsg, this);
+  on_response_msg.connect( sigc::mem_fun( *this , &SceneGUI::ProcessResponseMsg ));
 }
 
 SceneGUI::~SceneGUI() {
@@ -91,7 +93,7 @@ void SceneGUI::check_components() {
       availPubs[plugin->first] = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/GUI/Availability/Request/"+plugin->first);
       avail_requests[plugin->first].reset(gazebo::msgs::CreateRequest("status"));
       availPubs[plugin->first]->Publish(*(avail_requests[plugin->first].get()));
-      logger->msglog(">>", "~/SceneReconstruction/GUI/Availability/Request/"+plugin->first, avail_requests[plugin->first]);
+      logger->msglog(">>", "~/SceneReconstruction/GUI/Availability/Request/"+plugin->first, *avail_requests[plugin->first]);
     }
     else {
       logger->show_available(plugin->first);
@@ -100,33 +102,46 @@ void SceneGUI::check_components() {
 }
 
 void SceneGUI::OnResponseMsg(ConstResponsePtr &_msg) {
-  std::map< std::string, boost::shared_ptr<gazebo::msgs::Request> >::iterator avail_request = avail_requests.find(_msg->response());
-  if(avail_request == avail_requests.end() && _msg->id() != -1)
-    return;
-  if(_msg->id() != avail_request->second->id() && _msg->id() != -1)
-    return;
+  {
+    boost::mutex::scoped_lock lock(*this->responseMutex);
+    this->responseMsgs.push_back(*_msg);
+  }
+  on_response_msg();
+}
 
-  logger->msglog("<<", "~/SceneReconstruction/GUI/Availability/Response", _msg);
- 
-  // receive availability responses;
-  std::map<std::string, bool>::iterator plugin = plugin_availability.find(_msg->response());
-  if(plugin != plugin_availability.end()) {
-    if(!plugin->second) {
-      plugin->second = true;
-      missing_plugins--;
-      logger->show_available(plugin->first);
-      logger->log("available", "component "+plugin->first+" is now available");
+void SceneGUI::ProcessResponseMsg() {
+  boost::mutex::scoped_lock lock(*this->responseMutex);
+  std::list<gazebo::msgs::Response>::iterator _msg;
+  for(_msg = responseMsgs.begin(); _msg != responseMsgs.end(); _msg++) {
+    std::map< std::string, boost::shared_ptr<gazebo::msgs::Request> >::iterator avail_request = avail_requests.find(_msg->response());
+    if(avail_request == avail_requests.end() && _msg->id() != -1)
+      return;
+    if(_msg->id() != avail_request->second->id() && _msg->id() != -1)
+      return;
+
+    logger->msglog("<<", "~/SceneReconstruction/GUI/Availability/Response", *_msg);
+   
+    // receive availability responses;
+    std::map<std::string, bool>::iterator plugin = plugin_availability.find(_msg->response());
+    if(plugin != plugin_availability.end()) {
+      if(!plugin->second) {
+        plugin->second = true;
+        missing_plugins--;
+        logger->show_available(plugin->first);
+        logger->log("available", "component "+plugin->first+" is now available");
+      }
+    }
+
+    if(missing_plugins == 0) {
+      // reset time and pause the world
+      gazebo::msgs::WorldControl start;
+      start.set_pause(true);
+      start.mutable_reset()->set_all(true);
+      logger->msglog(">>", "~/world_control", start);
+      worldPub->Publish(start);
     }
   }
-
-  if(missing_plugins == 0) {
-    // reset time and pause the world
-    gazebo::msgs::WorldControl start;
-    start.set_pause(true);
-    start.mutable_reset()->set_all(true);
-    logger->msglog(">>", "~/world_control", start);
-    worldPub->Publish(start);
-  }
+  responseMsgs.clear();
 }
 
 int main(int argc, char **argv)

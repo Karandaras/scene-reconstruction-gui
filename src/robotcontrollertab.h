@@ -46,7 +46,12 @@ namespace SceneReconstruction {
       // subscriber and publisher
       gazebo::transport::SubscriberPtr         controllerSub;
  
+      Glib::Dispatcher                         on_controllerinfo_msg;
+      boost::mutex                            *controllerinfoMutex;
+      std::list<gazebo::msgs::SceneRobotController>    controllerinfoMsgs;
+
     private:
       void OnControllerInfoMsg(ConstSceneRobotControllerPtr&);
+      void ProcessControllerInfoMsg();
   };
 }

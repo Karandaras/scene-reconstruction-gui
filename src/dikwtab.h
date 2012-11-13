@@ -78,6 +78,7 @@ namespace SceneReconstruction {
       Gtk::ComboBox                     *win_combo;
       Gtk::Image                        *win_image;
       std::map<int, Glib::RefPtr<Gdk::Pixbuf> > win_images;
+      std::map<int, gazebo::msgs::Drawing >     win_pointclouds;
       Glib::RefPtr<Gdk::Pixbuf>          missing_image;
       Gtk::TextView                     *win_textview;
       Glib::RefPtr<Gtk::TextBuffer>      win_textbuffer;
@@ -91,11 +92,17 @@ namespace SceneReconstruction {
 
 
       gazebo::transport::SubscriberPtr   resSub;
-      gazebo::transport::PublisherPtr    framePub;
+      gazebo::transport::PublisherPtr    framePub,
+                                         pclPub;
       gazebo::msgs::Request             *docreq;
+
+      Glib::Dispatcher                   on_response_msg;
+      boost::mutex                      *responseMutex;
+      std::list<gazebo::msgs::Response>  responseMsgs;
 
     private:
       void OnResponseMsg(ConstResponsePtr&);
+      void ProcessResponseMsg();
       void create_graphviz_dot(std::string);
       void on_new_clicked();
       void on_load_clicked();

@@ -21,6 +21,10 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Gl
   time_offset = 0.0;
   selected_model = "";
   coords_updated = true;
+  this->timeMutex = new boost::mutex();
+  this->worldstatsMutex = new boost::mutex();
+  this->resMutex = new boost::mutex();
+  this->responseMutex = new boost::mutex();
   
   // rng_time setup
   _builder->get_widget("control_scale", rng_time);
@@ -93,114 +97,169 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Gl
   timeSub = node->Subscribe("~/SceneReconstruction/GUI/Time", &ControlTab::OnTimeMsg, this);
   worldSub = node->Subscribe("~/world_stats", &ControlTab::OnWorldStatsMsg, this);
   responseSub = node->Subscribe("~/SceneReconstruction/GUI/Response", &ControlTab::OnResponseMsg, this);
+  on_res_msg.connect( sigc::mem_fun( *this , &ControlTab::ProcessResMsg ));
+  on_time_msg.connect( sigc::mem_fun( *this , &ControlTab::ProcessTimeMsg ));
+  on_worldstats_msg.connect( sigc::mem_fun( *this , &ControlTab::ProcessWorldStatsMsg ));
+  on_response_msg.connect( sigc::mem_fun( *this , &ControlTab::ProcessResponseMsg ));
 }
 
 ControlTab::~ControlTab() {
 }
 
 void ControlTab::OnTimeMsg(ConstDoublePtr& _msg) {
-  rng_time->set_range(0.0, _msg->data());
-  Glib::ustring time = Converter::to_ustring_time(_msg->data());
-  lbl_max_time->set_text(time);
-  size_t p;
-  while((p = time.find_first_not_of("0:.")) != Glib::ustring::npos) {
-    time = time.replace(p,1,"0");
+  {
+    boost::mutex::scoped_lock lock(*this->timeMutex);
+    this->timeMsgs.push_back(*_msg);
   }
-    
-  lbl_min_time->set_text(time);
-  logger->log("control", "Range for scale set to (" + Converter::to_ustring_time(0.0) + " , " + Converter::to_ustring_time(_msg->data()) + ")");
+  on_time_msg();
+}
+
+void ControlTab::ProcessTimeMsg() {
+  boost::mutex::scoped_lock lock(*this->timeMutex);
+  std::list<gazebo::msgs::Double>::iterator _msg;
+  for(_msg = timeMsgs.begin(); _msg != timeMsgs.end(); _msg++) {
+    rng_time->set_range(0.0, _msg->data());
+    Glib::ustring time = Converter::to_ustring_time(_msg->data());
+    lbl_max_time->set_text(time);
+    size_t p;
+    while((p = time.find_first_not_of("0:.")) != Glib::ustring::npos) {
+      time = time.replace(p,1,"0");
+    }
+      
+    lbl_min_time->set_text(time);
+    logger->log("control", "Range for scale set to (" + Converter::to_ustring_time(0.0) + " , " + Converter::to_ustring_time(_msg->data()) + ")");
+  }
+  timeMsgs.clear();
 }
 
 void ControlTab::OnWorldStatsMsg(ConstWorldStatisticsPtr& _msg) {
-  if(!btn_pause->get_active()) {
-    double val;
-    val  = _msg->sim_time().sec()*1000;
-    val += _msg->sim_time().nsec()/1000000;
-    val += time_offset;
-    rng_time->set_value(val);
-    old_value = rng_time->get_value();
+  {
+    boost::mutex::scoped_lock lock(*this->worldstatsMutex);
+    this->worldstatsMsgs.push_back(*_msg);
+  }
+  on_worldstats_msg();
+}
 
-    if(val > rng_time->get_value()) {
-      btn_pause->set_active(true);
-    }
+void ControlTab::ProcessWorldStatsMsg() {
+  boost::mutex::scoped_lock lock(*this->worldstatsMutex);
+  std::list<gazebo::msgs::WorldStatistics>::iterator _msg;
+  for(_msg = worldstatsMsgs.begin(); _msg != worldstatsMsgs.end(); _msg++) {
+    if(!btn_pause->get_active()) {
+      double val;
+      val  = _msg->sim_time().sec()*1000;
+      val += _msg->sim_time().nsec()/1000000;
+      val += time_offset;
+      rng_time->set_value(val);
+      old_value = rng_time->get_value();
 
-    if(val >= ent_info_time+1000 && coords_updated && selected_model != "") {
-      ent_info_time = val;
-      reqPub->Publish(*gazebo::msgs::CreateRequest("entity_info", selected_model));
+      if(val > rng_time->get_value()) {
+        btn_pause->set_active(true);
+      }
+
+      if(val >= ent_info_time+1000 && coords_updated && selected_model != "") {
+        ent_info_time = val;
+        reqPub->Publish(*gazebo::msgs::CreateRequest("entity_info", selected_model));
+      }
     }
   }
 }
 
 void ControlTab::OnResMsg(ConstResponsePtr& _msg) {
-  if (_msg->request() == "entity_info") {
-    logger->msglog("<<", "~/response", _msg);
+  {
+    boost::mutex::scoped_lock lock(*this->resMutex);
+    this->resMsgs.push_back(*_msg);
+  }
+  on_res_msg();
+}
 
-    gazebo::msgs::Model model;
-    if (_msg->has_type() && _msg->type() == model.GetTypeName()) {
-      if(selected_model != model.name() || coords_updated) {
-        coords_updated = false;
-        model.ParseFromString(_msg->serialized_data());
-        logger->log("control", "Coords of Model " + model.name() + " received.");
-        selected_model = model.name();
-        update_coords(model);
+void ControlTab::ProcessResMsg() {
+  boost::mutex::scoped_lock lock(*this->resMutex);
+  std::list<gazebo::msgs::Response>::iterator _msg;
+  for(_msg = resMsgs.begin(); _msg != resMsgs.end(); _msg++) {
+    if (_msg->request() == "entity_info") {
+      logger->msglog("<<", "~/response", *_msg);
+
+      gazebo::msgs::Model model;
+      if (_msg->has_type() && _msg->type() == model.GetTypeName()) {
+        if(selected_model != model.name() || coords_updated) {
+          coords_updated = false;
+          model.ParseFromString(_msg->serialized_data());
+          logger->log("control", "Coords of Model " + model.name() + " received.");
+          selected_model = model.name();
+          update_coords(model);
+        }
       }
     }
   }
+  resMsgs.clear();
 }
 
 void ControlTab::OnResponseMsg(ConstResponsePtr& _msg) {
-  logger->msglog("<<", "~/SceneReconstruction/GUI/Response", _msg);
-  if (robotRequest) {
-    if (_msg->request() == robotRequest->request() && _msg->id() == robotRequest->id() && _msg->has_type() && _msg->type() == robot.GetTypeName() && _msg->response() != "unknown") {
-      robot.ParseFromString(_msg->serialized_data());
-      selected_model = _msg->response();
-    }
+  {
+    boost::mutex::scoped_lock lock(*this->responseMutex);
+    this->responseMsgs.push_back(*_msg);
   }
-  
-  if (objectRequest) {
-    gazebo::msgs::GzString obj;
-    if (_msg->request() == objectRequest->request() && _msg->id() == objectRequest->id() && _msg->has_type() && _msg->type() == obj.GetTypeName() && _msg->response() == "success") {
-      if(!frameRequest) {
-        obj.ParseFromString(_msg->serialized_data());
-        model_frame = obj.data();
-        logger->log("control", "getting coords for frame: "+model_frame);
+  on_response_msg();
+}
 
-        gazebo::msgs::Request *tmp = gazebo::msgs::CreateRequest("transform_request");
-        frameRequest = new gazebo::msgs::TransformRequest;
-        frameRequest->set_id(tmp->id());
-        frameRequest->set_request(tmp->request());
-        frameRequest->set_source_frame("/gazebo");
-        frameRequest->set_target_frame(model_frame);
-        gazebo::math::Vector3 pos = gazebo::msgs::Convert(gazebo.position()) - gazebo::msgs::Convert(robot);
-        frameRequest->set_pos_x(pos.x);
-        frameRequest->set_pos_y(pos.y);
-        frameRequest->set_pos_z(pos.z);
-        frameRequest->set_ori_w(gazebo.orientation().w());
-        frameRequest->set_ori_x(gazebo.orientation().x());
-        frameRequest->set_ori_y(gazebo.orientation().y());
-        frameRequest->set_ori_z(gazebo.orientation().z());
-        framePub->Publish(*frameRequest);
+void ControlTab::ProcessResponseMsg() {
+  boost::mutex::scoped_lock lock(*this->responseMutex);
+  std::list<gazebo::msgs::Response>::iterator _msg;
+  for(_msg = responseMsgs.begin(); _msg != responseMsgs.end(); _msg++) {
+    logger->msglog("<<", "~/SceneReconstruction/GUI/Response", *_msg);
+    if (robotRequest) {
+      if (_msg->request() == robotRequest->request() && _msg->id() == robotRequest->id() && _msg->has_type() && _msg->type() == robot.GetTypeName() && _msg->response() != "unknown") {
+        robot.ParseFromString(_msg->serialized_data());
+        selected_model = _msg->response();
       }
     }
-    else {
-      logger->log("control", "getting coords for frame: /map");
-      gazebo::math::Pose tmp_pose = gazebo::msgs::Convert(gazebo);
-      tmp_pose.pos -= gazebo::msgs::Convert(robot);
-      sensor = gazebo::msgs::Convert(tmp_pose);
-      sensor.set_name("/map");
+    
+    if (objectRequest) {
+      gazebo::msgs::GzString obj;
+      if (_msg->request() == objectRequest->request() && _msg->id() == objectRequest->id() && _msg->has_type() && _msg->type() == obj.GetTypeName() && _msg->response() == "success") {
+        if(!frameRequest) {
+          obj.ParseFromString(_msg->serialized_data());
+          model_frame = obj.data();
+          logger->log("control", "getting coords for frame: "+model_frame);
 
-      update_coords();
+          gazebo::msgs::Request *tmp = gazebo::msgs::CreateRequest("transform_request");
+          frameRequest = new gazebo::msgs::TransformRequest;
+          frameRequest->set_id(tmp->id());
+          frameRequest->set_request(tmp->request());
+          frameRequest->set_source_frame("/gazebo");
+          frameRequest->set_target_frame(model_frame);
+          gazebo::math::Vector3 pos = gazebo::msgs::Convert(gazebo.position()) - gazebo::msgs::Convert(robot);
+          frameRequest->set_pos_x(pos.x);
+          frameRequest->set_pos_y(pos.y);
+          frameRequest->set_pos_z(pos.z);
+          frameRequest->set_ori_w(gazebo.orientation().w());
+          frameRequest->set_ori_x(gazebo.orientation().x());
+          frameRequest->set_ori_y(gazebo.orientation().y());
+          frameRequest->set_ori_z(gazebo.orientation().z());
+          framePub->Publish(*frameRequest);
+        }
+      }
+      else {
+        logger->log("control", "getting coords for frame: /map");
+        gazebo::math::Pose tmp_pose = gazebo::msgs::Convert(gazebo);
+        tmp_pose.pos -= gazebo::msgs::Convert(robot);
+        sensor = gazebo::msgs::Convert(tmp_pose);
+        sensor.set_name("/map");
+
+        update_coords();
+      }
+    }
+    
+    if (frameRequest) {
+      if (_msg->request() == frameRequest->request() && _msg->id() == frameRequest->id() && _msg->has_type() && _msg->type() == sensor.GetTypeName()) {
+        sensor.ParseFromString(_msg->serialized_data());
+        delete frameRequest;
+        frameRequest = 0;
+        update_coords();      
+      }
     }
   }
-  
-  if (frameRequest) {
-    if (_msg->request() == frameRequest->request() && _msg->id() == frameRequest->id() && _msg->has_type() && _msg->type() == sensor.GetTypeName()) {
-      sensor.ParseFromString(_msg->serialized_data());
-      delete frameRequest;
-      frameRequest = 0;
-      update_coords();      
-    }
-  }
+  responseMsgs.clear();
 }
 
 void ControlTab::update_coords(gazebo::msgs::Model model) {
