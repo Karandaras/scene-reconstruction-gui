@@ -170,32 +170,37 @@ namespace SceneReconstruction {
        *  @param string representing the graph
        */
       void load(std::string graph) {
+        knowledge_nodes.clear();
+        information_nodes.clear();
+        data_nodes.clear();
+        edges.clear();
+
         size_t pos = graph.find("\n");
-        std::string knowledge = graph.substr(0, pos-1);
+        std::string knowledge = graph.substr(0, pos);
         graph = graph.substr(pos+1);
         while((pos = knowledge.find(";")) != std::string::npos) {
           DIKNode n;
-          n.node = knowledge.substr(0, pos-1);
+          n.node = knowledge.substr(0, pos);
           knowledge_nodes.push_back(n);
           knowledge = knowledge.substr(pos+1);
         }
 
         pos = graph.find("\n");
-        std::string information = graph.substr(0, pos-1);
+        std::string information = graph.substr(0, pos);
         graph = graph.substr(pos+1);
         while((pos = information.find(";")) != std::string::npos) {
           DIKNode n;
-          n.node = information.substr(0, pos-1);
+          n.node = information.substr(0, pos);
           information_nodes.push_back(n);
           information = information.substr(pos+1);
         }
 
         pos = graph.find("\n");
-        std::string data = graph.substr(0, pos-1);
+        std::string data = graph.substr(0, pos);
         graph = graph.substr(pos+1);
         while((pos = data.find(";")) != std::string::npos) {
           DIKNode n;
-          n.node = data.substr(0, pos-1);
+          n.node = data.substr(0, pos);
           data_nodes.push_back(n);
           data = data.substr(pos+1);
         }
@@ -205,13 +210,13 @@ namespace SceneReconstruction {
           size_t epos;
           DIKEdge e;
           epos = edge.find(";");
-          e.from = edge.substr(0,epos-1);
+          e.from = edge.substr(0,epos);
           edge = edge.substr(epos+1);
           epos = edge.find(";");
-          e.to = edge.substr(0,epos-1);
+          e.to = edge.substr(0,epos);
           edge = edge.substr(epos+1);
           epos = edge.find(";");
-          e.label = edge.substr(0,epos-1);
+          e.label = edge.substr(0,epos);
           if(is_node(e.from) && is_node(e.to)) {
             edges.push_back(e);
             DIKNode *from = get_node(e.from);

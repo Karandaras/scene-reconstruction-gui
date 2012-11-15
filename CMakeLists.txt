@@ -46,7 +46,7 @@ IF(PKG_CONFIG_FOUND)
   ENDIF(NOT PROTOBUF_FOUND)
 
   message("   Looking for Boost")
-  find_package(Boost 1.47.0 QUIET COMPONENTS system)
+  find_package(Boost 1.47.0 QUIET COMPONENTS system filesystem)
   IF(NOT Boost_FOUND)
     message("      Missing Boost (version \">= 1.47.0\")")
     set(MISSES "${MISSES}\n   Boost (http://www.boost.org/)")

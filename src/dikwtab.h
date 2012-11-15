@@ -6,9 +6,6 @@
 
 #include <google/protobuf/message.h>
 
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
-
 #include <gazebo/transport/Node.hh>
 #include <gazebo/transport/Transport.hh>
 #include <gazebo/transport/TransportTypes.hh>

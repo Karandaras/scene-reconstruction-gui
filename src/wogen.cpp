@@ -197,6 +197,22 @@ void WorldfileGenerator::on_dialog_file_set() {
     }
     fclose(f);
 
+    size_t gazebo_start = modelsdf.find("<gazebo");
+    if(gazebo_start != std::string::npos)
+      gazebo_start = modelsdf.find(">", gazebo_start+7)+1;
+    else
+      gazebo_start = 0;
+
+    size_t gazebo_end = modelsdf.find("</gazebo>");
+    if(gazebo_end != std::string::npos)
+      gazebo_end = gazebo_end;
+    else
+      gazebo_end = modelsdf.length() - gazebo_start;
+
+    std::cout << "start: " << gazebo_start << "\nend: " << gazebo_end << "\n";
+
+    modelsdf = modelsdf.substr(gazebo_start, gazebo_end-gazebo_start);
+
     size_t model_pos = modelsdf.find("<model");
     size_t name_start_pos = modelsdf.find("name=\"", model_pos)+6;
     size_t name_end_pos = modelsdf.find("\"", name_start_pos);
