@@ -3,7 +3,7 @@
 
 using namespace SceneReconstruction;
 
-/** @class AnalysisTab "AnalysisTab.h"
+/** @class AnalysisTab "analysistab.h"
  *  Tab for the GUI that controls the analyis tools.
  *  It displays the buffers for the Robot and the Objects
  *  and controls the a grid for measurements inside the 
@@ -24,16 +24,22 @@ AnalysisTab::AnalysisTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, 
   btn_position_preview->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_position_preview_clicked));
   _builder->get_widget("analysis_buffer_position_toolbutton_clear", btn_position_clear);
   btn_position_clear->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_position_clear_clicked));
+  _builder->get_widget("analysis_buffer_position_toolbutton_refresh", btn_position_refresh);
+  btn_position_refresh->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_position_refresh_clicked));
   _builder->get_widget("analysis_buffer_joints_toolbutton_preview", btn_angles_preview);
   btn_angles_preview->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_angles_preview_clicked));
   _builder->get_widget("analysis_buffer_joints_toolbutton_clear", btn_angles_clear);
   btn_angles_clear->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_angles_clear_clicked));
+  _builder->get_widget("analysis_buffer_joints_toolbutton_refresh", btn_angles_refresh);
+  btn_angles_refresh->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_angles_refresh_clicked));
   _builder->get_widget("analysis_buffer_objects_toolbutton_preview", btn_object_preview);
   btn_object_preview->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_object_preview_clicked));
   _builder->get_widget("analysis_buffer_objects_toolbutton_move", btn_object_move);
   btn_object_move->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_object_move_clicked));
   _builder->get_widget("analysis_buffer_objects_toolbutton_clear", btn_object_clear);
   btn_object_clear->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_object_clear_clicked));
+  _builder->get_widget("analysis_buffer_objects_toolbutton_refresh", btn_object_refresh);
+  btn_object_refresh->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_object_refresh_clicked));
 
   _builder->get_widget("analysis_buffer_position_treeview", trv_positions);
   pos_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(_builder->get_object("analysis_buffer_position_treestore"));
@@ -83,10 +89,15 @@ AnalysisTab::AnalysisTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, 
   positionPub = node->Advertise<gazebo::msgs::BufferPosition>("~/SceneReconstruction/RobotController/BufferPosition");
   anglesPub = node->Advertise<gazebo::msgs::BufferJoints>("~/SceneReconstruction/RobotController/BufferJoints");
   objectPub = node->Advertise<gazebo::msgs::BufferObjects>("~/SceneReconstruction/ObjectInstantiator/BufferObject");
-  drawingPub = node->Advertise<gazebo::msgs::Drawing>(std::string("~/draw"));
+  drawingPub = node->Advertise<gazebo::msgs::Drawing>("~/draw");
   lasersPub = node->Advertise<gazebo::msgs::Lasers>("~/SceneReconstruction/Framework/Lasers");
+  robconPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/RobotController/Request");
+  objinstPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/ObjectInstantiator/Request");
 
+
+  // TODO: switch to direct listening to framework messages
   bufferSub = node->Subscribe("~/SceneReconstruction/GUI/Buffer", &AnalysisTab::OnBufferMsg, this);
+
   lasersSub = node->Subscribe("~/SceneReconstruction/GUI/Lasers", &AnalysisTab::OnLasersMsg, this);
   on_buffer_msg.connect( sigc::mem_fun( *this , &AnalysisTab::ProcessBufferMsg ));
   on_lasers_msg.connect( sigc::mem_fun( *this , &AnalysisTab::ProcessLasersMsg ));
@@ -129,8 +140,9 @@ void AnalysisTab::ProcessBufferMsg() {
         if(n==a) {
           for(int j=0; j<n; j++) {
             Gtk::TreeModel::Row childrow = *(ang_store->append(row.children()));
-            childrow.set_value(0,jnt.name(i));
-            childrow.set_value(1,Converter::to_ustring(jnt.angle(i)));
+            childrow.set_value(0, jnt.name(j));
+            childrow.set_value(1, Converter::to_ustring(jnt.angle(j)));
+            childrow.set_value(2, i);
           }
         }
       }
@@ -157,7 +169,7 @@ void AnalysisTab::ProcessBufferMsg() {
           Gtk::TreeModel::Row cchildrow;
           cchildrow = *(obj_store->append(childrow.children()));
           cchildrow.set_value(0,(Glib::ustring)"Visible");
-          cchildrow.set_value(1,obj.object(i).visible());
+          cchildrow.set_value(1,Converter::to_ustring(obj.object(i).visible()));
           cchildrow.set_value(2, j);
 
           if(obj.object(i).has_model()) {
@@ -187,10 +199,10 @@ void AnalysisTab::ProcessBufferMsg() {
       pos_messages.resize(_msg->msgsdata_size());
       for(int i=0; i<_msg->msgsdata_size(); i++) {
         pos.ParseFromString(_msg->msgsdata(i));
-        Gtk::TreeModel::Row childrow = *(pos_store->append());
-        childrow.set_value(0,obj.object(i).object());
-        childrow.set_value(1,Converter::convert(pos.position(), 2, 3));
-        childrow.set_value(2, i);
+        Gtk::TreeModel::Row row = *(pos_store->append());
+        row.set_value(0,Converter::to_ustring_time(pos.timestamp()));
+        row.set_value(1,Converter::convert(pos.position(), 2, 3));
+        row.set_value(2, i);
         pos_messages[i] = pos;
       }
     }
@@ -255,12 +267,15 @@ void AnalysisTab::on_button_position_clear_clicked() {
   positionPub->Publish(buf);
 }
 
+void AnalysisTab::on_button_position_refresh_clicked() {
+  gazebo::msgs::Request *req = gazebo::msgs::CreateRequest("update_position_buffer", "");
+  robconPub->Publish(*req);
+}
+
 void AnalysisTab::on_button_angles_preview_clicked() {
   if(trv_angles->get_selection()->count_selected_rows() == 1) {
     int msgid;
     Gtk::TreeModel::iterator row = trv_angles->get_selection()->get_selected();
-    if(row->parent())
-      row = row->parent();
     row->get_value(2, msgid);
 
     anglesPub->Publish(ang_messages[msgid]);
@@ -273,17 +288,22 @@ void AnalysisTab::on_button_angles_clear_clicked() {
   anglesPub->Publish(buf);
 }
 
+void AnalysisTab::on_button_angles_refresh_clicked() {
+  gazebo::msgs::Request *req = gazebo::msgs::CreateRequest("update_joint_buffer", "");
+  robconPub->Publish(*req);
+}
+
 void AnalysisTab::on_button_object_preview_clicked() {
   if(trv_objects->get_selection()->count_selected_rows() == 1) {
     int msgid, objid;
     Gtk::TreeModel::iterator row = trv_objects->get_selection()->get_selected();
 
     gazebo::msgs::BufferObjects buf;
-    buf.CopyFrom(obj_messages[msgid]);
 
     if(row->parent() && row->parent()->parent()) {
       row->parent()->parent()->get_value(2, msgid);
       row->get_value(2, objid);;
+      buf.CopyFrom(obj_messages[msgid]);
       buf.clear_object();
       gazebo::msgs::SceneObject *obj = buf.add_object();
       obj->CopyFrom(obj_messages[msgid].object(objid));
@@ -291,9 +311,14 @@ void AnalysisTab::on_button_object_preview_clicked() {
     else if(row->parent()) {
       row->parent()->get_value(2, msgid);
       row->get_value(2, objid);;
+      buf.CopyFrom(obj_messages[msgid]);
       buf.clear_object();
       gazebo::msgs::SceneObject *obj = buf.add_object();
       obj->CopyFrom(obj_messages[msgid].object(objid));
+    }
+    else {
+      row->get_value(2, msgid);;
+      buf.CopyFrom(obj_messages[msgid]);
     }
 
     objectPub->Publish(buf);
@@ -345,6 +370,11 @@ void AnalysisTab::on_button_object_clear_clicked() {
   gazebo::msgs::BufferObjects buf;
   buf.set_timestamp(-1.0);
   objectPub->Publish(buf);
+}
+
+void AnalysisTab::on_button_object_refresh_clicked() {
+  gazebo::msgs::Request *req = gazebo::msgs::CreateRequest("update_object_buffer", "");
+  objinstPub->Publish(*req);
 }
 
 void AnalysisTab::on_lasers_visible_toggled(const Glib::ustring& path) {
@@ -452,6 +482,7 @@ void AnalysisTab::on_button_grid_move_clicked() {
 
 void AnalysisTab::on_button_lasers_update_clicked() {
   gazebo::msgs::Lasers lasers;
+  lasers.set_update(true);
 
   Gtk::TreeModel::Children rows = trv_lasers->get_model()->children();
   for(Gtk::TreeModel::Children::iterator row = rows.begin(); row != rows.end(); row++) {
@@ -482,14 +513,13 @@ void AnalysisTab::ProcessLasersMsg() {
     int i, v;
     i = _msg->interface_size();
     v = _msg->visible_size();
-    if(i != v)
-      return;
-
-    lsr_store->clear();
-    for(int l=0; l<i; l++) {
-      row = *(lsr_store->append());
-      row.set_value(0, _msg->interface(l));
-      row.set_value(1, _msg->visible(l));
+    if(i == v) {
+      lsr_store->clear();
+      for(int l=0; l<i; l++) {
+        row = *(lsr_store->append());
+        row.set_value(0, _msg->interface(l));
+        row.set_value(1, _msg->visible(l));
+      }
     }
   }
   lasersMsgs.clear();

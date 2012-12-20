@@ -39,14 +39,15 @@ namespace SceneReconstruction {
        *  @return Glib::ustring representation of in
        */
       static Glib::ustring to_ustring(bool in) {
-        std::stringstream convert;
-        convert << in;
-        Glib::ustring ret(convert.str());
-        return ret;
+        if(in)
+          return "TRUE";
+        
+        return "FALSE";
       }
 
       /** converts double to Glib::ustring 
        *  @param in input as double
+       *  @param precision rounding precision
        *  @return Glib::ustring representation of in
        */
       static Glib::ustring to_ustring(double in, unsigned int precision=6) {

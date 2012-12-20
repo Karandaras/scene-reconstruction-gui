@@ -16,7 +16,7 @@
 #include "loggertab.h"
 
 namespace SceneReconstruction {
-  /** @class AnalysisTab "AnalysisTab.h"
+  /** @class AnalysisTab "analysistab.h"
    *  Tab for the GUI that controls the analyis tools.
    *  It displays the buffers for the Robot and the Objects
    *  and controls the a grid for measurements inside the 
@@ -42,11 +42,14 @@ namespace SceneReconstruction {
 
       Gtk::ToolButton                   *btn_position_preview;
       Gtk::ToolButton                   *btn_position_clear;
+      Gtk::ToolButton                   *btn_position_refresh;
       Gtk::ToolButton                   *btn_angles_preview;
       Gtk::ToolButton                   *btn_angles_clear;
+      Gtk::ToolButton                   *btn_angles_refresh;
       Gtk::ToolButton                   *btn_object_preview;
       Gtk::ToolButton                   *btn_object_move;
       Gtk::ToolButton                   *btn_object_clear;
+      Gtk::ToolButton                   *btn_object_refresh;
 
       Gtk::TreeView                     *trv_positions;
       Glib::RefPtr<Gtk::TreeStore>       pos_store;
@@ -64,6 +67,8 @@ namespace SceneReconstruction {
                                          anglesPub,
                                          objectPub,
                                          drawingPub,
+                                         robconPub,
+                                         objinstPub,
                                          lasersPub;
 
       Gtk::SpinButton                   *spn_grid_pos_x;
@@ -106,11 +111,14 @@ namespace SceneReconstruction {
       bool on_treeview_objects_selection(GdkEventSelection*);
       void on_button_position_preview_clicked();
       void on_button_position_clear_clicked();
+      void on_button_position_refresh_clicked();
       void on_button_angles_preview_clicked();
       void on_button_angles_clear_clicked();
+      void on_button_angles_refresh_clicked();
       void on_button_object_preview_clicked();
       void on_button_object_move_clicked();
       void on_button_object_clear_clicked();
+      void on_button_object_refresh_clicked();
       void on_lasers_visible_toggled(const Glib::ustring&);
       void on_button_grid_show_clicked();
       void on_button_grid_move_clicked();

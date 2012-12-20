@@ -9,7 +9,7 @@
 #include "robotcontrollertab.h"
 #include "objectinstantiatortab.h"
 #include "frameworktab.h"
-#include "dikwtab.h"
+#include "kidtab.h"
 #include "analysistab.h"
 
 using namespace SceneReconstruction;
@@ -61,7 +61,7 @@ SceneGUI::SceneGUI()
   RobotControllerTab*    tab2 = new RobotControllerTab(node, logger, ui_builder);
   ObjectInstantiatorTab* tab3 = new ObjectInstantiatorTab(node, logger, ui_builder);
   FrameworkTab*          tab4 = new FrameworkTab(node, logger, ui_builder);
-  DIKWTab*               tab5 = new DIKWTab(node, logger, ui_builder);
+  KIDTab*                tab5 = new KIDTab(node, logger, ui_builder);
   AnalysisTab*           tab6 = new AnalysisTab(node, logger, ui_builder);
 
   vec_tabs.push_back(tab1);
@@ -73,8 +73,9 @@ SceneGUI::SceneGUI()
 
   window->show_all_children();
 
-  check_components();
-
+  plugin_pubs["Framework"] = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/Framework/Request");
+  plugin_pubs["ObjectInstantiator"] = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/ObjectInstantiator/Request");
+  plugin_pubs["RobotController"] = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/RobotController/Request");
   availSub = node->Subscribe("~/SceneReconstruction/GUI/Availability/Response", &SceneGUI::OnResponseMsg, this);
   on_response_msg.connect( sigc::mem_fun( *this , &SceneGUI::ProcessResponseMsg ));
 }
@@ -83,22 +84,6 @@ SceneGUI::~SceneGUI() {
   node->Fini();
   gazebo::transport::stop();
   gazebo::transport::fini();
-}
-
-void SceneGUI::check_components() {
-  // publish availability request
-  std::map<std::string, bool>::iterator plugin;
-  for(plugin =  plugin_availability.begin(); plugin != plugin_availability.end(); plugin++) {
-    if(!plugin->second) {
-      availPubs[plugin->first] = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/GUI/Availability/Request/"+plugin->first);
-      avail_requests[plugin->first].reset(gazebo::msgs::CreateRequest("status"));
-      availPubs[plugin->first]->Publish(*(avail_requests[plugin->first].get()));
-      logger->msglog(">>", "~/SceneReconstruction/GUI/Availability/Request/"+plugin->first, *avail_requests[plugin->first]);
-    }
-    else {
-      logger->show_available(plugin->first);
-    }
-  }
 }
 
 void SceneGUI::OnResponseMsg(ConstResponsePtr &_msg) {
@@ -113,20 +98,13 @@ void SceneGUI::ProcessResponseMsg() {
   boost::mutex::scoped_lock lock(*this->responseMutex);
   std::list<gazebo::msgs::Response>::iterator _msg;
   for(_msg = responseMsgs.begin(); _msg != responseMsgs.end(); _msg++) {
-    std::map< std::string, boost::shared_ptr<gazebo::msgs::Request> >::iterator avail_request = avail_requests.find(_msg->response());
-    if(avail_request == avail_requests.end() && _msg->id() != -1)
-      return;
-    if(_msg->id() != avail_request->second->id() && _msg->id() != -1)
-      return;
-
-    logger->msglog("<<", "~/SceneReconstruction/GUI/Availability/Response", *_msg);
-   
     // receive availability responses;
     std::map<std::string, bool>::iterator plugin = plugin_availability.find(_msg->response());
     if(plugin != plugin_availability.end()) {
       if(!plugin->second) {
         plugin->second = true;
         missing_plugins--;
+        plugin_pubs[plugin->first]->Publish(*gazebo::msgs::CreateRequest("available",""));
         logger->show_available(plugin->first);
         logger->log("available", "component "+plugin->first+" is now available");
       }
@@ -136,6 +114,7 @@ void SceneGUI::ProcessResponseMsg() {
       // reset time and pause the world
       gazebo::msgs::WorldControl start;
       start.set_pause(true);
+      start.set_step(true);
       start.mutable_reset()->set_all(true);
       logger->msglog(">>", "~/world_control", start);
       worldPub->Publish(start);

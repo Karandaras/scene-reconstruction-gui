@@ -5,7 +5,7 @@
 
 using namespace SceneReconstruction;
 
-/** @class SceneGui "mapgen.h"
+/** @class SceneGui "wogen.h"
  *  Class that creates the WorldfileGenerator GUI for Worldfile generation.
  *  It loads an image and allows the user to create walls according to that image. Additionally
  *  it helps in setting up the objectinstantiator and allows one to include the robot file.
@@ -136,16 +136,6 @@ void WorldfileGenerator::on_add_object_clicked() {
     row.set_value(0, ent_modelname->get_text());    
     row.set_value(1, ent_interfacename->get_text());    
     row.set_value(2, buf_preview->get_text());    
-
-    std::string clonesdf = buf_preview->get_text();
-    size_t model_pos = clonesdf.find("<model");
-    if(model_pos != std::string::npos) {
-      size_t name_start_pos = clonesdf.find("name=\"", model_pos)+6;
-      size_t name_end_pos = clonesdf.find("\"", name_start_pos);
-      clonesdf.insert(name_end_pos, "_clone");
-    }
-
-    row.set_value(3, clonesdf);    
   }
 
   ent_modelname->set_text("");
@@ -197,6 +187,22 @@ void WorldfileGenerator::on_dialog_file_set() {
     }
     fclose(f);
 
+    size_t gazebo_start = modelsdf.find("<gazebo");
+    if(gazebo_start != std::string::npos)
+      gazebo_start = modelsdf.find(">", gazebo_start+7)+1;
+    else
+      gazebo_start = 0;
+
+    size_t gazebo_end = modelsdf.find("</gazebo>");
+    if(gazebo_end != std::string::npos)
+      gazebo_end = gazebo_end;
+    else
+      gazebo_end = modelsdf.length() - gazebo_start;
+
+    std::cout << "start: " << gazebo_start << "\nend: " << gazebo_end << "\n";
+
+    modelsdf = modelsdf.substr(gazebo_start, gazebo_end-gazebo_start);
+
     size_t model_pos = modelsdf.find("<model");
     size_t name_start_pos = modelsdf.find("name=\"", model_pos)+6;
     size_t name_end_pos = modelsdf.find("\"", name_start_pos);
@@ -228,27 +234,27 @@ void WorldfileGenerator::on_make_world_clicked() {
             worldfile << "            <ode>\n";
             worldfile << "                <solver>\n";
             worldfile << "                    <type>world</type>\n";
-            worldfile << "                    <dt>0.01</dt>\n";
-            worldfile << "                    <iters>100</iters>\n";
+            worldfile << "                    <dt>0.1</dt>\n";
+            worldfile << "                    <iters>10</iters>\n";
             worldfile << "                    <sor>1.3</sor>\n";
             worldfile << "                </solver>\n";
             worldfile << "            </ode>\n";
             worldfile << "            <gravity>0 0 -9.81</gravity>\n";
-            worldfile << "            <update_rate>100</update_rate>\n";
+            worldfile << "            <update_rate>10</update_rate>\n";
             worldfile << "        </physics>\n";
             worldfile << "\n";
             worldfile << "        <!-- setup the scene -->\n";
             worldfile << "        <scene>\n";
             worldfile << "            <ambient>0.9 0.9 0.9 1.0</ambient>\n";
             worldfile << "            <background>0.5 0.5 0.5 1.0</background>\n";
-            worldfile << "            <shadows>true</shadows>\n";
-            worldfile << "            <fog>\n";
-            worldfile << "                <color>0.2 0.2 0.2 0.1</color>\n";
-            worldfile << "                <type>linear</type>\n";
-            worldfile << "                <start>0.0</start>\n";
-            worldfile << "                <end>500.0</end>\n";
-            worldfile << "                <density>1</density>\n";
-            worldfile << "            </fog>\n";
+//            worldfile << "            <shadows>true</shadows>\n";
+//            worldfile << "            <fog>\n";
+//            worldfile << "                <color>0.2 0.2 0.2 0.1</color>\n";
+//            worldfile << "                <type>linear</type>\n";
+//            worldfile << "                <start>0.0</start>\n";
+//            worldfile << "                <end>500.0</end>\n";
+//            worldfile << "                <density>1</density>\n";
+//            worldfile << "            </fog>\n";
             worldfile << "        </scene>\n";
             worldfile << "\n";
             worldfile << "        <!-- a simple ground plane -->\n";
@@ -332,10 +338,6 @@ void WorldfileGenerator::on_make_world_clicked() {
               std::string sdf;
               // add model
               l->get_value(2, sdf);
-              worldfile << "\n";
-              worldfile << sdf;
-              // add clone
-              l->get_value(3, sdf);
               worldfile << "\n";
               worldfile << sdf;
             }

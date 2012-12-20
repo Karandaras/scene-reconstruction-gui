@@ -46,7 +46,7 @@ IF(PKG_CONFIG_FOUND)
   ENDIF(NOT PROTOBUF_FOUND)
 
   message("   Looking for Boost")
-  find_package(Boost 1.47.0 QUIET COMPONENTS system)
+  find_package(Boost 1.47.0 QUIET COMPONENTS system filesystem)
   IF(NOT Boost_FOUND)
     message("      Missing Boost (version \">= 1.47.0\")")
     set(MISSES "${MISSES}\n   Boost (http://www.boost.org/)")
@@ -117,7 +117,7 @@ IF(PKG_CONFIG_FOUND)
     
     set(CMAKE_CXX_FLAGS " -g -Wextra -Wall -lstdc++" CACHE INTERNAL "General CXX Flags")
 
-    add_executable(CAT src/scenegui.cpp src/scenetab.cpp src/controltab.cpp src/loggertab.cpp src/robotcontrollertab.cpp src/objectinstantiatortab.cpp src/frameworktab.cpp src/dikwtab.cpp src/graph_drawing_area.cpp src/gvplugin_cairo.cpp src/analysistab.cpp)
+    add_executable(CAT src/scenegui.cpp src/scenetab.cpp src/controltab.cpp src/loggertab.cpp src/robotcontrollertab.cpp src/objectinstantiatortab.cpp src/frameworktab.cpp src/kidtab.cpp src/graph_drawing_area.cpp src/gvplugin_cairo.cpp src/analysistab.cpp)
     add_executable(wogen src/wogen.cpp)
 
     target_link_libraries(CAT ${GRAPHVIZ_LIBRARIES})

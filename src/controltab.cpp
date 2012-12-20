@@ -208,7 +208,7 @@ void ControlTab::ProcessResponseMsg() {
   for(_msg = responseMsgs.begin(); _msg != responseMsgs.end(); _msg++) {
     logger->msglog("<<", "~/SceneReconstruction/GUI/Response", *_msg);
     if (robotRequest) {
-      if (_msg->request() == robotRequest->request() && _msg->id() == robotRequest->id() && _msg->has_type() && _msg->type() == robot.GetTypeName() && _msg->response() != "unknown") {
+      if (_msg->request() == robotRequest->request() && (_msg->id() == robotRequest->id() || _msg->id() == -1) && _msg->has_type() && _msg->type() == robot.GetTypeName() && _msg->response() != "unknown") {
         robot.ParseFromString(_msg->serialized_data());
         selected_model = _msg->response();
       }
@@ -305,7 +305,6 @@ void ControlTab::update_coords() {
 }
 
 void ControlTab::on_button_stop_clicked() {
-  logger->log("control", "STOP");
   time_offset = 0.0;
   rng_time->set_value(0.0);
   ent_info_time = 0.0;
@@ -325,12 +324,10 @@ void ControlTab::on_button_stop_clicked() {
 }
 
 void ControlTab::on_button_play_clicked() {
-  logger->log("control", "PLAY");
   btn_pause->set_active(false);
 }
 
 void ControlTab::on_button_pause_toggled() {
-  logger->log("control", "PAUSE");
   if(btn_pause->get_active()) {
     gazebo::msgs::WorldControl start;
     start.set_pause(true);

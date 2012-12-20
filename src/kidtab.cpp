@@ -1,105 +1,105 @@
-#include "dikwtab.h"
+#include "kidtab.h"
+#include "converter.h"
 #include <fstream>
 #include <gazebo/common/Image.hh>
+#include <boost/filesystem/path.hpp>
 
 using namespace SceneReconstruction;
 
-/** @class DIKWTab "dikwtab.h"
- *  Tab for the GUI that builds and represents the DIKW Graph.
+/** @class KIDTab "kidtab.h"
+ *  Tab for the GUI that builds and represents the KID Graph.
  *  @author Bastian Klingen
  */
 
-DIKWTab::DIKWTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Glib::RefPtr<Gtk::Builder>& builder)
+KIDTab::KIDTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Glib::RefPtr<Gtk::Builder>& builder)
 : SceneTab::SceneTab(builder)
 {
   node = _node;
   logger = _logger;  
   this->responseMutex = new boost::mutex();
 
-  _builder->get_widget("dikw_toolbutton_new", btn_new);
-  btn_new->signal_clicked().connect(sigc::mem_fun(*this,&DIKWTab::on_new_clicked));
-  _builder->get_widget("dikw_toolbutton_load", btn_load);
-  btn_load->signal_clicked().connect(sigc::mem_fun(*this,&DIKWTab::on_load_clicked));
-  _builder->get_widget("dikw_toolbutton_save", btn_save);
-  btn_save->signal_clicked().connect(sigc::mem_fun(*this,&DIKWTab::on_save_clicked));
-  _builder->get_widget("dikw_toolbutton_close", btn_close);
-  btn_close->signal_clicked().connect(sigc::mem_fun(*this,&DIKWTab::on_close_clicked));
-  _builder->get_widget("dikw_combobox_graphs", com_graphs);
-  com_graphs->signal_changed().connect(sigc::mem_fun(*this,&DIKWTab::on_graphs_changed));
-  gra_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("dikw_liststore_graphs"));
+  _builder->get_widget("kid_toolbutton_new", btn_new);
+  btn_new->signal_clicked().connect(sigc::mem_fun(*this,&KIDTab::on_new_clicked));
+  _builder->get_widget("kid_toolbutton_load", btn_load);
+  btn_load->signal_clicked().connect(sigc::mem_fun(*this,&KIDTab::on_load_clicked));
+  _builder->get_widget("kid_toolbutton_save", btn_save);
+  btn_save->signal_clicked().connect(sigc::mem_fun(*this,&KIDTab::on_save_clicked));
+  _builder->get_widget("kid_toolbutton_close", btn_close);
+  btn_close->signal_clicked().connect(sigc::mem_fun(*this,&KIDTab::on_close_clicked));
+  _builder->get_widget("kid_combobox_graphs", com_graphs);
+  com_graphs->signal_changed().connect(sigc::mem_fun(*this,&KIDTab::on_graphs_changed));
+  gra_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("kid_liststore_graphs"));
   gra_store->clear();
 
   Gtk::Box *box_type;
-  _builder->get_widget("dikw_box_top_left", box_type);
+  _builder->get_widget("kid_box_top_left", box_type);
   com_type = Gtk::manage(new Gtk::ComboBoxText(false));
   com_type->append("Node");
   com_type->append("Edge");
   com_type->set_active(0);
   box_type->pack_end(*com_type, false, true);
-  com_type->signal_changed().connect(sigc::mem_fun(*this,&DIKWTab::on_type_changed));
-  _builder->get_widget("dikw_label_top_center_left", lbl_left);
+  com_type->signal_changed().connect(sigc::mem_fun(*this,&KIDTab::on_type_changed));
+  _builder->get_widget("kid_label_top_center_left", lbl_left);
   Gtk::Box *box_left;
-  _builder->get_widget("dikw_box_top_center_left", box_left);
+  _builder->get_widget("kid_box_top_center_left", box_left);
   com_left = Gtk::manage(new Gtk::ComboBoxText(true));
   com_left->append("Knowledge");
   com_left->append("Information");
   com_left->append("Data");
   com_left->set_active(0);
   box_left->pack_end(*com_left, true, true);
-  cpl_left = Glib::RefPtr<Gtk::EntryCompletion>::cast_dynamic(_builder->get_object("dikw_entrycompletion_level_from"));
+  cpl_left = Glib::RefPtr<Gtk::EntryCompletion>::cast_dynamic(_builder->get_object("kid_entrycompletion_level_from"));
   cpl_left->set_model(com_left->get_model());
   com_left->get_entry()->set_completion(cpl_left);
-  _builder->get_widget("dikw_label_top_center_right", lbl_right);
+  _builder->get_widget("kid_label_top_center_right", lbl_right);
   Gtk::Box *box_right;
-  _builder->get_widget("dikw_box_top_center_right", box_right);
+  _builder->get_widget("kid_box_top_center_right", box_right);
   com_right = Gtk::manage(new Gtk::ComboBoxText(true));
   box_right->pack_end(*com_right, true, true);
-  cpl_right = Glib::RefPtr<Gtk::EntryCompletion>::cast_dynamic(_builder->get_object("dikw_entrycompletion_name_to"));
+  cpl_right = Glib::RefPtr<Gtk::EntryCompletion>::cast_dynamic(_builder->get_object("kid_entrycompletion_name_to"));
   cpl_right->set_model(com_right->get_model());
   com_right->get_entry()->set_completion(cpl_right);
-  _builder->get_widget("dikw_entry_top_right", ent_label);
+  _builder->get_widget("kid_entry_top_right", ent_label);
   ent_label->set_sensitive(false);
-  _builder->get_widget("dikw_toolbutton_top_add", btn_add);
-  btn_add->signal_clicked().connect(sigc::mem_fun(*this,&DIKWTab::on_add_clicked));
-  _builder->get_widget("dikw_treeview_nodes", trv_nodes);
-  nds_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("dikw_liststore_nodes"));
+  _builder->get_widget("kid_toolbutton_top_add", btn_add);
+  btn_add->signal_clicked().connect(sigc::mem_fun(*this,&KIDTab::on_add_clicked));
+  _builder->get_widget("kid_treeview_nodes", trv_nodes);
+  nds_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("kid_liststore_nodes"));
   nds_store->clear();
-  _builder->get_widget("dikw_toolbutton_nodes_delete", btn_nodes_remove);
-  btn_nodes_remove->signal_clicked().connect(sigc::mem_fun(*this,&DIKWTab::on_nodes_remove_clicked));
-  _builder->get_widget("dikw_toolbutton_nodes_mark", btn_nodes_mark);
-  btn_nodes_mark->signal_clicked().connect(sigc::mem_fun(*this,&DIKWTab::on_nodes_mark_clicked));
-  _builder->get_widget("dikw_treeview_edges", trv_edges);
-  edg_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("dikw_liststore_edges"));
+  _builder->get_widget("kid_toolbutton_nodes_delete", btn_nodes_remove);
+  btn_nodes_remove->signal_clicked().connect(sigc::mem_fun(*this,&KIDTab::on_nodes_remove_clicked));
+  _builder->get_widget("kid_toolbutton_unmark", btn_unmark);
+  btn_unmark->signal_clicked().connect(sigc::mem_fun(*this,&KIDTab::on_unmark_clicked));
+  _builder->get_widget("kid_treeview_edges", trv_edges);
+  edg_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("kid_liststore_edges"));
   edg_store->clear();
-  _builder->get_widget("dikw_toolbutton_edges_delete", btn_edges_remove);
-  btn_edges_remove->signal_clicked().connect(sigc::mem_fun(*this,&DIKWTab::on_edges_remove_clicked));
-  _builder->get_widget("dikw_toolbutton_edges_mark", btn_edges_mark);
-  btn_edges_mark->signal_clicked().connect(sigc::mem_fun(*this,&DIKWTab::on_edges_mark_clicked));
-  _builder->get_widget("dikw_scrolledwindow_graph", scw_graph);
+  _builder->get_widget("kid_toolbutton_edges_delete", btn_edges_remove);
+  btn_edges_remove->signal_clicked().connect(sigc::mem_fun(*this,&KIDTab::on_edges_remove_clicked));
+  _builder->get_widget("kid_scrolledwindow_graph", scw_graph);
   gda_graph = Gtk::manage(new GraphDrawingArea());
   scw_graph->add(*gda_graph);
   gda_graph->show();
-  gda_graph->signal_button_release_event().connect(sigc::mem_fun(*this,&DIKWTab::on_graph_release));
+  gda_graph->signal_button_release_event().connect(sigc::mem_fun(*this,&KIDTab::on_graph_release));
 
-  _builder->get_widget("dikw_toolbutton_zoom_in", btn_zoomin);
-  btn_zoomin->signal_clicked().connect(sigc::mem_fun(*this,&DIKWTab::on_zoom_in_clicked));
-  _builder->get_widget("dikw_toolbutton_zoom_out", btn_zoomout);
-  btn_zoomout->signal_clicked().connect(sigc::mem_fun(*this,&DIKWTab::on_zoom_out_clicked));
-  _builder->get_widget("dikw_toolbutton_zoom_fit", btn_zoomfit);
-  btn_zoomfit->signal_clicked().connect(sigc::mem_fun(*this,&DIKWTab::on_zoom_fit_clicked));
-  _builder->get_widget("dikw_toolbutton_zoom_reset", btn_zoomreset);
-  btn_zoomreset->signal_clicked().connect(sigc::mem_fun(*this,&DIKWTab::on_zoom_reset_clicked));
-  _builder->get_widget("dikw_toolbutton_export", btn_export);
-  btn_export->signal_clicked().connect(sigc::mem_fun(*this,&DIKWTab::on_export_clicked));
+  _builder->get_widget("kid_toolbutton_zoom_in", btn_zoomin);
+  btn_zoomin->signal_clicked().connect(sigc::mem_fun(*this,&KIDTab::on_zoom_in_clicked));
+  _builder->get_widget("kid_toolbutton_zoom_out", btn_zoomout);
+  btn_zoomout->signal_clicked().connect(sigc::mem_fun(*this,&KIDTab::on_zoom_out_clicked));
+  _builder->get_widget("kid_toolbutton_zoom_fit", btn_zoomfit);
+  btn_zoomfit->signal_clicked().connect(sigc::mem_fun(*this,&KIDTab::on_zoom_fit_clicked));
+  _builder->get_widget("kid_toolbutton_zoom_reset", btn_zoomreset);
+  btn_zoomreset->signal_clicked().connect(sigc::mem_fun(*this,&KIDTab::on_zoom_reset_clicked));
+  _builder->get_widget("kid_toolbutton_export", btn_export);
+  btn_export->signal_clicked().connect(sigc::mem_fun(*this,&KIDTab::on_export_clicked));
 
-  _builder->get_widget("dikw_document_window", win_show);
-  _builder->get_widget("dikw_document_combobox", win_combo);
-  win_combo->signal_changed().connect(sigc::mem_fun(*this,&DIKWTab::on_document_changed));
-  _builder->get_widget("dikw_document_image", win_image);
+  _builder->get_widget("kid_document_window", win_show);
+  _builder->get_widget("kid_document_combobox", win_combo);
+  win_combo->signal_changed().connect(sigc::mem_fun(*this,&KIDTab::on_document_changed));
+  _builder->get_widget("kid_document_image", win_image);
   missing_image = Gdk::Pixbuf::create_from_file("res/noimg.png");
-  _builder->get_widget("dikw_document_textview", win_textview);
-  win_textbuffer = Glib::RefPtr<Gtk::TextBuffer>::cast_dynamic(_builder->get_object("dikw_document_textbuffer"));
-  win_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("dikw_document_liststore"));
+  _builder->get_widget("kid_document_textview", win_textview);
+  win_textbuffer = Glib::RefPtr<Gtk::TextBuffer>::cast_dynamic(_builder->get_object("kid_document_textbuffer"));
+  win_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("kid_document_liststore"));
 
   fcd_save = new Gtk::FileChooserDialog("Save Graph", Gtk::FILE_CHOOSER_ACTION_SAVE);
   fcd_open = new Gtk::FileChooserDialog("Load Graph", Gtk::FILE_CHOOSER_ACTION_OPEN);
@@ -107,30 +107,27 @@ DIKWTab::DIKWTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Glib::Re
   fcd_save->add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);
   fcd_open->add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
   fcd_open->add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
-  filter_dgf = Gtk::FileFilter::create();
-  filter_dgf->set_name("DIK Graph File (DGF)");
-  filter_dgf->add_pattern("*.dgf");
-  fcd_save->add_filter(filter_dgf);
-  fcd_save->set_filter(filter_dgf);
-  fcd_open->add_filter(filter_dgf);
-  fcd_open->set_filter(filter_dgf);
+  filter_kgf = Gtk::FileFilter::create();
+  filter_kgf->set_name("KID Graph File (KGF)");
+  filter_kgf->add_pattern("*.kgf");
+  fcd_save->add_filter(filter_kgf);
+  fcd_save->set_filter(filter_kgf);
+  fcd_open->add_filter(filter_kgf);
+  fcd_open->set_filter(filter_kgf);
 
-  dia_new = new Gtk::Dialog("New Graph");
-  dia_new->add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
-  dia_new->add_button(Gtk::Stock::OK, Gtk::RESPONSE_OK);
-  dia_new_entry = Gtk::manage(new Gtk::Entry());
-  dia_new->get_content_area()->add(*dia_new_entry);
+  _builder->get_widget("kid_dialog_newgraph", dia_new);
+  _builder->get_widget("kid_dialog_newgraph_entry", dia_new_entry);
 
-  resSub = node->Subscribe("~/SceneReconstruction/GUI/MongoDB", &DIKWTab::OnResponseMsg, this);
+  resSub = node->Subscribe("~/SceneReconstruction/GUI/MongoDB", &KIDTab::OnResponseMsg, this);
   framePub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/Framework/Request");
-  pclPub = node->Advertise<gazebo::msgs::Drawing>("~/draw");
-  on_response_msg.connect( sigc::mem_fun( *this , &DIKWTab::ProcessResponseMsg ));
+  pclPub = node->Advertise<gazebo::msgs::Drawing>("~/SceneReconstruction/RobotController/Draw");
+  on_response_msg.connect( sigc::mem_fun( *this , &KIDTab::ProcessResponseMsg ));
 }
 
-DIKWTab::~DIKWTab() {
+KIDTab::~KIDTab() {
 }
 
-void DIKWTab::OnResponseMsg(ConstResponsePtr& _msg) {
+void KIDTab::OnResponseMsg(ConstResponsePtr& _msg) {
   {
     boost::mutex::scoped_lock lock(*this->responseMutex);
     this->responseMsgs.push_back(*_msg);
@@ -138,13 +135,13 @@ void DIKWTab::OnResponseMsg(ConstResponsePtr& _msg) {
   on_response_msg();
 }
 
-void DIKWTab::ProcessResponseMsg() {
+void KIDTab::ProcessResponseMsg() {
   boost::mutex::scoped_lock lock(*this->responseMutex);
   std::list<gazebo::msgs::Response>::iterator _msg;
   for(_msg = responseMsgs.begin(); _msg != responseMsgs.end(); _msg++) {
     if(_msg->response() == "success") {
       if(_msg->request() == "collection_names") {
-        logger->log("dikw", "received collections for nodelist");
+        logger->log("kid", "received collections for nodelist");
 
         gazebo::msgs::GzString_V src;
         if(_msg->has_type() && _msg->type() == src.GetTypeName()) {
@@ -155,7 +152,7 @@ void DIKWTab::ProcessResponseMsg() {
             db_collections.push_back(src.data(i));
           }
           if(com_type->get_active_text() == "Node") {
-            logger->log("dikw", "updating nodelist");
+            logger->log("kid", "updating nodelist");
             com_right->remove_all();
             std::list<std::string>::iterator iter;
             for(iter = db_collections.begin(); iter != db_collections.end(); iter++)
@@ -164,7 +161,7 @@ void DIKWTab::ProcessResponseMsg() {
         }
       }
       else if(_msg->request() == "documents" && docreq->id() == _msg->id()) {
-        logger->log("dikw", "received documents for selected node: "+docreq->data());
+        logger->log("kid", "received documents for selected node: "+docreq->data());
 
         gazebo::msgs::Message_V docs;
         if(_msg->has_type() && _msg->type() == docs.GetTypeName()) {
@@ -176,15 +173,16 @@ void DIKWTab::ProcessResponseMsg() {
             win_images.clear();
             
             for(int i=0; i<n; i++) {
+              logger->log("kid", "processing document for selected node: "+docreq->data());
               doc.ParseFromString(docs.msgsdata(i));
               Gtk::TreeModel::Row row;
               row = *(win_store->append());
-              row.set_value(0, doc.timestamp());
+              row.set_value(0, "Time: "+Converter::to_ustring_time(doc.timestamp()));
               Glib::RefPtr<Gdk::Pixbuf> img;
               if(doc.has_image()) {
-                gazebo::common::Image *tmpimg = 0;
-                gazebo::msgs::Set(*tmpimg, doc.image());
-                tmpimg->SavePNG("tmp_img.png");
+                gazebo::common::Image tmpimg;
+                gazebo::msgs::Set(tmpimg, doc.image());
+                tmpimg.SavePNG("tmp_img.png");
                 img = Gdk::Pixbuf::create_from_file("tmp_img.png");
               }
               else {
@@ -205,6 +203,7 @@ void DIKWTab::ProcessResponseMsg() {
               win_pointclouds[i] = pcl;
               row.set_value(2, doc.document());
             }
+            win_combo->set_active(win_store->children().begin());
           }
         }
       }
@@ -213,12 +212,13 @@ void DIKWTab::ProcessResponseMsg() {
   responseMsgs.clear();
 }
 
-void DIKWTab::create_graphviz_dot(std::string markupnode) {
-  std::string dot = graph.get_dot(markupnode);
+void KIDTab::create_graphviz_dot() {
+  std::string dot = graph.get_dot();
   gda_graph->set_graph(dot);
+  gda_graph->zoom_fit();  
 }
 
-void DIKWTab::on_type_changed() {
+void KIDTab::on_type_changed() {
   if(com_type->get_active_text() == "Node") {
     lbl_left->set_text("Level");
     com_left->remove_all();
@@ -238,7 +238,7 @@ void DIKWTab::on_type_changed() {
     com_left->remove_all();
     com_right->remove_all();
     ent_label->set_sensitive(true);
-    std::list<DIKGraph::DIKNode>::iterator iter;
+    std::list<KIDGraph::KIDNode>::iterator iter;
     for(iter = graph.knowledge_nodes.begin(); iter != graph.knowledge_nodes.end(); iter++) {
       com_left->append(iter->node);
       com_right->append(iter->node);
@@ -256,12 +256,12 @@ void DIKWTab::on_type_changed() {
   }
 }
 
-void DIKWTab::on_add_clicked() {
+void KIDTab::on_add_clicked() {
   if(com_type->get_active_text() == "Node") {
     if(!graph.is_node(com_right->get_entry_text())) {
       if(com_left->get_active_text() == "Knowledge") {
-        logger->log("dikw", "knowledge node \""+com_right->get_entry_text()+"\" added");
-        DIKGraph::DIKNode node;
+        logger->log("kid", "knowledge node \""+com_right->get_entry_text()+"\" added");
+        KIDGraph::KIDNode node;
         node.node = com_right->get_entry_text();
         graph.knowledge_nodes.push_back(node);
         Gtk::TreeModel::Row row;
@@ -269,8 +269,8 @@ void DIKWTab::on_add_clicked() {
         row.set_value(0, com_right->get_entry_text());
       }
       else if(com_left->get_active_text() == "Information") {
-        logger->log("dikw", "information node \""+com_right->get_entry_text()+"\" added");
-        DIKGraph::DIKNode node;
+        logger->log("kid", "information node \""+com_right->get_entry_text()+"\" added");
+        KIDGraph::KIDNode node;
         node.node = com_right->get_entry_text();
         graph.information_nodes.push_back(node);
         Gtk::TreeModel::Row row;
@@ -278,8 +278,8 @@ void DIKWTab::on_add_clicked() {
         row.set_value(0, com_right->get_entry_text());
       }
       else if(com_left->get_active_text() == "Data") {
-        logger->log("dikw", "data node \""+com_right->get_entry_text()+"\" added");
-        DIKGraph::DIKNode node;
+        logger->log("kid", "data node \""+com_right->get_entry_text()+"\" added");
+        KIDGraph::KIDNode node;
         node.node = com_right->get_entry_text();
         graph.data_nodes.push_back(node);
         Gtk::TreeModel::Row row;
@@ -287,23 +287,23 @@ void DIKWTab::on_add_clicked() {
         row.set_value(0, com_right->get_entry_text());
       }
       else {
-        logger->log("dikw", "level \""+com_left->get_entry_text()+"\" not known");
+        logger->log("kid", "level \""+com_left->get_entry_text()+"\" not known");
       }
     }
     else {
-      logger->log("dikw", "node \""+com_right->get_entry_text()+"\" already exists at level "+graph.level_of_node(com_right->get_entry_text()));
+      logger->log("kid", "node \""+com_right->get_entry_text()+"\" already exists at level "+graph.level_of_node(com_right->get_entry_text()));
     }
   }
   else if(com_type->get_active_text() == "Edge") {
-    DIKGraph::DIKEdge edge;
+    KIDGraph::KIDEdge edge;
     edge.from = com_left->get_entry_text();
     edge.to = com_right->get_entry_text();
     edge.label = ent_label->get_text();
     if(!graph.is_edge(edge) && graph.is_node(edge.from) && graph.is_node(edge.to)) {
-      logger->log("dikw", "edge "+edge.toString()+" added");
+      logger->log("kid", "edge "+edge.toString()+" added");
       graph.edges.push_back(edge);
-      DIKGraph::DIKNode *from = graph.get_node(edge.from);
-      DIKGraph::DIKNode *to   = graph.get_node(edge.to);
+      KIDGraph::KIDNode *from = graph.get_node(edge.from);
+      KIDGraph::KIDNode *to   = graph.get_node(edge.to);
       from->children.push_back(to);
       to->parents.push_back(from);
       Gtk::TreeModel::Row row;
@@ -319,27 +319,27 @@ void DIKWTab::on_add_clicked() {
       if(!graph.is_node(com_right->get_entry_text()))
         error += ", node \""+com_right->get_entry_text()+"\" is not known";
 
-      logger->log("dikw", error);
+      logger->log("kid", error);
     }
   }
 
   com_graphs->get_active()->set_value(1,graph.save_to_string());
 
-  create_graphviz_dot("");
+  create_graphviz_dot();
 }
 
-void DIKWTab::on_nodes_remove_clicked() {
+void KIDTab::on_nodes_remove_clicked() {
   if(trv_nodes->get_selection()->count_selected_rows() == 1){
     Glib::ustring node;
     trv_nodes->get_selection()->get_selected()->get_value(0, node);
     nds_store->erase(trv_nodes->get_selection()->get_selected());
-    logger->log("dikw", "removed node: "+node);
+    logger->log("kid", "removed node: "+node);
     if(graph.level_of_node(node) == "knowledge") {
-      std::list<DIKGraph::DIKNode>::iterator iter;
+      std::list<KIDGraph::KIDNode>::iterator iter;
       iter = find(graph.knowledge_nodes.begin(), graph.knowledge_nodes.end(), (std::string)node);
       if(iter != graph.knowledge_nodes.end()) {
-        std::list<DIKGraph::DIKNode*>::iterator subiter;
-        DIKGraph::DIKNode *p;
+        std::list<KIDGraph::KIDNode*>::iterator subiter;
+        KIDGraph::KIDNode *p;
         p = graph.get_node(node);
         for(subiter = iter->children.begin(); subiter != iter->children.end(); subiter++) {
           (*subiter)->parents.remove(p);
@@ -352,11 +352,11 @@ void DIKWTab::on_nodes_remove_clicked() {
       }
     }
     else if(graph.level_of_node(node) == "information") {
-      std::list<DIKGraph::DIKNode>::iterator iter;
+      std::list<KIDGraph::KIDNode>::iterator iter;
       iter = find(graph.information_nodes.begin(), graph.information_nodes.end(), (std::string)node);
       if(iter != graph.information_nodes.end()) {
-        std::list<DIKGraph::DIKNode*>::iterator subiter;
-        DIKGraph::DIKNode *p;
+        std::list<KIDGraph::KIDNode*>::iterator subiter;
+        KIDGraph::KIDNode *p;
         p = graph.get_node(node);
         for(subiter = iter->children.begin(); subiter != iter->children.end(); subiter++) {
           (*subiter)->parents.remove(p);
@@ -369,11 +369,11 @@ void DIKWTab::on_nodes_remove_clicked() {
       }
     }
     else if(graph.level_of_node(node) == "data") {
-      std::list<DIKGraph::DIKNode>::iterator iter;
+      std::list<KIDGraph::KIDNode>::iterator iter;
       iter = find(graph.data_nodes.begin(), graph.data_nodes.end(), (std::string)node);
       if(iter != graph.data_nodes.end()) {
-        std::list<DIKGraph::DIKNode*>::iterator subiter;
-        DIKGraph::DIKNode *p;
+        std::list<KIDGraph::KIDNode*>::iterator subiter;
+        KIDGraph::KIDNode *p;
         p = graph.get_node(node);
         for(subiter = iter->children.begin(); subiter != iter->children.end(); subiter++) {
           (*subiter)->parents.remove(p);
@@ -387,8 +387,8 @@ void DIKWTab::on_nodes_remove_clicked() {
     }
 
     // remove edges that are no longer valid
-    std::list<DIKGraph::DIKEdge>::iterator edgeiter;
-    std::list<DIKGraph::DIKEdge> newedges;
+    std::list<KIDGraph::KIDEdge>::iterator edgeiter;
+    std::list<KIDGraph::KIDEdge> newedges;
     edg_store->clear();
     Gtk::TreeModel::Row row;
     for(edgeiter = graph.edges.begin(); edgeiter != graph.edges.end(); edgeiter++) {
@@ -403,30 +403,28 @@ void DIKWTab::on_nodes_remove_clicked() {
 
   com_graphs->get_active()->set_value(1,graph.save_to_string());
 
-  create_graphviz_dot("");
+  create_graphviz_dot();
 }
 
-void DIKWTab::on_nodes_mark_clicked() {
-  if(trv_nodes->get_selection()->count_selected_rows() == 1) {
-    Glib::ustring node;
-    trv_nodes->get_selection()->get_selected()->get_value(0, node);
-    create_graphviz_dot(node);
-    logger->log("dikw", "marked node: "+node);
-  }
+void KIDTab::on_unmark_clicked() {
+  graph.clear_markup();
+  com_graphs->get_active()->set_value(1,graph.save_to_string());
+  create_graphviz_dot();
+  logger->log("kid", "unmarked graph");
 }
 
-void DIKWTab::on_edges_remove_clicked() {
+void KIDTab::on_edges_remove_clicked() {
   if(trv_edges->get_selection()->count_selected_rows() == 1) {
     Glib::ustring edge;
     trv_edges->get_selection()->get_selected()->get_value(0, edge);
     edg_store->erase(trv_edges->get_selection()->get_selected());
-    logger->log("dikw", "removed edge: "+edge);
-    std::list<DIKGraph::DIKEdge>::iterator iter;
+    logger->log("kid", "removed edge: "+edge);
+    std::list<KIDGraph::KIDEdge>::iterator iter;
     iter = find(graph.edges.begin(), graph.edges.end(), (std::string)edge);
     
     if(iter != graph.edges.end()) {
-      DIKGraph::DIKNode *from;
-      DIKGraph::DIKNode *to;
+      KIDGraph::KIDNode *from;
+      KIDGraph::KIDNode *to;
       from = graph.get_node(iter->from);
       from->parents.remove(to);
       to   = graph.get_node(iter->to);
@@ -437,63 +435,79 @@ void DIKWTab::on_edges_remove_clicked() {
 
   com_graphs->get_active()->set_value(1,graph.save_to_string());
 
-  create_graphviz_dot("");
+  create_graphviz_dot();
 }
 
-void DIKWTab::on_edges_mark_clicked() {
-  if(trv_edges->get_selection()->count_selected_rows() == 1) {
-    Glib::ustring edge;
-    trv_edges->get_selection()->get_selected()->get_value(0, edge);    
-    create_graphviz_dot(edge.substr(1,edge.find("\"",1)-1));
-    logger->log("dikw", "marked node: "+edge.substr(1,edge.find("\"",1)-1)+" from edge: "+edge);
-  }
-}
+bool KIDTab::on_graph_release(GdkEventButton *b) {
+  std::string node = gda_graph->get_clicked_node(b->x, b->y);
+  if(graph.is_node(node)) {
+    if(b->button == 1) {
+      if(find(db_collections.begin(), db_collections.end(), node) != db_collections.end()) {
+        if(!win_show->get_visible()) {
+          win_show->present();
+          logger->log("kid", "opening document window for node: "+node);
+        }
+        else
+          logger->log("kid", "refreshing document window for node: "+node);
 
-bool DIKWTab::on_graph_release(GdkEventButton *b) {
-  if(b->button == 1) {
-    std::string node = gda_graph->get_clicked_node(b->x, b->y);
-    if(graph.is_node(node) && find(db_collections.begin(), db_collections.end(), node) != db_collections.end()) {
-      if(!win_show->get_visible()) {
-        win_show->present();
-        logger->log("dikw", "opening document window for node: "+node);
+        // get data from framework for selected collection node
+        docreq = gazebo::msgs::CreateRequest("documents", node);
+        framePub->Publish(*docreq);
       }
-      else
-        logger->log("dikw", "refreshing document window for node: "+node);
-
-      // TODO: get data from framework for selected collection node
-      docreq = gazebo::msgs::CreateRequest("documents", node);
-      framePub->Publish(*docreq);
+      else if (node != "")
+        logger->log("kid", "node: "+node+" does not refer to a collection");
     }
-    else if (node != "")
-      logger->log("dikw", "node: "+node+" does not refer to a collection");
-
+    else if(b->button == 3) {
+      if(graph.is_marked(node)) {
+        logger->log("kid", "unmark node: "+node);
+        graph.unmark_node(node);
+        com_graphs->get_active()->set_value(1,graph.save_to_string());
+        create_graphviz_dot();
+      }
+      else {
+        logger->log("kid", "mark node: "+node);
+        graph.mark_node(node);
+        com_graphs->get_active()->set_value(1,graph.save_to_string());
+        create_graphviz_dot();
+      }
+    }
   }
 
   return false;
 }
 
-void DIKWTab::on_document_changed() {
-  // TODO: set textbuffer and image according to selection
-  // TODO: send pointcloud to gazebo or remove currently shown one
+void KIDTab::on_document_changed() {
+  // set textbuffer and image according to selection
+  // send pointcloud to gazebo or remove currently shown one
   int id;
-  win_combo->get_active()->get_value(1,id);
-  win_image->set(win_images[id]);
-  // pclPub->Publish(win_pointclouds[id]);
-  Glib::ustring doc;
-  win_combo->get_active()->get_value(2,doc);
-  win_textbuffer->set_text(doc);
+  if(win_combo->get_active_row_number() != -1) {
+    win_combo->get_active()->get_value(1,id);
+    win_image->set(win_images[id]);
+    pclPub->Publish(win_pointclouds[id]);
+    Glib::ustring doc;
+    win_combo->get_active()->get_value(2,doc);
+    win_textbuffer->set_text(Converter::parse_json(doc));
+  }
+  else {
+    win_image->set(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_BUTTON);
+    gazebo::msgs::Drawing pcl;
+    pcl.set_name("pointcloud");
+    pcl.set_visible(false);
+    pclPub->Publish(pcl);
+    win_textbuffer->set_text("");
+  }
 }
 
-void DIKWTab::on_new_clicked() {
-  // TODO: create new graph inside combobox
+void KIDTab::on_new_clicked() {
+  // create new graph inside combobox
   Gtk::Window *w;
   _builder->get_widget("window", w);
   
   dia_new->set_transient_for(*w);
   int result = dia_new->run();
   if (result == Gtk::RESPONSE_OK) {
-    std::string __graph = "";
     std::string __name = dia_new_entry->get_text();
+    std::string __graph = __name+"\n";
     bool validname = true;
     Gtk::TreeModel::Children tmc = gra_store->children();
     Gtk::TreeModel::iterator tmi = tmc.begin();
@@ -510,6 +524,7 @@ void DIKWTab::on_new_clicked() {
       row = *(gra_store->append());
       row.set_value(0, __name);
       row.set_value(1, __graph);
+      com_graphs->set_active(row);
     }
     else {
       Gtk::MessageDialog md(*w, "Graphname already exists",
@@ -523,8 +538,8 @@ void DIKWTab::on_new_clicked() {
   dia_new->hide();
 }
 
-void DIKWTab::on_load_clicked() {
-  // TODO: load existing graph file into combobox (.dgf)
+void KIDTab::on_load_clicked() {
+  // load existing graph file into combobox (.kgf)
   Gtk::Window *w;
   _builder->get_widget("window", w);
   
@@ -532,13 +547,8 @@ void DIKWTab::on_load_clicked() {
 
   int result = fcd_open->run();
   if (result == Gtk::RESPONSE_OK) {
-
     std::string filename = fcd_open->get_filename();
-    char *basec = strdup(filename.c_str());
-    char *basen = basename(basec);
-    free(basec);
     std::string __graph = "";
-    std::string __name = basen;
     if (filename != "") {      
       FILE *f = fopen(filename.c_str(), "r");
       while (! feof(f)) {
@@ -549,10 +559,15 @@ void DIKWTab::on_load_clicked() {
         }
       }
       fclose(f);
+
+      size_t pos = __graph.find("\n");
+      std::string __name = __graph.substr(0, pos);
+
       Gtk::TreeModel::Row row;
       row = *(gra_store->append());
       row.set_value(0, __name);
       row.set_value(1, __graph);
+      com_graphs->set_active(row);
     } else {
       Gtk::MessageDialog md(*w, "Invalid filename",
 			    /* markup */ false, Gtk::MESSAGE_ERROR,
@@ -565,8 +580,8 @@ void DIKWTab::on_load_clicked() {
   fcd_open->hide();
 }
 
-void DIKWTab::on_save_clicked() {
-  // TODO: save selected graph to file (.dgf)
+void KIDTab::on_save_clicked() {
+  // save selected graph to file (.kgf)
   Gtk::Window *w;
   _builder->get_widget("window", w);
   
@@ -577,6 +592,15 @@ void DIKWTab::on_save_clicked() {
 
     std::string filename = fcd_save->get_filename();
     if (filename != "") {
+      size_t ext_pos = filename.rfind(".");
+      std::string extension = "";
+      if(ext_pos != std::string::npos) {
+        extension = filename.substr(ext_pos+1);
+        std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+      }
+      if(extension != "kgf")
+        filename += ".kgf";
+
      	graph.save(filename.c_str());
     } else {
       Gtk::MessageDialog md(*w, "Invalid filename",
@@ -590,34 +614,78 @@ void DIKWTab::on_save_clicked() {
   fcd_save->hide();
 }
 
-void DIKWTab::on_close_clicked() {
-  // TODO: remove selected graph from combobox
-  gra_store->erase(com_graphs->get_active());
+void KIDTab::on_close_clicked() {
+  // remove selected graph from combobox
+  Gtk::TreeModel::iterator oldgraph = com_graphs->get_active();
+  Gtk::TreeModel::iterator newgraph = com_graphs->get_active();
+  newgraph++;
+  if(newgraph == gra_store->children().end())
+    newgraph = gra_store->children().begin();
+
+  if(gra_store->children().size() == 1) {
+    gra_store->clear();
+  }
+  else {
+    com_graphs->set_active(newgraph);
+    gra_store->erase(oldgraph);
+  }
 }
 
-void DIKWTab::on_graphs_changed() {
-  Glib::ustring g;
-  com_graphs->get_active()->get_value(1,g);
-  graph.load(g);
+void KIDTab::on_graphs_changed() {
+  if(gra_store->children().size() == 0) {
+    graph.load("");
+    nds_store->clear();
+    edg_store->clear();
+  }
+  else {
+    Glib::ustring g;
+    com_graphs->get_active()->get_value(1,g);
+    graph.load(g);
+
+    nds_store->clear();
+    std::list<KIDGraph::KIDNode>::iterator iter;
+    Gtk::TreeModel::Row row;
+    for(iter = graph.knowledge_nodes.begin(); iter != graph.knowledge_nodes.end(); iter++) {
+      row = *(nds_store->append());
+      row.set_value(0, iter->node);
+    }
+    for(iter = graph.information_nodes.begin(); iter != graph.information_nodes.end(); iter++) {
+      row = *(nds_store->append());
+      row.set_value(0, iter->node);
+    }
+    for(iter = graph.data_nodes.begin(); iter != graph.data_nodes.end(); iter++) {
+      row = *(nds_store->append());
+      row.set_value(0, iter->node);
+    }
+
+    edg_store->clear();
+    std::list<KIDGraph::KIDEdge>::iterator eiter;
+    for(eiter = graph.edges.begin(); eiter != graph.edges.end(); eiter++) {
+      row = *(edg_store->append());
+      row.set_value(0, eiter->toString());
+    }
+  }
+
+  create_graphviz_dot();
 }
 
-void DIKWTab::on_zoom_in_clicked() {
+void KIDTab::on_zoom_in_clicked() {
   gda_graph->zoom_in();
 }
 
-void DIKWTab::on_zoom_out_clicked() {
+void KIDTab::on_zoom_out_clicked() {
   gda_graph->zoom_out();
 }
 
-void DIKWTab::on_zoom_fit_clicked() {
+void KIDTab::on_zoom_fit_clicked() {
   gda_graph->zoom_fit();
 }
 
-void DIKWTab::on_zoom_reset_clicked() {
+void KIDTab::on_zoom_reset_clicked() {
   gda_graph->zoom_reset();
 }
 
-void DIKWTab::on_export_clicked() {
+void KIDTab::on_export_clicked() {
   gda_graph->save();  
 }
 

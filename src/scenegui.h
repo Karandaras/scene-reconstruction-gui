@@ -37,9 +37,8 @@ namespace SceneReconstruction {
       gazebo::transport::SubscriberPtr   availSub;
 
       std::map<std::string, bool>                                       plugin_availability;
+      std::map<std::string, gazebo::transport::PublisherPtr>            plugin_pubs;
       unsigned int                                                      missing_plugins;
-      std::map< std::string, gazebo::transport::PublisherPtr >          availPubs;
-      std::map< std::string, boost::shared_ptr<gazebo::msgs::Request> > avail_requests;
 
       Glib::Dispatcher                   on_response_msg;
       boost::mutex                      *responseMutex;
@@ -52,6 +51,5 @@ namespace SceneReconstruction {
     private:
       void OnResponseMsg(ConstResponsePtr&);
       void ProcessResponseMsg();
-      void check_components();
   };
 }

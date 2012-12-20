@@ -53,7 +53,7 @@ void FrameworkTab::ProcessResponseMsg() {
   boost::mutex::scoped_lock lock(*this->responseMutex);
   std::list<gazebo::msgs::Response>::iterator _msg;
   for(_msg = responseMsgs.begin(); _msg != responseMsgs.end(); _msg++) {
-    if ((objReq && _msg->id() == objReq->id()) || (!objReq && _msg->id() == -1)){
+    if ((objReq && _msg->id() == objReq->id()) || _msg->id() == -1){
       logger->msglog("<<", "~/SceneReconstruction/GUI/MongoDB", *_msg);
 
       if(_msg->response() == "success") {
@@ -75,19 +75,17 @@ void FrameworkTab::ProcessResponseMsg() {
           if(_msg->has_type() && _msg->type() == src.GetTypeName()) {
             src.ParseFromString(_msg->serialized_data());
             obj_store->clear();
-            for(int i = 0; i<src.data_size()-1; i+=2) {
+            for(int i = 0; i<src.data_size(); i++) {
               Gtk::TreeModel::Row row;
               row = *(obj_store->append());
-              row.set_value(0, Converter::to_ustring_time(Converter::ustring_to_double(src.data(i))));
-              row.set_value(1, src.data(i+1));
+              row.set_value(0, "Time: "+Converter::to_ustring_time(Converter::ustring_to_double(src.data(i))));
+              row.set_value(1, (Glib::ustring)src.data(i));
             }
 
-            if(src.data_size()>1) {
-              txt_object->get_buffer()->set_text(Converter::parse_json(src.data(1)));
-            }
+            com_object->set_active(obj_store->children().begin());
           }
         }
-        else if(_msg->request() == "select_object") {
+        else if(_msg->request() == "select_document") {
           gazebo::msgs::GzString src;
           if(_msg->has_type() && _msg->type() == src.GetTypeName()) {
             src.ParseFromString(_msg->serialized_data());
@@ -124,12 +122,14 @@ void FrameworkTab::on_button_collections_select_clicked() {
 }
 
 void FrameworkTab::on_combobox_object_changed() {
-  std::string object;
-  com_object->get_active()->get_value(1, object);
-  logger->log("framework", "select document "+object);
-  objReq.reset(gazebo::msgs::CreateRequest("select_object"));
-  objReq->set_data(object);
-  logger->msglog(">>", "~/SceneReconstruction/Framework/Request", *objReq);
-  reqPub->Publish(*(objReq.get()));
+  if(com_object->get_active_row_number() != -1) {
+    std::string object;
+    com_object->get_active()->get_value(1, object);
+    logger->log("framework", "select document "+object);
+    objReq.reset(gazebo::msgs::CreateRequest("select_document"));
+    objReq->set_dbl_data(Converter::ustring_to_double(object));
+    logger->msglog(">>", "~/SceneReconstruction/Framework/Request", *objReq);
+    reqPub->Publish(*(objReq.get()));
+  }
 }
 

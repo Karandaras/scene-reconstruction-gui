@@ -518,8 +518,6 @@
       <column type="gchararray"/>
       <!-- column-name sdfdata -->
       <column type="gchararray"/>
-      <!-- column-name sdfdataclone -->
-      <column type="gchararray"/>
     </columns>
   </object>
   <object class="GtkWindow" id="window">

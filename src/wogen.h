@@ -3,7 +3,7 @@
 #include <gdk/gdk.h>
 
 namespace SceneReconstruction {
-  /** @class SceneGUI "scenegui.h"
+  /** @class WorldfileGenerator "wogen.h"
    *  Class that creates the WorldfileGenerator GUI for Worldfile generation.
    *  It loads an image and allows the user to create walls according to that image. Additionally
    *  it helps in setting up the objectinstantiator and allows one to include the robot file.
@@ -53,11 +53,21 @@ namespace SceneReconstruction {
       Gtk::SpinButton                 *spn_map;
       Gtk::ToolButton                 *btn_erase;
 
+      /** Point struct*/
       struct Point {
-          double x, y;
+          /** X coordinate */          
+          double x,
+          /** Y coordinate */          
+                 y;
       };
+
+      /** Line struct */
       struct Line {
-          Point p1, p2;
+          /** starting point for the line */
+          Point p1,
+          /** end point for the line */
+                p2;
+          /** width of the line */
           double width;
       };
 

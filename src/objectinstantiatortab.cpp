@@ -18,7 +18,7 @@ ObjectInstantiatorTab::ObjectInstantiatorTab(gazebo::transport::NodePtr& _node, 
 
   // object list
   _builder->get_widget("objectinstantiator_treeview_spawnedobjects", trv_object);
-  obj_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("objectinstantiator_liststore_spawnedobjects"));
+  obj_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(trv_object->get_model());
 
   // data list
   _builder->get_widget("objectinstantiator_image_objectdata", img_data);
@@ -32,12 +32,18 @@ ObjectInstantiatorTab::ObjectInstantiatorTab(gazebo::transport::NodePtr& _node, 
   row = *(img_store->append());
   row.set_value(0, (Glib::ustring)"None");
   images["None"] = Gdk::Pixbuf::create_from_file("res/noimg.png");
-  img_data->set(images["None"]->scale_simple(455,240,Gdk::INTERP_BILINEAR));
-  com_data->set_active(0);
+  int w, h;
+  w = images["None"]->get_width();
+  h = images["None"]->get_height();
+  double scale_w = 455.0/w;
+  double scale_h = 240.0/h;
+  double scale = scale_w<scale_h?scale_w:scale_h;
+  img_data->set(images["None"]->scale_simple((int)(w*scale),(int)(h*scale),Gdk::INTERP_BILINEAR));
+  com_data->set_active(img_store->children().begin());
   com_data->signal_changed().connect( sigc::mem_fun(*this, &ObjectInstantiatorTab::on_combo_changed) );
 
   _builder->get_widget("objectinstantiator_treeview_objectdata", trv_data);
-  dat_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(_builder->get_object("objectinstantiator_treestore_objectdata"));
+  dat_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(trv_data->get_model());
 
   _builder->get_widget("objectinstantiator_objectdata_window", win_show);
   win_show->set_visible(false);
@@ -45,7 +51,7 @@ ObjectInstantiatorTab::ObjectInstantiatorTab(gazebo::transport::NodePtr& _node, 
   _builder->get_widget("objectinstantiator_objectdata_window_image", win_image);
   win_image->set(images["None"]);
   _builder->get_widget("objectinstantiator_objectdata_window_combobox", win_combo);
-  win_combo->set_active(0);
+  win_combo->set_active(img_store->children().begin());
   win_combo->signal_changed().connect( sigc::mem_fun(*this, &ObjectInstantiatorTab::on_win_combo_changed) );
 
   // btn_show
@@ -86,7 +92,8 @@ void ObjectInstantiatorTab::ProcessResponseMsg() {
           logger->log("object instantiator", "receiving object list from ObjectInstantiatorPlugin");
 
           int n = src.data_size();
-          obj_store->clear();
+          if(obj_store->children().size() > 0)
+            obj_store->clear();
           Gtk::TreeModel::Row row;
 
           for(int i = 0; i<n; i++) {
@@ -95,101 +102,92 @@ void ObjectInstantiatorTab::ProcessResponseMsg() {
           }
         }
 
-        objReq.reset();
+        delete objReq;
+        objReq = 0;
       }
       else if(_msg->request() == "object_data") {
-        if(!objRes) {
-          gazebo::msgs::Response res;
-          res.CopyFrom(*_msg);
-          objRes.reset(&res);
-          return;
-        }
-        else if(objRes->type() == _msg->type()) // same message again
-          return;
-
-        // message from framework and gazebo present
         gazebo::msgs::SceneObject src1;
         gazebo::msgs::Message_V   src2;
-
-        if((_msg->has_type() && _msg->type() == src1.GetTypeName()) && (objRes->has_type() && objRes->type() == src2.GetTypeName())) {
-          src1.ParseFromString(_msg->serialized_data());
-          src2.ParseFromString(objRes->serialized_data());
-        }
-        else if((_msg->has_type() && _msg->type() == src2.GetTypeName()) && (objRes->has_type() && objRes->type() == src1.GetTypeName())) {
-          src2.ParseFromString(_msg->serialized_data());
-          src1.ParseFromString(objRes->serialized_data());
-        }
-        else {
-          logger->log("object instantiator", "received messages not matching required types");
-          return;
-        }
-        
-        dat_store->clear();
         Gtk::TreeModel::Row row;
 
-        logger->log("object instantiator", "receiving object data from ObjectInstantiatorPlugin");
-        if(src1.has_model()) {
-          row = *(dat_store->append());
-          row.set_value(0, (Glib::ustring)"Model");
-          row.set_value(1, src1.model());
+        if(_msg->type() == src1.GetTypeName()) {
+          src1.ParseFromString(_msg->serialized_data());
+
+          logger->log("object instantiator", "receiving object data from ObjectInstantiatorPlugin");
+          if(src1.has_model()) {
+            row = *(dat_store->append());
+            row.set_value(0, (Glib::ustring)"Model");
+            row.set_value(1, src1.model());
+          }
+
+          if(src1.has_pose()) {
+            row = *(dat_store->append());
+            row.set_value(0, (Glib::ustring)"Position");
+            row.set_value(1, Converter::convert(src1.pose(), 0));
+            row = *(dat_store->append());
+            row.set_value(0, (Glib::ustring)"Orientation");
+            row.set_value(1, Converter::convert(src1.pose(), 1));
+          }
+
+          if(src1.has_object()) {
+            row = *(dat_store->append());
+            row.set_value(0, (Glib::ustring)"Object");
+            row.set_value(1, src1.object());
+          }
         }
+        else if(_msg->type() == src2.GetTypeName()) {
+          src2.ParseFromString(_msg->serialized_data());
+          images.clear();
+          img_store->clear();
+          row = *(img_store->append());
+          row.set_value(0, (Glib::ustring)"None");
+          images["None"] = Gdk::Pixbuf::create_from_file("res/noimg.png");
 
-        if(src1.has_pose()) {
-          row = *(dat_store->append());
-          row.set_value(0, (Glib::ustring)"Position");
-          row.set_value(1, Converter::convert(src1.pose(), 0));
-          row = *(dat_store->append());
-          row.set_value(0, (Glib::ustring)"Orientation");
-          row.set_value(1, Converter::convert(src1.pose(), 1));
-        }
-
-        if(src1.has_object()) {
-          row = *(dat_store->append());
-          row.set_value(0, (Glib::ustring)"Object");
-          row.set_value(1, src1.object());
-        }
-
-        images.clear();
-        img_store->clear();
-        row = *(img_store->append());
-        row.set_value(0, (Glib::ustring)"None");
-        images["None"] = Gdk::Pixbuf::create_from_file("res/noimg.png");
-
-        int n = src2.msgsdata_size();
-        gazebo::msgs::SceneDocument doc;
-        if(src2.msgtype() == doc.GetTypeName()) {
-          for(int m = 0; m<n; m++) {
-            doc.ParseFromString(src2.msgsdata(m));
-
-            if(doc.has_image()) {
-              row = *(img_store->append());
-              row.set_value(0, doc.interface());
-              gazebo::common::Image *img = 0;
-              gazebo::msgs::Set(*img, doc.image());
-              img->SavePNG("tmp_img.png");
-              images[doc.interface()] = Gdk::Pixbuf::create_from_file("tmp_img.png");
-            }
-            
+          int n = src2.msgsdata_size();
+          gazebo::msgs::SceneDocument doc;
+          if(src2.msgtype() == doc.GetTypeName()) {
             row = *(dat_store->append());
             row.set_value(0, (Glib::ustring)"Documents");
             row.set_value(1, (Glib::ustring)"");
 
-            Gtk::TreeModel::Row childrow;
-            childrow = *(dat_store->append(row.children()));
-            childrow.set_value(0, doc.interface());
-            childrow.set_value(1, (Glib::ustring)"");
+            Gtk::TreeModel::Row irow;
 
-            Gtk::TreeModel::Row cchildrow;
-            cchildrow = *(dat_store->append(childrow.children()));
-            cchildrow.set_value(0, (Glib::ustring)"");
-            cchildrow.set_value(1, Converter::parse_json(doc.document()));
-          }
-        }    
-        image_iter = images.begin();
-        img_data->set(image_iter->second);
+            for(int m = 0; m<n; m++) {
+              doc.ParseFromString(src2.msgsdata(m));
 
-        objRes.reset();
-        objReq.reset();
+              if(doc.has_image()) {
+                irow = *(img_store->append());
+                irow.set_value(0, doc.interface());
+                gazebo::common::Image img;
+                gazebo::msgs::Set(img, doc.image());
+                img.SavePNG("tmp_img.png");
+                images[doc.interface()] = Gdk::Pixbuf::create_from_file("tmp_img.png");
+              }
+              
+              Gtk::TreeModel::Row childrow;
+              childrow = *(dat_store->append(row.children()));
+              childrow.set_value(0, doc.interface());
+
+              if(doc.timestamp() < 0.0)
+                childrow.set_value(1, (Glib::ustring)"pre scene document");
+              else
+                childrow.set_value(1, Converter::to_ustring_time(doc.timestamp()));
+
+              Gtk::TreeModel::Row cchildrow;
+              cchildrow = *(dat_store->append(childrow.children()));
+              cchildrow.set_value(0, (Glib::ustring)"");
+              cchildrow.set_value(1, Converter::parse_json(doc.document()));
+            }
+          }    
+          image_iter = images.begin();
+          com_data->set_active(img_store->children().begin());
+
+          delete objReq;
+          objReq = 0;
+        }
+        else {
+          logger->log("object instantiator", "objRes has no type or wrong type");
+        }
       }
     }
   }
@@ -198,7 +196,6 @@ void ObjectInstantiatorTab::ProcessResponseMsg() {
 
 void ObjectInstantiatorTab::on_combo_changed() {
   if(!win_change) {
-    logger->log("object instantiator", "COMBOBOX CHANGED");
     Gtk::TreeModel::iterator iter = com_data->get_active();
     if(iter) {
       win_change = true;
@@ -208,10 +205,19 @@ void ObjectInstantiatorTab::on_combo_changed() {
         Glib::ustring name;
         row.get_value(0, name);
         image_iter = images.find(name);
-        img_data->set(image_iter->second->scale_simple(455,240,Gdk::INTERP_BILINEAR));
+        if(image_iter != images.end()) {
+          int w, h;
+          w = image_iter->second->get_width();
+          h = image_iter->second->get_height();
+          double scale_w = 455.0/w;
+          double scale_h = 240.0/h;
+          double scale = scale_w<scale_h?scale_w:scale_h;
+          img_data->set(image_iter->second->scale_simple((int)(w*scale),(int)(h*scale),Gdk::INTERP_BILINEAR));
+        }
         logger->log("object instantiator", "displaying image "+image_iter->first);
         if(win_show->get_visible()) {
-          win_image->set(image_iter->second);
+          if(image_iter != images.end())
+            win_image->set(image_iter->second);
         }
       }
     }
@@ -221,7 +227,6 @@ void ObjectInstantiatorTab::on_combo_changed() {
 
 void ObjectInstantiatorTab::on_win_combo_changed() {
   if(!win_change) {
-    logger->log("object instantiator", "COMBOBOX CHANGED");
     Gtk::TreeModel::iterator iter = win_combo->get_active();
     if(iter) {
       win_change = true;
@@ -231,10 +236,19 @@ void ObjectInstantiatorTab::on_win_combo_changed() {
         Glib::ustring name;
         row.get_value(0, name);
         image_iter = images.find(name);
-        img_data->set(image_iter->second->scale_simple(455,240,Gdk::INTERP_BILINEAR));
+        if(image_iter != images.end()) {
+          int w, h;
+          w = image_iter->second->get_width();
+          h = image_iter->second->get_height();
+          double scale_w = 455.0/w;
+          double scale_h = 240.0/h;
+          double scale = scale_w<scale_h?scale_w:scale_h;
+          img_data->set(image_iter->second->scale_simple((int)(w*scale),(int)(h*scale),Gdk::INTERP_BILINEAR));
+        }
         logger->log("object instantiator", "displaying image "+image_iter->first);
         if(win_show->get_visible()) {
-          win_image->set(image_iter->second);
+          if(image_iter != images.end())
+            win_image->set(image_iter->second);
         }
       }
     }
@@ -243,24 +257,23 @@ void ObjectInstantiatorTab::on_win_combo_changed() {
 }
 
 void ObjectInstantiatorTab::on_button_show_clicked() {
-  logger->log("object instantiator", "SHOW");
   if(trv_object->get_selection()->count_selected_rows() == 1) {
-    objReq.reset(gazebo::msgs::CreateRequest("object_data"));
+    objReq = gazebo::msgs::CreateRequest("object_data");
     Glib::ustring tmp;
     trv_object->get_selection()->get_selected()->get_value(0, tmp);
     objReq->set_data(tmp);
-    sceneReqPub->Publish(*(objReq.get()));
+    sceneReqPub->Publish(*objReq);
     logger->log("object instantiator", "requesting data of selected spawned object from ObjectInstantiatorPlugin");
     logger->msglog(">>", "~/SceneReconstruction/ObjectInstantiator/Request", *objReq);
+    dat_store->clear();
   }
   else
     logger->log("object instantiator", "no object to request data for selected");
 }
 
 void ObjectInstantiatorTab::on_button_refresh_objects_clicked() {
-  logger->log("object instantiator", "REFRESH");
-  objReq.reset(gazebo::msgs::CreateRequest("object_list"));
-  sceneReqPub->Publish(*(objReq.get()));
+  objReq = gazebo::msgs::CreateRequest("object_list");
+  sceneReqPub->Publish(*objReq);  
   logger->log("object instantiator", "requesting list of spawned objects from ObjectInstantiatorPlugin");
   logger->msglog(">>", "~/SceneReconstruction/ObjectInstantiator/Request", *objReq);
 }
@@ -279,7 +292,8 @@ bool ObjectInstantiatorTab::on_image_button_release(GdkEventButton *b) {
           Glib::ustring name;
           row.get_value(0, name);
           image_iter = images.find(name);
-          win_image->set(image_iter->second);
+          if(image_iter != images.end())
+            win_image->set(image_iter->second);
         }
       }
       win_show->present();

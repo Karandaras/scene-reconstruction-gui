@@ -94,9 +94,9 @@ void RobotControllerTab::ProcessControllerInfoMsg() {
         row.set_value(1, (Glib::ustring)_msg->robot_name(i));
         row.set_value(2, _msg->gripper(i));
         row.set_value(3, (Glib::ustring)_msg->simulator_name2(i));
-        row.set_value(4, _msg->offset(i));
-        row.set_value(5, _msg->simulator_angle(i));
-        row.set_value(6, _msg->robot_angle(i));
+        row.set_value(4, _msg->robot_angle(i));
+        row.set_value(5, _msg->offset(i));
+        row.set_value(6, _msg->simulator_angle(i));
       }
     }
   }

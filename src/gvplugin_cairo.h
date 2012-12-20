@@ -46,8 +46,16 @@ class CairoRenderInstructor
     virtual void   set_pad(double pad_x, double pad_y) = 0;
     virtual void   get_pad(double &pad_x, double &pad_y) = 0;
 
+    /** bounding box for labels */
     struct box {
-        double x1, x2, y1, y2;
+        /** X coordinate for the top left corner of the bounding box */
+        double x1,
+        /** Y coordinate for the top left corner of the bounding box */
+               y1;
+        /** X coordinate for the bottom right corner of the bounding box */
+        double x2,
+        /** Y coordinate for the bottom right corner of the bounding box */
+               y2;
     };
 
     /** list of boundingboxes for the node labels */

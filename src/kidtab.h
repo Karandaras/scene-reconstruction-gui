@@ -6,9 +6,6 @@
 
 #include <google/protobuf/message.h>
 
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
-
 #include <gazebo/transport/Node.hh>
 #include <gazebo/transport/Transport.hh>
 #include <gazebo/transport/TransportTypes.hh>
@@ -16,14 +13,14 @@
 
 #include "scenetab.h"
 #include "loggertab.h"
-#include "dikgraph.h"
+#include "kidgraph.h"
 
 namespace SceneReconstruction {
-/** @class DIKWTab "dikwtab.h"
- *  Tab for the GUI that builds and represents the DIKW Graph.
+/** @class KIDTab "kidtab.h"
+ *  Tab for the GUI that builds and represents the KID Graph.
  *  @author Bastian Klingen
  */
-  class DIKWTab : public SceneTab
+  class KIDTab : public SceneTab
   {
     public:
       /** Constructor
@@ -31,12 +28,12 @@ namespace SceneReconstruction {
        *  @param _logger LoggerTab to use
        *  @param builder the ui_builder to access the needed parts
        */
-      DIKWTab(gazebo::transport::NodePtr&, LoggerTab*, Glib::RefPtr<Gtk::Builder>&);
+      KIDTab(gazebo::transport::NodePtr&, LoggerTab*, Glib::RefPtr<Gtk::Builder>&);
       /** Destructor */
-      ~DIKWTab();
+      ~KIDTab();
 
     private:
-      DIKGraph                           graph;
+      KIDGraph                           graph;
       std::list<std::string>             db_collections;
       std::list<std::string>             marked_nodes;
       gazebo::transport::NodePtr         node;
@@ -61,11 +58,10 @@ namespace SceneReconstruction {
       Gtk::TreeView                     *trv_nodes;
       Glib::RefPtr<Gtk::ListStore>       nds_store;
       Gtk::ToolButton                   *btn_nodes_remove;
-      Gtk::ToolButton                   *btn_nodes_mark;
+      Gtk::ToolButton                   *btn_unmark;
       Gtk::TreeView                     *trv_edges;
       Glib::RefPtr<Gtk::ListStore>       edg_store;
       Gtk::ToolButton                   *btn_edges_remove;
-      Gtk::ToolButton                   *btn_edges_mark;
       Gtk::ScrolledWindow               *scw_graph;
       GraphDrawingArea                  *gda_graph;
       Gtk::ToolButton                   *btn_zoomin;
@@ -88,7 +84,7 @@ namespace SceneReconstruction {
       Gtk::FileChooserDialog            *fcd_open;
       Gtk::Dialog                       *dia_new;
       Gtk::Entry                        *dia_new_entry;
-      Glib::RefPtr<Gtk::FileFilter>      filter_dgf;
+      Glib::RefPtr<Gtk::FileFilter>      filter_kgf;
 
 
       gazebo::transport::SubscriberPtr   resSub;
@@ -103,7 +99,7 @@ namespace SceneReconstruction {
     private:
       void OnResponseMsg(ConstResponsePtr&);
       void ProcessResponseMsg();
-      void create_graphviz_dot(std::string);
+      void create_graphviz_dot();
       void on_new_clicked();
       void on_load_clicked();
       void on_save_clicked();
@@ -112,9 +108,8 @@ namespace SceneReconstruction {
       void on_type_changed();
       void on_add_clicked();
       void on_nodes_remove_clicked();
-      void on_nodes_mark_clicked();
+      void on_unmark_clicked();
       void on_edges_remove_clicked();
-      void on_edges_mark_clicked();
       bool on_graph_release(GdkEventButton*);
       void on_zoom_in_clicked();
       void on_zoom_out_clicked();

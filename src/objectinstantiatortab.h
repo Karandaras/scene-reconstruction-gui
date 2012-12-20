@@ -56,8 +56,8 @@ namespace SceneReconstruction {
       // subscriber and publisher
       gazebo::transport::SubscriberPtr                             sceneResSub;
       gazebo::transport::PublisherPtr                              sceneReqPub;
-      boost::shared_ptr<gazebo::msgs::Request>                     objReq;
-      boost::shared_ptr<gazebo::msgs::Response>                    objRes;
+      gazebo::msgs::Request                                       *objReq;
+      gazebo::msgs::Response                                      *objRes;
 
       Glib::Dispatcher                                             on_response_msg;
       boost::mutex                                                *responseMutex;
