@@ -234,6 +234,7 @@
         </child>
         <child>
           <object class="GtkEntry" id="kid_dialog_newgraph_entry">
+          <object class="GtkEntry" id="dikw_dialog_newgraph_entry">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="invisible_char">●</property>
