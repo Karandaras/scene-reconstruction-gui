@@ -465,7 +465,7 @@ bool WorldfileGenerator::on_map_draw(Cairo::RefPtr<Cairo::Context> cr) {
     l->get_value(4, width);
 
     cr->set_line_width(width);
-    cr->set_source_rgb(1.0, 0.0, 0.0);
+    cr->set_source_rgba(1.0, 0.0, 0.0, 0.8);
     cr->move_to(x1, y1);
     cr->line_to(x2, y2);
     cr->stroke();
@@ -474,7 +474,7 @@ bool WorldfileGenerator::on_map_draw(Cairo::RefPtr<Cairo::Context> cr) {
   // draw temporary line
   if(new_line) {
     cr->set_line_width(new_line->width);
-    cr->set_source_rgb(1.0, 0.0, 0.0);
+    cr->set_source_rgba(1.0, 0.0, 0.0, 0.6);
     cr->move_to(new_line->p1.x, new_line->p1.y);
     cr->line_to(new_line->p2.x, new_line->p2.y);
     cr->stroke();

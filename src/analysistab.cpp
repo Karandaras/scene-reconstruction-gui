@@ -162,32 +162,25 @@ void AnalysisTab::ProcessBufferMsg() {
         int o = obj.object_size();
         for(int j=0; j<o; j++) {
           Gtk::TreeModel::Row childrow = *(obj_store->append(row.children()));
-          childrow.set_value(0,obj.object(i).object());
+          childrow.set_value(0,obj.object(j).object());
           childrow.set_value(1,(Glib::ustring)"");
           childrow.set_value(2, j);
 
           Gtk::TreeModel::Row cchildrow;
           cchildrow = *(obj_store->append(childrow.children()));
           cchildrow.set_value(0,(Glib::ustring)"Visible");
-          cchildrow.set_value(1,Converter::to_ustring(obj.object(i).visible()));
+          cchildrow.set_value(1,Converter::to_ustring(obj.object(j).visible()));
           cchildrow.set_value(2, j);
-
-          if(obj.object(i).has_model()) {
-            cchildrow = *(obj_store->append(childrow.children()));
-            cchildrow.set_value(0,(Glib::ustring)"Model");
-            cchildrow.set_value(1,obj.object(i).model());
-            cchildrow.set_value(2, j);
-          }
 
           cchildrow = *(obj_store->append(childrow.children()));
           cchildrow.set_value(0,(Glib::ustring)"Pose");
-          cchildrow.set_value(1,Converter::convert(obj.object(i).pose(), 2, 3));
+          cchildrow.set_value(1,Converter::convert(obj.object(j).pose(), 2, 3));
           cchildrow.set_value(2, j);
 
-          if(obj.object(i).has_query()) {
+          if(obj.object(j).has_query()) {
             cchildrow = *(obj_store->append(childrow.children()));
             cchildrow.set_value(0,(Glib::ustring)"Query");
-            cchildrow.set_value(1,obj.object(i).query());
+            cchildrow.set_value(1,obj.object(j).query());
             cchildrow.set_value(2, j);
           }
         }

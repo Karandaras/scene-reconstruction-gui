@@ -114,11 +114,6 @@ void ObjectInstantiatorTab::ProcessResponseMsg() {
           src1.ParseFromString(_msg->serialized_data());
 
           logger->log("object instantiator", "receiving object data from ObjectInstantiatorPlugin");
-          if(src1.has_model()) {
-            row = *(dat_store->append());
-            row.set_value(0, (Glib::ustring)"Model");
-            row.set_value(1, src1.model());
-          }
 
           if(src1.has_pose()) {
             row = *(dat_store->append());

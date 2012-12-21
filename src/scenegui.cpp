@@ -104,10 +104,10 @@ void SceneGUI::ProcessResponseMsg() {
       if(!plugin->second) {
         plugin->second = true;
         missing_plugins--;
-        plugin_pubs[plugin->first]->Publish(*gazebo::msgs::CreateRequest("available",""));
         logger->show_available(plugin->first);
         logger->log("available", "component "+plugin->first+" is now available");
       }
+      plugin_pubs[plugin->first]->Publish(*gazebo::msgs::CreateRequest("available",""));
     }
 
     if(missing_plugins == 0) {
@@ -118,6 +118,7 @@ void SceneGUI::ProcessResponseMsg() {
       start.mutable_reset()->set_all(true);
       logger->msglog(">>", "~/world_control", start);
       worldPub->Publish(start);
+      break;
     }
   }
   responseMsgs.clear();
