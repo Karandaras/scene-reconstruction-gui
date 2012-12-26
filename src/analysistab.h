@@ -42,33 +42,30 @@ namespace SceneReconstruction {
 
       Gtk::ToolButton                   *btn_position_preview;
       Gtk::ToolButton                   *btn_position_clear;
-      Gtk::ToolButton                   *btn_position_refresh;
       Gtk::ToolButton                   *btn_angles_preview;
       Gtk::ToolButton                   *btn_angles_clear;
-      Gtk::ToolButton                   *btn_angles_refresh;
       Gtk::ToolButton                   *btn_object_preview;
       Gtk::ToolButton                   *btn_object_move;
       Gtk::ToolButton                   *btn_object_clear;
-      Gtk::ToolButton                   *btn_object_refresh;
 
       Gtk::TreeView                     *trv_positions;
       Glib::RefPtr<Gtk::TreeStore>       pos_store;
-      std::vector<gazebo::msgs::BufferPosition> pos_messages;
+      std::vector<gazebo::msgs::SceneRobot> pos_messages;
       Gtk::TreeView                     *trv_angles;
       Glib::RefPtr<Gtk::TreeStore>       ang_store;
-      std::vector<gazebo::msgs::BufferJoints> ang_messages;
+      std::vector<gazebo::msgs::SceneJoint> ang_messages;
       Gtk::TreeView                     *trv_objects;
       Glib::RefPtr<Gtk::TreeStore>       obj_store;
-      std::vector<gazebo::msgs::BufferObjects> obj_messages;
+      std::vector<gazebo::msgs::SceneObject> obj_messages;
 
-      gazebo::transport::SubscriberPtr   bufferSub,
+      gazebo::transport::SubscriberPtr   robBufferSub,
+                                         objBufferSub,
+                                         controlSub,
                                          lasersSub;
       gazebo::transport::PublisherPtr    positionPub,
                                          anglesPub,
                                          objectPub,
                                          drawingPub,
-                                         robconPub,
-                                         objinstPub,
                                          lasersPub;
 
       Gtk::SpinButton                   *spn_grid_pos_x;
@@ -97,18 +94,25 @@ namespace SceneReconstruction {
       Gtk::Button                       *btn_lasers_update;
 
       Glib::Dispatcher                   on_lasers_msg,
-                                         on_buffer_msg;
+                                         on_buffer_msg,
+                                         on_control_msg;
       boost::mutex                      *lasersMutex,
                                         *bufferMutex;
       std::list<gazebo::msgs::Lasers>    lasersMsgs;
       std::list<gazebo::msgs::Message_V> bufferMsgs;
+
+      double                             time_offset;
 
     private:
       void OnBufferMsg(ConstMessage_VPtr&);
       void ProcessBufferMsg();
       void OnLasersMsg(ConstLasersPtr&);
       void ProcessLasersMsg();
-      bool on_treeview_objects_selection(GdkEventSelection*);
+      void OnControlMsg(ConstSceneFrameworkControlPtr&);
+      void ProcessControlMsg();
+      bool on_treeview_button_release(GdkEventButton*);
+      bool on_treeview_key_release(GdkEventKey*);
+      void treeview_object_selection();
       void on_button_position_preview_clicked();
       void on_button_position_clear_clicked();
       void on_button_position_refresh_clicked();

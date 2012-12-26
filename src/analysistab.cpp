@@ -24,22 +24,16 @@ AnalysisTab::AnalysisTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, 
   btn_position_preview->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_position_preview_clicked));
   _builder->get_widget("analysis_buffer_position_toolbutton_clear", btn_position_clear);
   btn_position_clear->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_position_clear_clicked));
-  _builder->get_widget("analysis_buffer_position_toolbutton_refresh", btn_position_refresh);
-  btn_position_refresh->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_position_refresh_clicked));
   _builder->get_widget("analysis_buffer_joints_toolbutton_preview", btn_angles_preview);
   btn_angles_preview->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_angles_preview_clicked));
   _builder->get_widget("analysis_buffer_joints_toolbutton_clear", btn_angles_clear);
   btn_angles_clear->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_angles_clear_clicked));
-  _builder->get_widget("analysis_buffer_joints_toolbutton_refresh", btn_angles_refresh);
-  btn_angles_refresh->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_angles_refresh_clicked));
   _builder->get_widget("analysis_buffer_objects_toolbutton_preview", btn_object_preview);
   btn_object_preview->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_object_preview_clicked));
   _builder->get_widget("analysis_buffer_objects_toolbutton_move", btn_object_move);
   btn_object_move->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_object_move_clicked));
   _builder->get_widget("analysis_buffer_objects_toolbutton_clear", btn_object_clear);
   btn_object_clear->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_object_clear_clicked));
-  _builder->get_widget("analysis_buffer_objects_toolbutton_refresh", btn_object_refresh);
-  btn_object_refresh->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_object_refresh_clicked));
 
   _builder->get_widget("analysis_buffer_position_treeview", trv_positions);
   pos_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(_builder->get_object("analysis_buffer_position_treestore"));
@@ -48,7 +42,8 @@ AnalysisTab::AnalysisTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, 
   ang_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(_builder->get_object("analysis_buffer_joints_treestore"));
 
   _builder->get_widget("analysis_buffer_objects_treeview", trv_objects);
-  trv_objects->signal_selection_notify_event().connect(sigc::mem_fun(*this,&AnalysisTab::on_treeview_objects_selection));
+  trv_objects->signal_button_release_event().connect(sigc::mem_fun(*this,&AnalysisTab::on_treeview_button_release));
+  trv_objects->signal_key_release_event().connect(sigc::mem_fun(*this,&AnalysisTab::on_treeview_key_release));
   obj_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(_builder->get_object("analysis_buffer_objects_treestore"));
 
   _builder->get_widget("analysis_buffer_objects_spinbutton_position_x", spn_object_pos_x);
@@ -86,24 +81,41 @@ AnalysisTab::AnalysisTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, 
     dynamic_cast<Gtk::CellRendererToggle*>(las_col_visible[i])->signal_toggled().connect(sigc::mem_fun(*this,&AnalysisTab::on_lasers_visible_toggled));
   }
 
-  positionPub = node->Advertise<gazebo::msgs::BufferPosition>("~/SceneReconstruction/RobotController/BufferPosition");
-  anglesPub = node->Advertise<gazebo::msgs::BufferJoints>("~/SceneReconstruction/RobotController/BufferJoints");
-  objectPub = node->Advertise<gazebo::msgs::BufferObjects>("~/SceneReconstruction/ObjectInstantiator/BufferObject");
+  positionPub = node->Advertise<gazebo::msgs::SceneRobot>("~/SceneReconstruction/RobotController/BufferPosition");
+  anglesPub = node->Advertise<gazebo::msgs::SceneJoint>("~/SceneReconstruction/RobotController/BufferJoints");
+  objectPub = node->Advertise<gazebo::msgs::SceneObject>("~/SceneReconstruction/ObjectInstantiator/BufferObject");
   drawingPub = node->Advertise<gazebo::msgs::Drawing>("~/draw");
   lasersPub = node->Advertise<gazebo::msgs::Lasers>("~/SceneReconstruction/Framework/Lasers");
-  robconPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/RobotController/Request");
-  objinstPub = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/ObjectInstantiator/Request");
 
-
-  // TODO: switch to direct listening to framework messages
-  bufferSub = node->Subscribe("~/SceneReconstruction/GUI/Buffer", &AnalysisTab::OnBufferMsg, this);
-
-  lasersSub = node->Subscribe("~/SceneReconstruction/GUI/Lasers", &AnalysisTab::OnLasersMsg, this);
+  objBufferSub = node->Subscribe("~/SceneReconstruction/ObjectInstantiator/Object", &AnalysisTab::OnBufferMsg, this);
+  robBufferSub = node->Subscribe("~/SceneReconstruction/RobotController/", &AnalysisTab::OnBufferMsg, this);
   on_buffer_msg.connect( sigc::mem_fun( *this , &AnalysisTab::ProcessBufferMsg ));
+  lasersSub = node->Subscribe("~/SceneReconstruction/GUI/Lasers", &AnalysisTab::OnLasersMsg, this);
   on_lasers_msg.connect( sigc::mem_fun( *this , &AnalysisTab::ProcessLasersMsg ));
+  controlSub = node->Subscribe("~/SceneReconstruction/Framework/Control", &AnalysisTab::OnControlMsg, this);
+  on_control_msg.connect( sigc::mem_fun( *this , &AnalysisTab::ProcessControlMsg ));
 }
 
 AnalysisTab::~AnalysisTab() {
+}
+
+void AnalysisTab::OnControlMsg(ConstSceneFrameworkControlPtr& _msg) {
+  if(_msg->has_change_offset() && _msg->change_offset()) {
+    time_offset = _msg->offset();
+    on_control_msg();
+  }
+}
+
+void AnalysisTab::ProcessControlMsg() {
+  {
+    boost::mutex::scoped_lock lock(*this->bufferMutex);
+    ang_store->clear();
+    ang_messages.clear();
+    obj_store->clear();
+    obj_messages.clear();
+    pos_store->clear();
+    pos_messages.clear();
+  }
 }
 
 void AnalysisTab::OnBufferMsg(ConstMessage_VPtr& _msg) {
@@ -119,84 +131,86 @@ void AnalysisTab::ProcessBufferMsg() {
   std::list<gazebo::msgs::Message_V>::iterator _msg;
   for(_msg = bufferMsgs.begin(); _msg != bufferMsgs.end(); _msg++) {
     logger->msglog("<<", "~/SceneReconstruction/GUI/Buffer", *_msg);
-    gazebo::msgs::BufferJoints jnt;
-    gazebo::msgs::BufferPosition pos;
-    gazebo::msgs::BufferObjects obj;
+    gazebo::msgs::SceneJoint jnt;
+    gazebo::msgs::SceneRobot pos;
+    gazebo::msgs::SceneObject obj;
     
     if(_msg->msgtype() == jnt.GetTypeName()) {
-      ang_store->clear();
-      ang_messages.clear();
-      ang_messages.resize(_msg->msgsdata_size());
       for(int i=0; i<_msg->msgsdata_size(); i++) {
         jnt.ParseFromString(_msg->msgsdata(i));
         Gtk::TreeModel::Row row = *(ang_store->append());
-        row.set_value(0, Converter::to_ustring_time(jnt.timestamp()));
+        int msg = ang_messages.size();
+        row.set_value(0, Converter::to_ustring_time((jnt.controltime()+time_offset)*1000));
         row.set_value(1, (Glib::ustring)"");
-        row.set_value(2, i);
-        ang_messages[i] = jnt;
+        row.set_value(2, msg);
 
-        int n = jnt.name_size();
+        int n = jnt.joint_size();
         int a = jnt.angle_size();
         if(n==a) {
           for(int j=0; j<n; j++) {
             Gtk::TreeModel::Row childrow = *(ang_store->append(row.children()));
-            childrow.set_value(0, jnt.name(j));
+            childrow.set_value(0, jnt.joint(j));
             childrow.set_value(1, Converter::to_ustring(jnt.angle(j)));
-            childrow.set_value(2, i);
+            childrow.set_value(2, (int)ang_messages.size());
           }
         }
+        ang_messages.push_back(jnt);
       }
     }
     else if(_msg->msgtype() == obj.GetTypeName()) {
-      obj_store->clear();
-      obj_messages.clear();
-      obj_messages.resize(_msg->msgsdata_size());
+      obj_messages.resize(obj_messages.size()+_msg->msgsdata_size());
       for(int i=0; i<_msg->msgsdata_size(); i++) {
         obj.ParseFromString(_msg->msgsdata(i));
         Gtk::TreeModel::Row row = *(obj_store->append());
-        row.set_value(0, Converter::to_ustring_time(obj.timestamp()));
-        row.set_value(1,(Glib::ustring)"");
-        row.set_value(2, i);
-        obj_messages[i] = obj;
+        int msg = obj_messages.size();
+        row.set_value(0, Converter::to_ustring_time((obj.time()+time_offset)*1000));
+        row.set_value(1, obj.object()+(obj.visible()?" (Visible)":""));
+        row.set_value(2, msg);
 
-        int o = obj.object_size();
-        for(int j=0; j<o; j++) {
-          Gtk::TreeModel::Row childrow = *(obj_store->append(row.children()));
-          childrow.set_value(0,obj.object(j).object());
-          childrow.set_value(1,(Glib::ustring)"");
-          childrow.set_value(2, j);
+        Gtk::TreeModel::Row childrow = *(obj_store->append(row.children()));
+        childrow.set_value(0, (Glib::ustring)"Visible");
+        childrow.set_value(1, Converter::to_ustring(obj.visible()));
+        childrow.set_value(2, msg);
 
-          Gtk::TreeModel::Row cchildrow;
-          cchildrow = *(obj_store->append(childrow.children()));
-          cchildrow.set_value(0,(Glib::ustring)"Visible");
-          cchildrow.set_value(1,Converter::to_ustring(obj.object(j).visible()));
-          cchildrow.set_value(2, j);
+        childrow = *(obj_store->append(row.children()));
+        childrow.set_value(0, (Glib::ustring)"Pose");
+        childrow.set_value(1, Converter::convert(obj.pose(), 2, 3));
+        childrow.set_value(2, msg);
 
-          cchildrow = *(obj_store->append(childrow.children()));
-          cchildrow.set_value(0,(Glib::ustring)"Pose");
-          cchildrow.set_value(1,Converter::convert(obj.object(j).pose(), 2, 3));
-          cchildrow.set_value(2, j);
-
-          if(obj.object(j).has_query()) {
-            cchildrow = *(obj_store->append(childrow.children()));
-            cchildrow.set_value(0,(Glib::ustring)"Query");
-            cchildrow.set_value(1,obj.object(j).query());
-            cchildrow.set_value(2, j);
-          }
+        if(obj.has_query()) {
+          childrow = *(obj_store->append(row.children()));
+          childrow.set_value(0, (Glib::ustring)"Query");
+          childrow.set_value(1, obj.query());
+          childrow.set_value(2, msg);
         }
+
+        if(obj.has_frame()) {
+          childrow = *(obj_store->append(row.children()));
+          childrow.set_value(0, (Glib::ustring)"Frame");
+          childrow.set_value(1, obj.frame());
+          childrow.set_value(2, msg);
+        }
+
+        obj_messages.push_back(obj);
       }
     }
     else if(_msg->msgtype() == pos.GetTypeName()) {
-      pos_store->clear();
-      pos_messages.clear();
-      pos_messages.resize(_msg->msgsdata_size());
       for(int i=0; i<_msg->msgsdata_size(); i++) {
         pos.ParseFromString(_msg->msgsdata(i));
         Gtk::TreeModel::Row row = *(pos_store->append());
-        row.set_value(0,Converter::to_ustring_time(pos.timestamp()));
-        row.set_value(1,Converter::convert(pos.position(), 2, 3));
-        row.set_value(2, i);
-        pos_messages[i] = pos;
+        int msg = pos_messages.size();
+        row.set_value(0, Converter::to_ustring_time((pos.controltime()+time_offset)*1000));
+        row.set_value(1, Converter::convert(pos.pose(), 2, 3));
+        row.set_value(2, msg);
+        Gtk::TreeModel::Row childrow = *(pos_store->append(row.children()));
+        childrow.set_value(0, (Glib::ustring)"Position");
+        childrow.set_value(1, Converter::convert(pos.pose(), 0, 3));
+        childrow.set_value(2, msg);
+        childrow = *(pos_store->append(row.children()));
+        childrow.set_value(0, (Glib::ustring)"Orientation");
+        childrow.set_value(1, Converter::convert(pos.pose(), 1, 3));
+        childrow.set_value(2, msg);
+        pos_messages.push_back(pos);
       }
     }
   }
@@ -204,29 +218,31 @@ void AnalysisTab::ProcessBufferMsg() {
   bufferMsgs.clear();
 }
 
-bool AnalysisTab::on_treeview_objects_selection(GdkEventSelection */*event*/) {
+bool AnalysisTab::on_treeview_button_release(GdkEventButton */*event*/) {
+  treeview_object_selection();  
+  return true;
+}
+
+bool AnalysisTab::on_treeview_key_release(GdkEventKey */*event*/) {
+  treeview_object_selection();  
+  return true;
+}
+
+void AnalysisTab::treeview_object_selection() {
   if(trv_objects->get_selection()->count_selected_rows() == 1) {
     Gtk::TreeModel::iterator row = trv_objects->get_selection()->get_selected();
     int msg = -1;
-    int obj = -1;
 
-    if(row->parent() && row->parent()->parent()) {
-      row->get_value(2, obj);
-      row->parent()->parent()->get_value(2, msg);
-    }
-    else if(row->parent()) {
-      row->get_value(2, obj);
-      row->parent()->get_value(2, msg);
-    }
+    row->get_value(2, msg);
 
-    if(msg != -1 && obj != -1) {
-      spn_object_pos_x->set_value(obj_messages[msg].object(obj).pose().position().x());
-      spn_object_pos_y->set_value(obj_messages[msg].object(obj).pose().position().y());
-      spn_object_pos_z->set_value(obj_messages[msg].object(obj).pose().position().z());
-      spn_object_rot_x->set_value(obj_messages[msg].object(obj).pose().orientation().x());
-      spn_object_rot_y->set_value(obj_messages[msg].object(obj).pose().orientation().y());
-      spn_object_rot_z->set_value(obj_messages[msg].object(obj).pose().orientation().z());
-      spn_object_rot_w->set_value(obj_messages[msg].object(obj).pose().orientation().w());
+    if(msg != -1) {
+      spn_object_pos_x->set_value(obj_messages[msg].pose().position().x());
+      spn_object_pos_y->set_value(obj_messages[msg].pose().position().y());
+      spn_object_pos_z->set_value(obj_messages[msg].pose().position().z());
+      spn_object_rot_x->set_value(obj_messages[msg].pose().orientation().x());
+      spn_object_rot_y->set_value(obj_messages[msg].pose().orientation().y());
+      spn_object_rot_z->set_value(obj_messages[msg].pose().orientation().z());
+      spn_object_rot_w->set_value(obj_messages[msg].pose().orientation().w());
     }
     else {
       spn_object_pos_x->set_value(0.0);
@@ -238,36 +254,30 @@ bool AnalysisTab::on_treeview_objects_selection(GdkEventSelection */*event*/) {
       spn_object_rot_w->set_value(0.0);
     }
   }
-
-  return true;
 }
 
 void AnalysisTab::on_button_position_preview_clicked() {
   if(trv_positions->get_selection()->count_selected_rows() == 1) {
-    int msgid;
+    int msgid = -1;
     Gtk::TreeModel::iterator row = trv_positions->get_selection()->get_selected();
     row->get_value(2, msgid);
 
-    positionPub->Publish(pos_messages[msgid]);
+    if(msgid != -1)
+      positionPub->Publish(pos_messages[msgid]);
   }
 }
 
 void AnalysisTab::on_button_position_clear_clicked() {
-  gazebo::msgs::BufferPosition buf;
-  buf.set_timestamp(-1.0);
+  gazebo::msgs::SceneRobot buf;
+  buf.set_controltime(-1.0);
   gazebo::math::Pose p(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-  buf.mutable_position()->CopyFrom(gazebo::msgs::Convert(p));
+  buf.mutable_pose()->CopyFrom(gazebo::msgs::Convert(p));
   positionPub->Publish(buf);
-}
-
-void AnalysisTab::on_button_position_refresh_clicked() {
-  gazebo::msgs::Request *req = gazebo::msgs::CreateRequest("update_position_buffer", "");
-  robconPub->Publish(*req);
 }
 
 void AnalysisTab::on_button_angles_preview_clicked() {
   if(trv_angles->get_selection()->count_selected_rows() == 1) {
-    int msgid;
+    int msgid = -1;
     Gtk::TreeModel::iterator row = trv_angles->get_selection()->get_selected();
     row->get_value(2, msgid);
 
@@ -276,98 +286,53 @@ void AnalysisTab::on_button_angles_preview_clicked() {
 }
 
 void AnalysisTab::on_button_angles_clear_clicked() {
-  gazebo::msgs::BufferJoints buf;
-  buf.set_timestamp(-1.0);
+  gazebo::msgs::SceneJoint buf;
+  buf.set_controltime(-1.0);
   anglesPub->Publish(buf);
-}
-
-void AnalysisTab::on_button_angles_refresh_clicked() {
-  gazebo::msgs::Request *req = gazebo::msgs::CreateRequest("update_joint_buffer", "");
-  robconPub->Publish(*req);
 }
 
 void AnalysisTab::on_button_object_preview_clicked() {
   if(trv_objects->get_selection()->count_selected_rows() == 1) {
-    int msgid, objid;
+    int msgid = -1;
     Gtk::TreeModel::iterator row = trv_objects->get_selection()->get_selected();
 
-    gazebo::msgs::BufferObjects buf;
-
-    if(row->parent() && row->parent()->parent()) {
-      row->parent()->parent()->get_value(2, msgid);
-      row->get_value(2, objid);;
-      buf.CopyFrom(obj_messages[msgid]);
-      buf.clear_object();
-      gazebo::msgs::SceneObject *obj = buf.add_object();
-      obj->CopyFrom(obj_messages[msgid].object(objid));
-    }
-    else if(row->parent()) {
-      row->parent()->get_value(2, msgid);
-      row->get_value(2, objid);;
-      buf.CopyFrom(obj_messages[msgid]);
-      buf.clear_object();
-      gazebo::msgs::SceneObject *obj = buf.add_object();
-      obj->CopyFrom(obj_messages[msgid].object(objid));
-    }
-    else {
-      row->get_value(2, msgid);;
-      buf.CopyFrom(obj_messages[msgid]);
-    }
-
-    objectPub->Publish(buf);
+    row->get_value(2, msgid);;
+    if(msgid != -1)
+      objectPub->Publish(obj_messages[msgid]);
   }
 }
 
 void AnalysisTab::on_button_object_move_clicked() {
   if(trv_objects->get_selection()->count_selected_rows() == 1) {
-    int msgid, objid;
+    int msgid = -1;
     Gtk::TreeModel::iterator row = trv_objects->get_selection()->get_selected();
 
-    gazebo::msgs::BufferObjects buf;
-    buf.CopyFrom(obj_messages[msgid]);
+    gazebo::msgs::SceneObject buf;
+    row->get_value(2, msgid);;
+    if(msgid != -1) {
+      buf.CopyFrom(obj_messages[msgid]);
 
-    if(row->parent() && row->parent()->parent()) {
-      row->parent()->parent()->get_value(2, msgid);
-      row->get_value(2, objid);;
-      buf.clear_object();
-      gazebo::msgs::SceneObject *obj = buf.add_object();
-      obj->CopyFrom(obj_messages[msgid].object(objid));
-      obj->mutable_pose()->mutable_position()->set_x(spn_object_pos_x->get_value());
-      obj->mutable_pose()->mutable_position()->set_y(spn_object_pos_y->get_value());
-      obj->mutable_pose()->mutable_position()->set_z(spn_object_pos_z->get_value());
-      obj->mutable_pose()->mutable_orientation()->set_x(spn_object_rot_x->get_value());
-      obj->mutable_pose()->mutable_orientation()->set_y(spn_object_rot_y->get_value());
-      obj->mutable_pose()->mutable_orientation()->set_z(spn_object_rot_z->get_value());
-      obj->mutable_pose()->mutable_orientation()->set_w(spn_object_rot_w->get_value());
-    }
-    else if(row->parent()) {
-      row->parent()->get_value(2, msgid);
-      row->get_value(2, objid);;
-      buf.clear_object();
-      gazebo::msgs::SceneObject *obj = buf.add_object();
-      obj->CopyFrom(obj_messages[msgid].object(objid));
-      obj->mutable_pose()->mutable_position()->set_x(spn_object_pos_x->get_value());
-      obj->mutable_pose()->mutable_position()->set_y(spn_object_pos_y->get_value());
-      obj->mutable_pose()->mutable_position()->set_z(spn_object_pos_z->get_value());
-      obj->mutable_pose()->mutable_orientation()->set_x(spn_object_rot_x->get_value());
-      obj->mutable_pose()->mutable_orientation()->set_y(spn_object_rot_y->get_value());
-      obj->mutable_pose()->mutable_orientation()->set_z(spn_object_rot_z->get_value());
-      obj->mutable_pose()->mutable_orientation()->set_w(spn_object_rot_w->get_value());
-    }
+      buf.mutable_pose()->mutable_position()->set_x(spn_object_pos_x->get_value());
+      buf.mutable_pose()->mutable_position()->set_y(spn_object_pos_y->get_value());
+      buf.mutable_pose()->mutable_position()->set_z(spn_object_pos_z->get_value());
+      buf.mutable_pose()->mutable_orientation()->set_x(spn_object_rot_x->get_value());
+      buf.mutable_pose()->mutable_orientation()->set_y(spn_object_rot_y->get_value());
+      buf.mutable_pose()->mutable_orientation()->set_z(spn_object_rot_z->get_value());
+      buf.mutable_pose()->mutable_orientation()->set_w(spn_object_rot_w->get_value());
 
-    objectPub->Publish(buf);
+      objectPub->Publish(buf);
+    }
   }
 }
 
 void AnalysisTab::on_button_object_clear_clicked() {
-  gazebo::msgs::BufferObjects buf;
-  buf.set_timestamp(-1.0);
+  gazebo::msgs::SceneObject buf;
+  buf.set_object("");
+  buf.set_visible(false);
+  gazebo::math::Pose p(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+  buf.mutable_pose()->CopyFrom(gazebo::msgs::Convert(p));
+  buf.set_time(-1.0);
   objectPub->Publish(buf);
-}
-
-void AnalysisTab::on_button_object_refresh_clicked() {
-  gazebo::msgs::Request *req = gazebo::msgs::CreateRequest("update_object_buffer", "");
-  objinstPub->Publish(*req);
 }
 
 void AnalysisTab::on_lasers_visible_toggled(const Glib::ustring& path) {
@@ -433,7 +398,7 @@ void AnalysisTab::on_button_grid_move_clicked() {
     gazebo::msgs::Drawing drw;
     drw.set_name("grid");
     drw.set_visible(true);
-    drw.set_material("WhiteGlow");
+    drw.set_material("Gazebo/WhiteGlow");
     drw.set_mode(gazebo::msgs::Drawing::LINE_LIST);
     gazebo::msgs::Pose *pose = drw.mutable_pose();
     gazebo::msgs::Vector3d *pos = pose->mutable_position();

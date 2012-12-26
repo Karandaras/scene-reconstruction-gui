@@ -82,7 +82,8 @@ void FrameworkTab::ProcessResponseMsg() {
               row.set_value(1, (Glib::ustring)src.data(i));
             }
 
-            com_object->set_active(obj_store->children().begin());
+            if(src.data_size() > 0)
+              com_object->set_active(obj_store->children().begin());
           }
         }
         else if(_msg->request() == "select_document") {
