@@ -139,7 +139,7 @@ void KIDTab::ProcessResponseMsg() {
   boost::mutex::scoped_lock lock(*this->responseMutex);
   std::list<gazebo::msgs::Response>::iterator _msg;
   for(_msg = responseMsgs.begin(); _msg != responseMsgs.end(); _msg++) {
-    if(_msg->response() == "success") {
+    if(_msg->response() == "success" || _msg->response() == "part") {
       if(_msg->request() == "collection_names") {
         logger->log("kid", "received collections for nodelist");
 
@@ -169,8 +169,6 @@ void KIDTab::ProcessResponseMsg() {
           gazebo::msgs::SceneDocument doc;
           if(docs.msgtype() == doc.GetTypeName()) {
             int n = docs.msgsdata_size();
-            win_store->clear();
-            win_images.clear();
             
             for(int i=0; i<n; i++) {
               logger->log("kid", "processing document for selected node: "+docreq->data());
@@ -450,9 +448,14 @@ bool KIDTab::on_graph_release(GdkEventButton *b) {
         else
           logger->log("kid", "refreshing document window for node: "+node);
 
-        // get data from framework for selected collection node
+        // clear previous data
+        win_store->clear();
+        win_images.clear();
+
+        // get new data from framework for selected collection node
         docreq = gazebo::msgs::CreateRequest("documents", node);
         framePub->Publish(*docreq);
+
       }
       else if (node != "")
         logger->log("kid", "node: "+node+" does not refer to a collection");

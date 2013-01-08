@@ -15,6 +15,8 @@ ObjectInstantiatorTab::ObjectInstantiatorTab(gazebo::transport::NodePtr& _node, 
   node = _node;
   logger = _logger;
   this->responseMutex = new boost::mutex();
+  object_data_part1 = false;
+  object_data_part2 = false;
 
   // object list
   _builder->get_widget("objectinstantiator_treeview_spawnedobjects", trv_object);
@@ -129,22 +131,26 @@ void ObjectInstantiatorTab::ProcessResponseMsg() {
             row.set_value(0, (Glib::ustring)"Object");
             row.set_value(1, src1.object());
           }
+
+          if(src1.has_frame()) {
+            row = *(dat_store->append());
+            row.set_value(0, (Glib::ustring)"Frame");
+            row.set_value(1, src1.frame());
+          }
+          object_data_part1 = true;
         }
         else if(_msg->type() == src2.GetTypeName()) {
           src2.ParseFromString(_msg->serialized_data());
-          images.clear();
-          img_store->clear();
-          row = *(img_store->append());
-          row.set_value(0, (Glib::ustring)"None");
-          images["None"] = Gdk::Pixbuf::create_from_file("res/noimg.png");
 
           int n = src2.msgsdata_size();
           gazebo::msgs::SceneDocument doc;
           if(src2.msgtype() == doc.GetTypeName()) {
-            row = *(dat_store->append());
-            row.set_value(0, (Glib::ustring)"Documents");
-            row.set_value(1, (Glib::ustring)"");
-
+            if(!set_documents) {
+              documents_row = *(dat_store->append());
+              documents_row.set_value(0, (Glib::ustring)"Documents");
+              documents_row.set_value(1, (Glib::ustring)"");
+              set_documents = true;
+            }
             Gtk::TreeModel::Row irow;
 
             for(int m = 0; m<n; m++) {
@@ -152,7 +158,7 @@ void ObjectInstantiatorTab::ProcessResponseMsg() {
 
               if(doc.has_image()) {
                 irow = *(img_store->append());
-                irow.set_value(0, doc.interface());
+                irow.set_value(0, Converter::to_ustring_time(doc.timestamp())+" => "+doc.interface());
                 gazebo::common::Image img;
                 gazebo::msgs::Set(img, doc.image());
                 img.SavePNG("tmp_img.png");
@@ -160,7 +166,7 @@ void ObjectInstantiatorTab::ProcessResponseMsg() {
               }
               
               Gtk::TreeModel::Row childrow;
-              childrow = *(dat_store->append(row.children()));
+              childrow = *(dat_store->append(documents_row.children()));
               childrow.set_value(0, doc.interface());
 
               if(doc.timestamp() < 0.0)
@@ -173,12 +179,18 @@ void ObjectInstantiatorTab::ProcessResponseMsg() {
               cchildrow.set_value(0, (Glib::ustring)"");
               cchildrow.set_value(1, Converter::parse_json(doc.document()));
             }
+            if(_msg->response() != "part")
+              object_data_part2 = true;
           }    
           image_iter = images.begin();
           com_data->set_active(img_store->children().begin());
 
-          delete objReq;
-          objReq = 0;
+          if(object_data_part1 && object_data_part2) {
+            delete objReq;
+            objReq = 0;
+            object_data_part1 = false;
+            object_data_part2 = false;
+          }
         }
         else {
           logger->log("object instantiator", "objRes has no type or wrong type");
@@ -253,6 +265,14 @@ void ObjectInstantiatorTab::on_win_combo_changed() {
 
 void ObjectInstantiatorTab::on_button_show_clicked() {
   if(trv_object->get_selection()->count_selected_rows() == 1) {
+    images.clear();
+    img_store->clear();
+    Gtk::TreeModel::Row row = *(img_store->append());
+    row.set_value(0, (Glib::ustring)"None");
+    images["None"] = Gdk::Pixbuf::create_from_file("res/noimg.png");
+    dat_store->clear();
+    set_documents = false;
+
     objReq = gazebo::msgs::CreateRequest("object_data");
     Glib::ustring tmp;
     trv_object->get_selection()->get_selected()->get_value(0, tmp);
@@ -260,7 +280,6 @@ void ObjectInstantiatorTab::on_button_show_clicked() {
     sceneReqPub->Publish(*objReq);
     logger->log("object instantiator", "requesting data of selected spawned object from ObjectInstantiatorPlugin");
     logger->msglog(">>", "~/SceneReconstruction/ObjectInstantiator/Request", *objReq);
-    dat_store->clear();
   }
   else
     logger->log("object instantiator", "no object to request data for selected");

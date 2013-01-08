@@ -19,21 +19,29 @@ AnalysisTab::AnalysisTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, 
   logger = _logger;
   this->bufferMutex = new boost::mutex();
   this->lasersMutex = new boost::mutex();
-  
+
   _builder->get_widget("analysis_buffer_position_toolbutton_preview", btn_position_preview);
   btn_position_preview->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_position_preview_clicked));
   _builder->get_widget("analysis_buffer_position_toolbutton_clear", btn_position_clear);
   btn_position_clear->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_position_clear_clicked));
+  _builder->get_widget("analysis_buffer_position_toolbutton_refresh", btn_position_refresh);
+  btn_position_refresh->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::StartProcessBufferMsg));
   _builder->get_widget("analysis_buffer_joints_toolbutton_preview", btn_angles_preview);
   btn_angles_preview->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_angles_preview_clicked));
   _builder->get_widget("analysis_buffer_joints_toolbutton_clear", btn_angles_clear);
   btn_angles_clear->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_angles_clear_clicked));
+  _builder->get_widget("analysis_buffer_joints_toolbutton_refresh", btn_angles_refresh);
+  btn_angles_refresh->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::StartProcessBufferMsg));
   _builder->get_widget("analysis_buffer_objects_toolbutton_preview", btn_object_preview);
   btn_object_preview->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_object_preview_clicked));
   _builder->get_widget("analysis_buffer_objects_toolbutton_move", btn_object_move);
   btn_object_move->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_object_move_clicked));
   _builder->get_widget("analysis_buffer_objects_toolbutton_clear", btn_object_clear);
   btn_object_clear->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::on_button_object_clear_clicked));
+  _builder->get_widget("analysis_buffer_objects_toolbutton_refresh", btn_object_refresh);
+  btn_object_refresh->signal_clicked().connect(sigc::mem_fun(*this,&AnalysisTab::StartProcessBufferMsg));
+
+  _builder->get_widget("analysis_buffer_notebook", ntb_buffer);
 
   _builder->get_widget("analysis_buffer_position_treeview", trv_positions);
   pos_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(_builder->get_object("analysis_buffer_position_treestore"));
@@ -45,6 +53,9 @@ AnalysisTab::AnalysisTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, 
   trv_objects->signal_button_release_event().connect(sigc::mem_fun(*this,&AnalysisTab::on_treeview_button_release));
   trv_objects->signal_key_release_event().connect(sigc::mem_fun(*this,&AnalysisTab::on_treeview_key_release));
   obj_store = Glib::RefPtr<Gtk::TreeStore>::cast_dynamic(_builder->get_object("analysis_buffer_objects_treestore"));
+
+  _builder->get_widget("analysis_buffer_status_window", win_status);
+  _builder->get_widget("analysis_buffer_status_progressbar", bar_status);
 
   _builder->get_widget("analysis_buffer_objects_spinbutton_position_x", spn_object_pos_x);
   _builder->get_widget("analysis_buffer_objects_spinbutton_position_y", spn_object_pos_y);
@@ -89,7 +100,6 @@ AnalysisTab::AnalysisTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, 
 
   objBufferSub = node->Subscribe("~/SceneReconstruction/ObjectInstantiator/Object", &AnalysisTab::OnBufferMsg, this);
   robBufferSub = node->Subscribe("~/SceneReconstruction/RobotController/", &AnalysisTab::OnBufferMsg, this);
-  on_buffer_msg.connect( sigc::mem_fun( *this , &AnalysisTab::ProcessBufferMsg ));
   lasersSub = node->Subscribe("~/SceneReconstruction/GUI/Lasers", &AnalysisTab::OnLasersMsg, this);
   on_lasers_msg.connect( sigc::mem_fun( *this , &AnalysisTab::ProcessLasersMsg ));
   controlSub = node->Subscribe("~/SceneReconstruction/Framework/Control", &AnalysisTab::OnControlMsg, this);
@@ -123,21 +133,29 @@ void AnalysisTab::OnBufferMsg(ConstMessage_VPtr& _msg) {
     boost::mutex::scoped_lock lock(*this->bufferMutex);
     this->bufferMsgs.push_back(*_msg);
   }
-  on_buffer_msg();
 }
 
-void AnalysisTab::ProcessBufferMsg() {
-  boost::mutex::scoped_lock lock(*this->bufferMutex);
-  std::list<gazebo::msgs::Message_V>::iterator _msg;
-  for(_msg = bufferMsgs.begin(); _msg != bufferMsgs.end(); _msg++) {
-    logger->msglog("<<", "~/SceneReconstruction/GUI/Buffer", *_msg);
+void AnalysisTab::StartProcessBufferMsg() {
+  this->bufferMutex->lock();
+  trv_positions->unset_model();
+  trv_angles->unset_model();
+  trv_objects->unset_model();
+  bufferIter = bufferMsgs.begin();
+  bar_status->set_fraction(0.0);
+  win_status->present();
+  bufferTimer = Glib::signal_timeout().connect(sigc::mem_fun(*this, &AnalysisTab::ProcessBufferMsg), 50 );
+}
+
+bool AnalysisTab::ProcessBufferMsg() {
+  if(bufferIter != bufferMsgs.end()) {
+    logger->msglog("<<", "~/SceneReconstruction/GUI/Buffer", *bufferIter);
     gazebo::msgs::SceneJoint jnt;
     gazebo::msgs::SceneRobot pos;
     gazebo::msgs::SceneObject obj;
     
-    if(_msg->msgtype() == jnt.GetTypeName()) {
-      for(int i=0; i<_msg->msgsdata_size(); i++) {
-        jnt.ParseFromString(_msg->msgsdata(i));
+    if(bufferIter->msgtype() == jnt.GetTypeName()) {
+      for(int i=0; i<bufferIter->msgsdata_size(); i++) {
+        jnt.ParseFromString(bufferIter->msgsdata(i));
         Gtk::TreeModel::Row row = *(ang_store->append());
         int msg = ang_messages.size();
         row.set_value(0, Converter::to_ustring_time((jnt.controltime()+time_offset)*1000));
@@ -157,10 +175,10 @@ void AnalysisTab::ProcessBufferMsg() {
         ang_messages.push_back(jnt);
       }
     }
-    else if(_msg->msgtype() == obj.GetTypeName()) {
-      obj_messages.resize(obj_messages.size()+_msg->msgsdata_size());
-      for(int i=0; i<_msg->msgsdata_size(); i++) {
-        obj.ParseFromString(_msg->msgsdata(i));
+    else if(bufferIter->msgtype() == obj.GetTypeName()) {
+      obj_messages.resize(obj_messages.size()+bufferIter->msgsdata_size());
+      for(int i=0; i<bufferIter->msgsdata_size(); i++) {
+        obj.ParseFromString(bufferIter->msgsdata(i));
         Gtk::TreeModel::Row row = *(obj_store->append());
         int msg = obj_messages.size();
         row.set_value(0, Converter::to_ustring_time((obj.time()+time_offset)*1000));
@@ -194,9 +212,9 @@ void AnalysisTab::ProcessBufferMsg() {
         obj_messages.push_back(obj);
       }
     }
-    else if(_msg->msgtype() == pos.GetTypeName()) {
-      for(int i=0; i<_msg->msgsdata_size(); i++) {
-        pos.ParseFromString(_msg->msgsdata(i));
+    else if(bufferIter->msgtype() == pos.GetTypeName()) {
+      for(int i=0; i<bufferIter->msgsdata_size(); i++) {
+        pos.ParseFromString(bufferIter->msgsdata(i));
         Gtk::TreeModel::Row row = *(pos_store->append());
         int msg = pos_messages.size();
         row.set_value(0, Converter::to_ustring_time((pos.controltime()+time_offset)*1000));
@@ -213,9 +231,26 @@ void AnalysisTab::ProcessBufferMsg() {
         pos_messages.push_back(pos);
       }
     }
+
+    bufferIter++;
+    bar_status->set_fraction(bar_status->get_fraction() + 1.0/bufferMsgs.size());
+  }
+  else {
+    EndProcessBufferMsg();
+    return false;
   }
 
+  return true;
+}
+
+void AnalysisTab::EndProcessBufferMsg() {
   bufferMsgs.clear();
+  trv_positions->set_model(pos_store);
+  trv_angles->set_model(ang_store);
+  trv_objects->set_model(obj_store);
+  bufferTimer.disconnect();
+  win_status->hide();
+  this->bufferMutex->unlock();
 }
 
 bool AnalysisTab::on_treeview_button_release(GdkEventButton */*event*/) {
@@ -482,3 +517,4 @@ void AnalysisTab::ProcessLasersMsg() {
   }
   lasersMsgs.clear();
 }
+

@@ -58,6 +58,10 @@ namespace SceneReconstruction {
       gazebo::transport::PublisherPtr                              sceneReqPub;
       gazebo::msgs::Request                                       *objReq;
       gazebo::msgs::Response                                      *objRes;
+      bool                                                         object_data_part1,
+                                                                   object_data_part2,
+                                                                   set_documents;
+      Gtk::TreeModel::Row                                          documents_row;
 
       Glib::Dispatcher                                             on_response_msg;
       boost::mutex                                                *responseMutex;
