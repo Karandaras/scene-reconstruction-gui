@@ -138,8 +138,8 @@ void AnalysisTab::OnBufferMsg(ConstMessage_VPtr& _msg) {
     boost::mutex::scoped_lock lock(*this->bufferMutex);
 
     // if max messages reached, delete old ones
-    while(bufferMsgs.size() >= TARGET_BUFFER);
-      bufferMsgs.erase(bufferMsgs.begin());
+    while(bufferMsgs.size() >= TARGET_BUFFER)
+      bufferMsgs.pop_front();
 
     this->bufferMsgs.push_back(*_msg);
   }
