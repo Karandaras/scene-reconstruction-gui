@@ -51,5 +51,6 @@ namespace SceneReconstruction {
     private:
       void OnResponseMsg(ConstResponsePtr&);
       void ProcessResponseMsg();
+      bool on_close(GdkEventAny*);
   };
 }

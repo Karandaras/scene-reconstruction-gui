@@ -31,6 +31,10 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Gl
   rng_time->signal_button_release_event().connect(sigc::mem_fun(*this,&ControlTab::on_scale_button_event), false);
   rng_time->signal_key_release_event().connect(sigc::mem_fun(*this,&ControlTab::on_scale_key_event), false);
   rng_time->signal_format_value().connect(sigc::mem_fun(*this,&ControlTab::on_scale_format_value), false);
+  _builder->get_widget("control_window_scale", rng_win_time);
+  rng_win_time->signal_button_release_event().connect(sigc::mem_fun(*this,&ControlTab::on_win_scale_button_event), false);
+  rng_win_time->signal_key_release_event().connect(sigc::mem_fun(*this,&ControlTab::on_win_scale_key_event), false);
+  rng_win_time->signal_format_value().connect(sigc::mem_fun(*this,&ControlTab::on_win_scale_format_value), false);
   _builder->get_widget("control_label_max_time", lbl_max_time);
   _builder->get_widget("control_label_min_time", lbl_min_time);
 
@@ -45,6 +49,10 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Gl
   // btn_pause
   _builder->get_widget("control_toolbutton_pause", btn_pause);
   btn_pause->signal_toggled().connect(sigc::mem_fun(*this,&ControlTab::on_button_pause_toggled));
+
+  // btn_shrink
+  _builder->get_widget("control_toolbutton_shrink", btn_shrink);
+  btn_shrink->signal_clicked().connect(sigc::mem_fun(*this,&ControlTab::on_button_shrink_clicked));
 
   // data display
   _builder->get_widget("control_treeview", trv_data);
@@ -66,6 +74,18 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Gl
   childrow.set_value(0,(Glib::ustring)"Frame (\"/map\")");
   childrow.set_value(1,(Glib::ustring)"Position (X: 0 Y: 0 Z: 0) Orientation (X: 0 Y: 0 Z: 0 W: 0)");
   trv_data->expand_all();
+
+  _builder->get_widget("control_window", win_control);
+  win_control->signal_delete_event().connect(sigc::mem_fun(*this,&ControlTab::on_control_close), false);
+  _builder->get_widget("control_window_toolbutton_stop", btn_win_stop);
+  btn_win_stop->signal_clicked().connect(sigc::mem_fun(*this,&ControlTab::on_button_stop_clicked));
+  _builder->get_widget("control_window_toolbutton_play", btn_win_play);
+  btn_win_play->signal_clicked().connect(sigc::mem_fun(*this,&ControlTab::on_button_play_clicked));
+  _builder->get_widget("control_window_toolbutton_pause", btn_win_pause);
+  btn_win_pause->signal_toggled().connect(sigc::mem_fun(*this,&ControlTab::on_button_win_pause_toggled));
+  _builder->get_widget("control_window_toolbutton_maximize", btn_win_maximize);
+  btn_win_maximize->signal_clicked().connect(sigc::mem_fun(*this,&ControlTab::on_button_maximize_clicked));
+  no_toggle = false;
 
   reqPub = node->Advertise<gazebo::msgs::Request>("~/request");
   controlPub = node->Advertise<gazebo::msgs::SceneFrameworkControl>("~/SceneReconstruction/Framework/Control");
@@ -119,6 +139,7 @@ void ControlTab::ProcessTimeMsg() {
   std::list<gazebo::msgs::Double>::iterator _msg;
   for(_msg = timeMsgs.begin(); _msg != timeMsgs.end(); _msg++) {
     rng_time->set_range(0.0, _msg->data());
+    rng_win_time->set_range(0.0, _msg->data());
     Glib::ustring time = Converter::to_ustring_time(_msg->data());
     lbl_max_time->set_text(time);
     size_t p;
@@ -150,6 +171,7 @@ void ControlTab::ProcessWorldStatsMsg() {
       val += _msg->sim_time().nsec()/1000000;
       val += time_offset;
       rng_time->set_value(val);
+      rng_win_time->set_value(val);
       old_value = rng_time->get_value();
 
       if(val > rng_time->get_value()) {
@@ -307,6 +329,7 @@ void ControlTab::update_coords() {
 void ControlTab::on_button_stop_clicked() {
   time_offset = 0.0;
   rng_time->set_value(0.0);
+  rng_win_time->set_value(0.0);
   ent_info_time = 0.0;
   btn_pause->set_active(true);
 
@@ -328,6 +351,9 @@ void ControlTab::on_button_play_clicked() {
 }
 
 void ControlTab::on_button_pause_toggled() {
+  no_toggle = true;
+  btn_win_pause->set_active(btn_pause->get_active());
+
   if(btn_pause->get_active()) {
     gazebo::msgs::WorldControl start;
     start.set_pause(true);
@@ -348,6 +374,57 @@ void ControlTab::on_button_pause_toggled() {
     control.set_pause(false);
     controlPub->Publish(control);
   }
+  no_toggle = false;
+}
+
+void ControlTab::on_button_win_pause_toggled() {
+  if(!no_toggle)
+    btn_pause->set_active(!(btn_pause->get_active()));
+}
+
+void ControlTab::on_button_shrink_clicked() {
+  Gtk::Window *w;
+  _builder->get_widget("window", w);
+
+  int x, y;
+  w->get_position(x,y);
+  win_control->move(x,y);
+
+  win_control->present();
+  w->hide();
+}
+
+void ControlTab::on_button_maximize_clicked() {
+  Gtk::Window *w;
+  _builder->get_widget("window", w);
+
+  int x, y;
+  win_control->get_position(x,y);
+  w->move(x,y);
+
+  w->present();
+  win_control->hide();
+}
+
+bool ControlTab::on_control_close(GdkEventAny* /*e*/) {
+  Gtk::Window *w;
+  _builder->get_widget("window", w);
+
+  int x, y;
+  win_control->get_position(x,y);
+  w->move(x,y);
+
+  w->present();
+  win_control->hide();
+  return true;
+}
+
+Glib::ustring ControlTab::on_scale_format_value(double value) {
+  return Converter::to_ustring_time(value);
+}
+
+Glib::ustring ControlTab::on_win_scale_format_value(double value) {
+  return Converter::to_ustring_time(value)+" / "+lbl_max_time->get_text();
 }
 
 bool ControlTab::on_scale_button_event(GdkEventButton* b) {
@@ -356,6 +433,7 @@ bool ControlTab::on_scale_button_event(GdkEventButton* b) {
     logger->log("control", "Time changed from %.2f to %.2f using button %d of the mouse on rng_time", old_value, rng_time->get_value(), b->button);
     time_offset = rng_time->get_value();
     old_value = rng_time->get_value();
+    rng_win_time->set_value(old_value);
     ent_info_time = time_offset;
 
     gazebo::msgs::WorldControl start;
@@ -376,10 +454,6 @@ bool ControlTab::on_scale_button_event(GdkEventButton* b) {
   return false;
 }
 
-Glib::ustring ControlTab::on_scale_format_value(double value) {
-  return Converter::to_ustring_time(value);
-}
-
 bool ControlTab::on_scale_key_event(GdkEventKey* k) {
   if(((k->keyval == GDK_KEY_Left || k->keyval == GDK_KEY_Right || k->keyval == GDK_KEY_Up || k->keyval == GDK_KEY_Down || k->keyval == GDK_KEY_KP_Left || k->keyval == GDK_KEY_KP_Right || k->keyval == GDK_KEY_KP_Up || k->keyval == GDK_KEY_KP_Down || k->keyval == GDK_KEY_Home || k->keyval == GDK_KEY_End || k->keyval == GDK_KEY_Page_Up || k->keyval == GDK_KEY_Page_Down) && old_value != rng_time->get_value()) && btn_pause->get_active()) {
 
@@ -387,6 +461,62 @@ bool ControlTab::on_scale_key_event(GdkEventKey* k) {
 
     time_offset = rng_time->get_value();
     old_value = rng_time->get_value();
+    rng_win_time->set_value(old_value);
+    ent_info_time = time_offset;
+
+    gazebo::msgs::WorldControl start;
+    start.set_pause(true);
+    start.set_step(true);
+    start.mutable_reset()->set_all(true);
+    logger->msglog(">>", "~/world_control", start);
+    worldPub->Publish(start);
+
+    gazebo::msgs::SceneFrameworkControl control;
+    control.set_pause(true);
+    control.set_change_offset(true);
+    control.set_offset(time_offset);
+    control.set_step(true);
+    controlPub->Publish(control);
+  }
+
+  return false;
+}
+
+bool ControlTab::on_win_scale_button_event(GdkEventButton* b) {
+  if(rng_win_time->get_value() != old_value && btn_pause->get_active()) {
+
+    logger->log("control", "Time changed from %.2f to %.2f using button %d of the mouse on rng_win_time", old_value, rng_win_time->get_value(), b->button);
+    time_offset = rng_win_time->get_value();
+    old_value = rng_win_time->get_value();
+    rng_time->set_value(old_value);
+    ent_info_time = time_offset;
+
+    gazebo::msgs::WorldControl start;
+    start.set_pause(true);
+    start.set_step(true);
+    start.mutable_reset()->set_all(true);
+    logger->msglog(">>", "~/world_control", start);
+    worldPub->Publish(start);
+
+    gazebo::msgs::SceneFrameworkControl control;
+    control.set_pause(true);
+    control.set_change_offset(true);
+    control.set_offset(time_offset);
+    control.set_step(true);
+    controlPub->Publish(control);
+  }
+
+  return false;
+}
+
+bool ControlTab::on_win_scale_key_event(GdkEventKey* k) {
+  if(((k->keyval == GDK_KEY_Left || k->keyval == GDK_KEY_Right || k->keyval == GDK_KEY_Up || k->keyval == GDK_KEY_Down || k->keyval == GDK_KEY_KP_Left || k->keyval == GDK_KEY_KP_Right || k->keyval == GDK_KEY_KP_Up || k->keyval == GDK_KEY_KP_Down || k->keyval == GDK_KEY_Home || k->keyval == GDK_KEY_End || k->keyval == GDK_KEY_Page_Up || k->keyval == GDK_KEY_Page_Down) && old_value != rng_win_time->get_value()) && btn_pause->get_active()) {
+
+    logger->log("control", "Time changed from %.2f to %.2f using key %s of the keyboard on rng_win_time", old_value, rng_win_time->get_value(), gdk_keyval_name(k->keyval));
+
+    time_offset = rng_win_time->get_value();
+    old_value = rng_win_time->get_value();
+    rng_time->set_value(old_value);
     ent_info_time = time_offset;
 
     gazebo::msgs::WorldControl start;

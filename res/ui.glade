@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
+  <object class="GtkAction" id="action1"/>
   <object class="GtkTreeStore" id="analysis_buffer_joints_treestore">
     <columns>
       <!-- column-name desc -->
@@ -93,6 +94,7 @@
         <property name="height_request">32</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="show_text">True</property>
       </object>
     </child>
   </object>
@@ -175,6 +177,118 @@
       <!-- column-name value -->
       <column type="gchararray"/>
     </columns>
+  </object>
+  <object class="GtkWindow" id="control_window">
+    <property name="width_request">205</property>
+    <property name="height_request">65</property>
+    <property name="can_focus">False</property>
+    <property name="title" translatable="yes">Playback Control</property>
+    <property name="resizable">False</property>
+    <property name="modal">True</property>
+    <property name="default_width">205</property>
+    <property name="default_height">65</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="icon_name">applications-utilities</property>
+    <property name="transient_for">window</property>
+    <property name="opacity">0.94999999999999996</property>
+    <child>
+      <object class="GtkVBox" id="vbox1">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <child>
+          <object class="GtkScale" id="control_window_scale">
+            <property name="width_request">350</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="hexpand">True</property>
+            <property name="restrict_to_fill_level">False</property>
+            <property name="fill_level">0</property>
+            <property name="round_digits">2</property>
+            <property name="digits">2</property>
+            <property name="value_pos">bottom</property>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkToolbar" id="control_window_toolbar">
+            <property name="width_request">205</property>
+            <property name="height_request">65</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="hexpand">True</property>
+            <property name="toolbar_style">both</property>
+            <property name="show_arrow">False</property>
+            <property name="icon_size">4</property>
+            <child>
+              <object class="GtkToolButton" id="control_window_toolbutton_stop">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="use_action_appearance">False</property>
+                <property name="label" translatable="yes">Stop</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-media-stop</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="control_window_toolbutton_play">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="use_action_appearance">False</property>
+                <property name="label" translatable="yes">Play</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-media-play</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToggleToolButton" id="control_window_toolbutton_pause">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="use_action_appearance">False</property>
+                <property name="label" translatable="yes">Pause</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-media-pause</property>
+                <property name="active">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="control_window_toolbutton_maximize">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="use_action_appearance">False</property>
+                <property name="label" translatable="yes">Maximize</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-fullscreen</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
   </object>
   <object class="GtkAdjustment" id="framework_adjustment_object">
     <property name="step_increment">1</property>
@@ -630,6 +744,20 @@
                         <property name="homogeneous">True</property>
                       </packing>
                     </child>
+                    <child>
+                      <object class="GtkToolButton" id="control_toolbutton_shrink">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="label" translatable="yes">Shrink</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-leave-fullscreen</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
                   </object>
                   <packing>
                     <property name="x">5</property>
@@ -656,13 +784,13 @@
                     <property name="orientation">vertical</property>
                   </object>
                   <packing>
-                    <property name="x">209</property>
+                    <property name="x">224</property>
                     <property name="y">6</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkScale" id="control_scale">
-                    <property name="width_request">410</property>
+                    <property name="width_request">350</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="hexpand">True</property>
@@ -673,7 +801,7 @@
                     <property name="value_pos">bottom</property>
                   </object>
                   <packing>
-                    <property name="x">220</property>
+                    <property name="x">270</property>
                     <property name="y">26</property>
                   </packing>
                 </child>
@@ -686,7 +814,7 @@
                     <property name="label" translatable="yes">0.00</property>
                   </object>
                   <packing>
-                    <property name="x">219</property>
+                    <property name="x">255</property>
                     <property name="y">5</property>
                   </packing>
                 </child>

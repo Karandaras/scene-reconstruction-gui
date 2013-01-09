@@ -37,6 +37,7 @@ SceneGUI::SceneGUI()
   // Setup the GUI
   ui_builder = Gtk::Builder::create_from_file("res/ui.glade");
   ui_builder->get_widget("window", window);
+  window->signal_delete_event().connect(sigc::mem_fun(*this,&SceneGUI::on_close), false);
 
   // create LoggerTab to log all Gazebo output
   logger = new LoggerTab(ui_builder);
@@ -78,6 +79,8 @@ SceneGUI::SceneGUI()
   plugin_pubs["RobotController"] = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/RobotController/Request");
   availSub = node->Subscribe("~/SceneReconstruction/GUI/Availability/Response", &SceneGUI::OnResponseMsg, this);
   on_response_msg.connect( sigc::mem_fun( *this , &SceneGUI::ProcessResponseMsg ));
+
+  window->present();
 }
 
 SceneGUI::~SceneGUI() {
@@ -124,11 +127,15 @@ void SceneGUI::ProcessResponseMsg() {
   responseMsgs.clear();
 }
 
+bool SceneGUI::on_close(GdkEventAny* /*e*/) {
+  Gtk::Main::quit();
+  return true;
+}
+
 int main(int argc, char **argv)
 {
     Gtk::Main main(argc,argv);
     SceneGUI scene;
-
-    main.run(*(scene.window));
+    main.run();
     return 0;
 }

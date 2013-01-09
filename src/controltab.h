@@ -39,6 +39,7 @@ namespace SceneReconstruction {
       LoggerTab                    *logger;
       // timeline to display current time and allow navigation
       Gtk::Scale                   *rng_time;
+      Gtk::Scale                   *rng_win_time;
       Gtk::Label                   *lbl_min_time;
       Gtk::Label                   *lbl_max_time;
 
@@ -46,6 +47,14 @@ namespace SceneReconstruction {
       Gtk::ToolButton              *btn_stop;
       Gtk::ToolButton              *btn_play;
       Gtk::ToggleToolButton        *btn_pause;
+      Gtk::ToolButton              *btn_shrink;
+      Gtk::ToolButton              *btn_win_stop;
+      Gtk::ToolButton              *btn_win_play;
+      Gtk::ToggleToolButton        *btn_win_pause;
+      Gtk::ToolButton              *btn_win_maximize;
+      bool                          no_toggle;
+
+      Gtk::Window                  *win_control;
 
       // data display
       Gtk::TreeView                *trv_data;
@@ -104,8 +113,15 @@ namespace SceneReconstruction {
       void on_button_stop_clicked();
       void on_button_play_clicked();
       void on_button_pause_toggled();
+      void on_button_win_pause_toggled();
+      void on_button_shrink_clicked();
+      void on_button_maximize_clicked();
+      bool on_control_close(GdkEventAny*);
       bool on_scale_button_event(GdkEventButton*);
       bool on_scale_key_event(GdkEventKey*);
+      bool on_win_scale_button_event(GdkEventButton*);
+      bool on_win_scale_key_event(GdkEventKey*);
       Glib::ustring on_scale_format_value(double);
+      Glib::ustring on_win_scale_format_value(double);
   };
 }
