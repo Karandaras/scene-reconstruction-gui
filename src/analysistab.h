@@ -37,78 +37,78 @@ namespace SceneReconstruction {
       ~AnalysisTab();
 
     private:
-      gazebo::transport::NodePtr                    node;
-      LoggerTab                                    *logger;
+      gazebo::transport::NodePtr                      node;
+      LoggerTab                                      *logger;
 
-      Gtk::ToolButton                              *btn_position_preview;
-      Gtk::ToolButton                              *btn_position_clear;
-      Gtk::ToolButton                              *btn_position_refresh;
-      Gtk::ToolButton                              *btn_angles_preview;
-      Gtk::ToolButton                              *btn_angles_clear;
-      Gtk::ToolButton                              *btn_angles_refresh;
-      Gtk::ToolButton                              *btn_object_preview;
-      Gtk::ToolButton                              *btn_object_move;
-      Gtk::ToolButton                              *btn_object_clear;
-      Gtk::ToolButton                              *btn_object_refresh;
+      Gtk::ToolButton                                *btn_position_preview;
+      Gtk::ToolButton                                *btn_position_clear;
+      Gtk::ToolButton                                *btn_position_refresh;
+      Gtk::ToolButton                                *btn_angles_preview;
+      Gtk::ToolButton                                *btn_angles_clear;
+      Gtk::ToolButton                                *btn_angles_refresh;
+      Gtk::ToolButton                                *btn_object_preview;
+      Gtk::ToolButton                                *btn_object_move;
+      Gtk::ToolButton                                *btn_object_clear;
+      Gtk::ToolButton                                *btn_object_refresh;
 
-      Gtk::Notebook                                *ntb_buffer;
-      Gtk::TreeView                                *trv_positions;
-      Glib::RefPtr<Gtk::TreeStore>                  pos_store;
-      std::vector<gazebo::msgs::SceneRobot>         pos_messages;
-      Gtk::TreeView                                *trv_angles;
-      Glib::RefPtr<Gtk::TreeStore>                  ang_store;
-      std::vector<gazebo::msgs::SceneJoint>         ang_messages;
-      Gtk::TreeView                                *trv_objects;
-      Glib::RefPtr<Gtk::TreeStore>                  obj_store;
-      std::vector<gazebo::msgs::SceneObject>        obj_messages;
-      Gtk::Window                                  *win_status;
-      Gtk::ProgressBar                             *bar_status;
+      Gtk::Notebook                                  *ntb_buffer;
+      Gtk::TreeView                                  *trv_positions;
+      Glib::RefPtr<Gtk::TreeStore>                    pos_store;
+      std::vector<gazebo::msgs::SceneRobot>           pos_messages;
+      Gtk::TreeView                                  *trv_angles;
+      Glib::RefPtr<Gtk::TreeStore>                    ang_store;
+      std::vector<gazebo::msgs::SceneJoint>           ang_messages;
+      Gtk::TreeView                                  *trv_objects;
+      Glib::RefPtr<Gtk::TreeStore>                    obj_store;
+      std::vector<gazebo::msgs::SceneObject>          obj_messages;
+      Gtk::Window                                    *win_status;
+      Gtk::ProgressBar                               *bar_status;
 
-      gazebo::transport::SubscriberPtr              robBufferSub,
-                                                    objBufferSub,
-                                                    controlSub,
-                                                    lasersSub;
-      gazebo::transport::PublisherPtr               positionPub,
-                                                    anglesPub,
-                                                    objectPub,
-                                                    drawingPub,
-                                                    lasersPub;
+      gazebo::transport::SubscriberPtr                robBufferSub,
+                                                      objBufferSub,
+                                                      controlSub,
+                                                      lasersSub;
+      gazebo::transport::PublisherPtr                 positionPub,
+                                                      anglesPub,
+                                                      objectPub,
+                                                      drawingPub,
+                                                      lasersPub;
 
-      Gtk::SpinButton                              *spn_grid_pos_x;
-      Gtk::SpinButton                              *spn_grid_pos_y;
-      Gtk::SpinButton                              *spn_grid_pos_z;
-      Gtk::SpinButton                              *spn_grid_rot_x;
-      Gtk::SpinButton                              *spn_grid_rot_y;
-      Gtk::SpinButton                              *spn_grid_rot_z;
-      Gtk::SpinButton                              *spn_grid_rot_w;
-      Gtk::SpinButton                              *spn_grid_width;
-      Gtk::SpinButton                              *spn_grid_height;
-      Gtk::SpinButton                              *spn_grid_size;
-      Gtk::Button                                  *btn_grid_show;
-      Gtk::Button                                  *btn_grid_move;
+      Gtk::SpinButton                                *spn_grid_pos_x;
+      Gtk::SpinButton                                *spn_grid_pos_y;
+      Gtk::SpinButton                                *spn_grid_pos_z;
+      Gtk::SpinButton                                *spn_grid_rot_x;
+      Gtk::SpinButton                                *spn_grid_rot_y;
+      Gtk::SpinButton                                *spn_grid_rot_z;
+      Gtk::SpinButton                                *spn_grid_rot_w;
+      Gtk::SpinButton                                *spn_grid_width;
+      Gtk::SpinButton                                *spn_grid_height;
+      Gtk::SpinButton                                *spn_grid_size;
+      Gtk::Button                                    *btn_grid_show;
+      Gtk::Button                                    *btn_grid_move;
 
-      Gtk::SpinButton                              *spn_object_pos_x;
-      Gtk::SpinButton                              *spn_object_pos_y;
-      Gtk::SpinButton                              *spn_object_pos_z;
-      Gtk::SpinButton                              *spn_object_rot_x;
-      Gtk::SpinButton                              *spn_object_rot_y;
-      Gtk::SpinButton                              *spn_object_rot_z;
-      Gtk::SpinButton                              *spn_object_rot_w;
+      Gtk::SpinButton                                *spn_object_pos_x;
+      Gtk::SpinButton                                *spn_object_pos_y;
+      Gtk::SpinButton                                *spn_object_pos_z;
+      Gtk::SpinButton                                *spn_object_rot_x;
+      Gtk::SpinButton                                *spn_object_rot_y;
+      Gtk::SpinButton                                *spn_object_rot_z;
+      Gtk::SpinButton                                *spn_object_rot_w;
  
-      Gtk::TreeView                                *trv_lasers;
-      Glib::RefPtr<Gtk::ListStore>                  lsr_store;
-      Gtk::Button                                  *btn_lasers_update;
+      Gtk::TreeView                                  *trv_lasers;
+      Glib::RefPtr<Gtk::ListStore>                    lsr_store;
+      Gtk::Button                                    *btn_lasers_update;
 
-      Glib::Dispatcher                              on_lasers_msg,
-                                                    on_control_msg;
-      boost::mutex                                 *lasersMutex,
-                                                   *bufferMutex;
-      std::list<gazebo::msgs::Lasers>               lasersMsgs;
-      std::list<gazebo::msgs::Message_V>            bufferMsgs;
-      std::list<gazebo::msgs::Message_V>::iterator  bufferIter;
-      sigc::connection                              bufferTimer;
+      Glib::Dispatcher                                on_lasers_msg,
+                                                      on_control_msg;
+      boost::mutex                                   *lasersMutex,
+                                                     *bufferMutex;
+      std::list<gazebo::msgs::Lasers>                 lasersMsgs;
+      std::list<gazebo::msgs::Message_V>              bufferMsgs;
+      std::list<gazebo::msgs::Message_V>::iterator    bufferIter;
+      sigc::connection                                bufferTimer;
 
-      double                                        time_offset;
+      double                                          time_offset;
 
     private:
       void OnBufferMsg(ConstMessage_VPtr&);

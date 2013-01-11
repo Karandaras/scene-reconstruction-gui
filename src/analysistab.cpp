@@ -1,11 +1,6 @@
 #include "analysistab.h"
 #include "converter.h"
 
-// maximum number of messages to store
-#define MAX_BUFFER 1000
-// number of messages to keep if maximum is reached and old ones get deleted
-#define TARGET_BUFFER 900
-
 using namespace SceneReconstruction;
 
 /** @class AnalysisTab "analysistab.h"
@@ -136,12 +131,7 @@ void AnalysisTab::ProcessControlMsg() {
 void AnalysisTab::OnBufferMsg(ConstMessage_VPtr& _msg) {
   {
     boost::mutex::scoped_lock lock(*this->bufferMutex);
-
-    // if max messages reached, delete old ones
-    while(bufferMsgs.size() >= TARGET_BUFFER)
-      bufferMsgs.pop_front();
-
-    this->bufferMsgs.push_back(*_msg);
+    bufferMsgs.push_back(*_msg);
   }
 }
 
@@ -156,9 +146,9 @@ void AnalysisTab::StartProcessBufferMsg() {
   obj_messages.clear();
   pos_store->clear();
   pos_messages.clear();
-  bufferIter = bufferMsgs.begin();
   bar_status->set_fraction(0.0);
   win_status->present();
+  bufferIter = bufferMsgs.begin();
   bufferTimer = Glib::signal_timeout().connect(sigc::mem_fun(*this, &AnalysisTab::ProcessBufferMsg), 50 );
 }
 

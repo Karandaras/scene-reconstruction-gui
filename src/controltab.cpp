@@ -184,6 +184,8 @@ void ControlTab::ProcessWorldStatsMsg() {
       }
     }
   }
+
+  worldstatsMsgs.clear();
 }
 
 void ControlTab::OnResMsg(ConstResponsePtr& _msg) {
@@ -208,7 +210,16 @@ void ControlTab::ProcessResMsg() {
           model.ParseFromString(_msg->serialized_data());
           logger->log("control", "Coords of Model " + model.name() + " received.");
           selected_model = model.name();
-          update_coords(model);
+
+          if(model.has_pose()) {
+            gazebo = model.pose();
+          }
+
+          gazebo::math::Pose sen;
+          sensor = gazebo::msgs::Convert(sen);
+          objectRequest = gazebo::msgs::CreateRequest("get_frame", model.name());
+          objectPub->Publish(*objectRequest);
+          logger->msglog(">>", "~/SceneReconstruction/ObjectInstantiator/Request", *objectRequest);
         }
       }
     }
@@ -284,45 +295,24 @@ void ControlTab::ProcessResponseMsg() {
   responseMsgs.clear();
 }
 
-void ControlTab::update_coords(gazebo::msgs::Model model) {
-  // Update Coords-Treeview
-  if(model.has_pose()) {
-    gazebo = model.pose();
-  }
-
-  gazebo::math::Pose sen;
-  sensor = gazebo::msgs::Convert(sen);
-  objectRequest = gazebo::msgs::CreateRequest("get_frame", model.name());
-  objectPub->Publish(*objectRequest);
-  logger->msglog(">>", "~/SceneReconstruction/ObjectInstantiator/Request", *objectRequest);
-}
-
 void ControlTab::update_coords() {
   // Update Coords-Treeview
   Gtk::TreeModel::Children rows = trv_data->get_model()->children();
-  for(Gtk::TreeModel::Children::iterator iter = rows.begin(); iter != rows.end(); ++iter) {
-    Gtk::TreeModel::Row row = *iter;
-    Glib::ustring tmp;
-    row.get_value(0, tmp);
-    Gtk::TreeModel::Children childrows = row.children();
-    Gtk::TreeModel::Children::iterator childiter;
-    Gtk::TreeModel::Row childrow;
+  Gtk::TreeModel::Children::iterator iter = rows.begin();
+  Gtk::TreeModel::Children childrows = iter->children();
+  Gtk::TreeModel::Children::iterator childiter;
+ 
+  childiter = childrows.begin();
+  childiter->set_value(1, Converter::convert(gazebo, 2, 3));
 
-    childiter = childrows.begin();
-    childrow = *childiter;
-    childrow.set_value(1, Converter::convert(gazebo, 2, 3));
-  
-    gazebo::math::Pose tmp_pose = gazebo::msgs::Convert(gazebo);
-    tmp_pose.pos -= gazebo::msgs::Convert(robot);
-    childiter++;
-    childrow = *childiter;
-    childrow.set_value(1, Converter::convert(gazebo::msgs::Convert(tmp_pose), 2, 3));
+  gazebo::math::Pose tmp_pose = gazebo::msgs::Convert(gazebo);
+  tmp_pose.pos -= gazebo::msgs::Convert(robot);
+  childiter++;
+  childiter->set_value(1, Converter::convert(gazebo::msgs::Convert(tmp_pose), 2, 3));
 
-    childiter++;
-    childrow = *childiter;
-    childrow.set_value(0, "Frame (\""+sensor.name()+"\")");
-    childrow.set_value(1, Converter::convert(sensor, 2, 3));
-  }
+  childiter++;
+  childiter->set_value(0, "Frame (\""+sensor.name()+"\")");
+  childiter->set_value(1, Converter::convert(sensor, 2, 3));
   coords_updated = true;
 }
 
