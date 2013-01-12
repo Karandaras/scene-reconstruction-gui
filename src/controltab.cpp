@@ -76,6 +76,7 @@ ControlTab::ControlTab(gazebo::transport::NodePtr& _node, LoggerTab* _logger, Gl
   trv_data->expand_all();
 
   _builder->get_widget("control_window", win_control);
+  win_control->set_keep_above();
   win_control->signal_delete_event().connect(sigc::mem_fun(*this,&ControlTab::on_control_close), false);
   _builder->get_widget("control_window_toolbutton_stop", btn_win_stop);
   btn_win_stop->signal_clicked().connect(sigc::mem_fun(*this,&ControlTab::on_button_stop_clicked));
