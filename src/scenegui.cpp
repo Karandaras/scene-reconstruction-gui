@@ -79,8 +79,6 @@ SceneGUI::SceneGUI()
   plugin_pubs["RobotController"] = node->Advertise<gazebo::msgs::Request>("~/SceneReconstruction/RobotController/Request");
   availSub = node->Subscribe("~/SceneReconstruction/GUI/Availability/Response", &SceneGUI::OnResponseMsg, this);
   on_response_msg.connect( sigc::mem_fun( *this , &SceneGUI::ProcessResponseMsg ));
-
-  window->present();
 }
 
 SceneGUI::~SceneGUI() {
@@ -127,6 +125,16 @@ void SceneGUI::ProcessResponseMsg() {
   responseMsgs.clear();
 }
 
+void SceneGUI::present(bool minimized) {
+  if(!minimized)
+    window->present();
+  else {
+    Gtk::Window *win_control;
+    ui_builder->get_widget("control_window", win_control);
+    win_control->present();
+  }
+}
+
 bool SceneGUI::on_close(GdkEventAny* /*e*/) {
   Gtk::Main::quit();
   return true;
@@ -136,6 +144,12 @@ int main(int argc, char **argv)
 {
     Gtk::Main main(argc,argv);
     SceneGUI scene;
+    if(strcmp(argv[1], "-m") || strcmp(argv[1], "--minimized"))
+      scene.present(true);
+    else
+      scene.present(false);
+
     main.run();
     return 0;
 }
+

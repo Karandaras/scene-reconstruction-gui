@@ -24,6 +24,10 @@ namespace SceneReconstruction {
       SceneGUI();
       /** Destructor */
       ~SceneGUI();
+      /** Function to show the GUI
+        * @param minimized if true, the gui will show up minimized
+        */
+      void present(bool);      
 
     private:
      // gazebo node
