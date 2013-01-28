@@ -144,7 +144,7 @@ int main(int argc, char **argv)
 {
     Gtk::Main main(argc,argv);
     SceneGUI scene;
-    if(strcmp(argv[1], "-m") || strcmp(argv[1], "--minimized"))
+    if(argc > 1 && (strcmp(argv[1], "-m") || strcmp(argv[1], "--minimized")))
       scene.present(true);
     else
       scene.present(false);

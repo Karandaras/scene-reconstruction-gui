@@ -656,14 +656,14 @@
       <column type="gchararray"/>
       <!-- column-name gripper -->
       <column type="gboolean"/>
-      <!-- column-name simname2 -->
-      <column type="gchararray"/>
       <!-- column-name robangle -->
       <column type="gdouble"/>
       <!-- column-name offset -->
+      <column type="gchararray"/>
+      <!-- column-name factor -->
       <column type="gdouble"/>
       <!-- column-name simangle -->
-      <column type="gdouble"/>
+      <column type="gchararray"/>
     </columns>
   </object>
   <object class="GtkWindow" id="window">
@@ -1150,9 +1150,6 @@
                     <property name="rules_hint">True</property>
                     <property name="search_column">0</property>
                     <property name="enable_grid_lines">both</property>
-                    <child internal-child="selection">
-                      <object class="GtkTreeSelection" id="robotcontroller_treeview_selection"/>
-                    </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="robotcontroller_treeview_column_simulatorname">
                         <property name="resizable">True</property>
@@ -1193,17 +1190,6 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkTreeViewColumn" id="robotcontroller_treeview_column_simulatorname2">
-                        <property name="title" translatable="yes">Simulator Name 2</property>
-                        <child>
-                          <object class="GtkCellRendererText" id="robotcontroller_cellrenderertext_simulatorname2"/>
-                          <attributes>
-                            <attribute name="text">3</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
-                    <child>
                       <object class="GtkTreeViewColumn" id="robotcontroller_treeview_column_robotangle">
                         <property name="resizable">True</property>
                         <property name="min_width">125</property>
@@ -1212,7 +1198,7 @@
                         <child>
                           <object class="GtkCellRendererText" id="robotcontroller_cellrenderertext_robotangle"/>
                           <attributes>
-                            <attribute name="text">4</attribute>
+                            <attribute name="text">3</attribute>
                           </attributes>
                         </child>
                       </object>
@@ -1225,6 +1211,17 @@
                         <property name="reorderable">True</property>
                         <child>
                           <object class="GtkCellRendererText" id="robotcontroller_cellrenderertext_offset"/>
+                          <attributes>
+                            <attribute name="text">4</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="robotcontroller_treeview_column_factor">
+                        <property name="title" translatable="yes">Factor</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="robotcontroller_cellrenderertext_factor"/>
                           <attributes>
                             <attribute name="text">5</attribute>
                           </attributes>

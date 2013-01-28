@@ -51,13 +51,15 @@ void RobotControllerTab::ProcessControllerInfoMsg() {
     logger->msglog("<<", "~/SceneReconstruction/RobotController/ControllerInfo", *_msg);
     logger->log("robot controller", "receiving info from RobotControllerPlugin");
 
-    int sn, rn, gr, sn2, o, sa, ra;
+    int sn, rn, gr, sn2, o, o2, sa, sa2, ra;
     sn  = _msg->simulator_name_size();
     rn  = _msg->robot_name_size();
     gr  = _msg->gripper_size();
     sn2 = _msg->simulator_name2_size();
     o   = _msg->offset_size();
+    o2  = _msg->offset2_size();
     sa  = _msg->simulator_angle_size();
+    sa2 = _msg->simulator_angle2_size();
     ra  = _msg->robot_angle_size();
 
     if(_msg->has_pos_x() && _msg->has_pos_y()) {	
@@ -84,19 +86,28 @@ void RobotControllerTab::ProcessControllerInfoMsg() {
       ent_oriz->set_text(Converter::to_ustring(0.0, 3));
     }
 
-    if(sn == rn && rn == gr && gr == sn2 && sn2 == o && o == sa && sa == ra && ra == sn) {
+    if(sn == rn && rn == gr && gr == o && o == sa && sa == ra && sn2 == o2 && o2 == sa2) {
       rob_store->clear();
       Gtk::TreeModel::Row row;
+      int c = 0;
 
       for(int i=0; i<sn; i++) {
         row = *(rob_store->append());
-        row.set_value(0, (Glib::ustring)_msg->simulator_name(i));
         row.set_value(1, (Glib::ustring)_msg->robot_name(i));
         row.set_value(2, _msg->gripper(i));
-        row.set_value(3, (Glib::ustring)_msg->simulator_name2(i));
-        row.set_value(4, _msg->robot_angle(i));
-        row.set_value(5, _msg->offset(i));
-        row.set_value(6, _msg->simulator_angle(i));
+        row.set_value(3, _msg->robot_angle(i));
+        if(_msg->gripper(i)) {
+          row.set_value(0, (Glib::ustring)_msg->simulator_name(i) + " / " +(Glib::ustring)_msg->simulator_name2(c));
+          row.set_value(4, Converter::to_ustring(_msg->offset(i)) + " / " + Converter::to_ustring(_msg->offset2(c)));
+          row.set_value(6, Converter::to_ustring(_msg->simulator_angle(i)) + " / " + Converter::to_ustring(_msg->simulator_angle2(c)));
+          c++;
+        }
+        else {
+          row.set_value(0, (Glib::ustring)_msg->simulator_name(i));
+          row.set_value(4, Converter::to_ustring(_msg->offset(i)));
+          row.set_value(6, Converter::to_ustring(_msg->simulator_angle(i)));
+        }
+        row.set_value(5, _msg->factor(i));
       }
     }
   }
